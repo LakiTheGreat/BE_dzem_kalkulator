@@ -1,12 +1,12 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import { fruits } from './src/mock.js';
 
 dotenv.config();
 
 const app = express();
 
-// ✅ Allow localhost:3000 and dzem-kalkulator.vercel.app
 const allowedOrigins = [
   'http://localhost:3000',
   'https://dzem-kalkulator.vercel.app',
@@ -29,9 +29,7 @@ app.use(
 const PORT = process.env.PORT || 5000;
 
 app.get('/api/order-types', (req, res) => {
-  res.status(200).json({
-    orderTypes: ['Delivery', 'Pickup'],
-  });
+  res.status(200).json(fruits);
 });
 
 app.listen(PORT, () => {

@@ -5,12 +5,13 @@ import { fruits } from './src/mock.js';
 
 dotenv.config();
 
-const app = express();
-
 const allowedOrigins = [
   'http://localhost:3000',
   'https://dzem-kalkulator.vercel.app',
 ];
+const PORT = process.env.PORT || 5000;
+
+const app = express();
 
 app.use(
   cors({
@@ -26,12 +27,11 @@ app.use(
     // credentials: true, // Only include this if you use cookies or Authorization headers
   })
 );
-const PORT = process.env.PORT || 5000;
-
-app.get('/api/order-types', (req, res) => {
-  res.status(200).json(fruits);
-});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+app.get('/api/order-types', (req, res) => {
+  res.status(200).json(fruits);
 });

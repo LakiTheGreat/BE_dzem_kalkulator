@@ -13,7 +13,11 @@ const app = express();
 app.use(express.json());
 app.use(lookupRouter);
 
-app.use(cors());
+app.use(
+  cors({
+    origin: '*',
+  })
+);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

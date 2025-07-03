@@ -13,6 +13,7 @@ const allowedOrigins = [
 const PORT = process.env.PORT || 5000;
 
 const app = express();
+//CORS must be before routes!!!
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -24,7 +25,7 @@ app.use(
         return callback(new Error('Not allowed by CORS'));
       }
     },
-    // credentials: true, // Only include this if you use cookies or Authorization headers
+    credentials: true,
   })
 );
 

@@ -1,9 +1,10 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import { checkSchema, validationResult } from 'express-validator';
 
 import { fruits } from './src/mock.js';
-import { body, validationResult } from 'express-validator';
+import { testValidationSchema } from './src/validationSchemas/testSchema.mjs';
 
 dotenv.config();
 
@@ -41,15 +42,11 @@ app.get('/api/order-types', (req, res) => {
   res.status(200).json(fruits);
 });
 
-app.post(
-  '/api/order-types',
-  body('name').notEmpty().withMessage('Field "Name" is required'),
-  (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    res.status(200).send(req.body);
+app.post('/api/order-types', checkSchema(testValidationSchema), (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
-);
+
+  res.status(200).send(req.body);
+});

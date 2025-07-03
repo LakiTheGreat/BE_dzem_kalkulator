@@ -1,7 +1,9 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+
 import { fruits } from './src/mock.js';
+import { body, validationResult } from 'express-validator';
 
 dotenv.config();
 
@@ -12,6 +14,9 @@ const allowedOrigins = [
 const PORT = process.env.PORT || 5000;
 
 const app = express();
+
+//Parsira objekat JSON (npr. u POST req)
+app.use(express.json());
 
 app.use(
   cors({
@@ -35,3 +40,16 @@ app.listen(PORT, () => {
 app.get('/api/order-types', (req, res) => {
   res.status(200).json(fruits);
 });
+
+app.post(
+  '/api/order-types',
+  body('name').notEmpty().withMessage('Field "Name" is required'),
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    res.status(200).send(req.body);
+  }
+);

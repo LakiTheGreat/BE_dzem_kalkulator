@@ -1,10 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import { checkSchema, validationResult } from 'express-validator';
 
-import { fruits } from './src/mock.js';
-import { testValidationSchema } from './src/validationSchemas/testSchema.mjs';
+import lookupRouter from './src/routes/lookups.mjs';
 
 dotenv.config();
 
@@ -16,8 +14,8 @@ const PORT = process.env.PORT || 5000;
 
 const app = express();
 
-//Parsira objekat JSON (npr. u POST req)
 app.use(express.json());
+app.use(lookupRouter);
 
 app.use(
   cors({
@@ -36,17 +34,4 @@ app.use(
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
-
-app.get('/api/order-types', (req, res) => {
-  res.status(200).json(fruits);
-});
-
-app.post('/api/order-types', checkSchema(testValidationSchema), (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  res.status(200).send(req.body);
 });

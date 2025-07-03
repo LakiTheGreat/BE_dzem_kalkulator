@@ -1,0 +1,1 @@
+{"version":3,"file":"testSchema.js","sourceRoot":"","sources":["../../src/validationSchemas/testSchema.ts"],"names":[],"mappings":"AAEA,MAAM,CAAC,MAAM,oBAAoB,GAAW;IAC1C,IAAI,EAAE;QACJ,QAAQ,EAAE,EAAE,YAAY,EAAE,0BAA0B,EAAE;QACtD,QAAQ,EAAE;YACR,OAAO,EAAE,EAAE,GAAG,EAAE,CAAC,EAAE,GAAG,EAAE,CAAC,EAAE;YAC3B,YAAY,EAAE,iDAAiD;SAChE;KACF;CACF,CAAC"}

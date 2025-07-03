@@ -10,6 +10,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://dzem-kalkulator.vercel.app',
 ];
+
 const PORT = process.env.PORT || 5000;
 
 const app = express();

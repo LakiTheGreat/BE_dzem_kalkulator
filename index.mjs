@@ -30,6 +30,7 @@ app.use(
 );
 
 app.use(express.json());
+
 app.use(lookupRouter);
 
 app.listen(PORT, () => {

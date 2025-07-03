@@ -4,6 +4,6 @@ import lookupRouter from './lookups.mjs';
 
 const router = Router();
 
-router.use(lookupRouter);
+router.use('/api/lookup', lookupRouter);
 
 export default router;

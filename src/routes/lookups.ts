@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { fruits } from '../mock.js';
+import { fruits } from '../mockData/index.js';
 
 const router = Router();
 

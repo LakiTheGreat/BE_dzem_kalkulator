@@ -1,4 +1,6 @@
-export const testValidationSchema = {
+import { Schema } from 'express-validator';
+
+export const testValidationSchema: Schema = {
   name: {
     notEmpty: { errorMessage: 'Field "Name" is required' },
     isLength: {

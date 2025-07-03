@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 
-import lookupRouter from './src/routes/lookups.mjs';
+import router from './src/routes/index.mjs';
 
 dotenv.config();
 
@@ -31,7 +31,8 @@ app.use(
 
 app.use(express.json());
 
-app.use(lookupRouter);
+// Routes
+app.use(router);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

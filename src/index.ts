@@ -34,7 +34,7 @@ app.use(
 );
 
 app.use(express.json());
-
+console.log('before app.use');
 app.use(logRequests);
 // ------------------------------
 

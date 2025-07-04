@@ -23,3 +23,7 @@
 04-07-2025 09:34:27 [info]: Server running on port 3333
 04-07-2025 09:38:32 [info]: GET /fruits 200 - 4ms
 04-07-2025 09:41:56 [info]: Server running on port 3333
+04-07-2025 09:45:13 [info]: Server running on port 3333
+04-07-2025 09:45:23 [info]: Server running on port 3333
+04-07-2025 09:45:32 [info]: Server running on port 3333
+04-07-2025 09:45:38 [info]: GET /fruits 200 - 3ms

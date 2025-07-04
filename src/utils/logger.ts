@@ -4,10 +4,6 @@ import winston from 'winston';
 
 const logDir = 'logs';
 
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir);
-}
-
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(

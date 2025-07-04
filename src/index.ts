@@ -4,6 +4,7 @@ import cors from 'cors';
 
 import router from './routes/index.js';
 import logger from './utils/logger.js';
+import logRequests from './middlwares/logRequets.js';
 
 dotenv.config();
 
@@ -15,7 +16,8 @@ const allowedOrigins = [
 const PORT = process.env.PORT || 5000;
 
 const app = express();
-//CORS must be before routes!!!
+
+// --------- MIddleware ---------
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -33,8 +35,11 @@ app.use(
 
 app.use(express.json());
 
+app.use(logRequests);
+// ------------------------------
+
 // Routes
-app.use(router);
+app.use('/api', router);
 
 app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);

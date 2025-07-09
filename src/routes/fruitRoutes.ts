@@ -7,7 +7,7 @@ import {
   createNewFruit,
   deleteFruitById,
   getAllFruits,
-} from '../controllers/CONTROLER.js';
+} from '../controllers/FruitController.js';
 
 const router = Router();
 

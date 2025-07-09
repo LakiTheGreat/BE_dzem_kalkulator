@@ -136,4 +136,4 @@ export const deleteFruitById = async (req, res) => {
  *                   example: Fruit deleted successfully
  *
  */
-//# sourceMappingURL=FruitController.js.map
+//# sourceMappingURL=fruitController-temp.js.map

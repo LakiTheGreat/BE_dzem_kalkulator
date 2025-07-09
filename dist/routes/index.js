@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import lookupRouter from './lookups.js';
+import fruitsRouter from './fruitRoutes.js';
 const router = Router();
-router.use('/lookup', lookupRouter);
+router.use('/fruits', fruitsRouter);
 export default router;
 //# sourceMappingURL=index.js.map

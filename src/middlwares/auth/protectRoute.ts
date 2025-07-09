@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-export default function checkForToken(
+export default function protectRoute(
   req: Request,
   res: Response,
   next: NextFunction

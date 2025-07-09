@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 
-import prisma from '../db.js';
+import prisma from '../utils/db.js';
 
 export const createNewFruit = async (req: Request, res: Response) => {
   try {
@@ -72,7 +72,7 @@ export const deleteFruitById = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /api/lookup/fruits:
+ * /api/fruits:
  *   get:
  *     tags:
  *       - Lookups
@@ -90,7 +90,7 @@ export const deleteFruitById = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /api/lookup/fruits:
+ * /api/fruits:
  *   post:
  *     tags:
  *       - Lookups
@@ -118,13 +118,12 @@ export const deleteFruitById = async (req: Request, res: Response) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Fruit'
- *       500:
- *         description: Something went wrong
+
  */
 
 /**
  * @swagger
- * /api/lookup/fruits/{id}:
+ * /api/fruits/{id}:
  *   delete:
  *     tags:
  *       - Lookups
@@ -147,26 +146,5 @@ export const deleteFruitById = async (req: Request, res: Response) => {
  *                 message:
  *                   type: string
  *                   example: Fruit deleted successfully
- *       400:
- *         description: Invalid fruit ID supplied
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Invalid fruit ID
- *       404:
- *         description: Fruit not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Fruit not found
- *       500:
- *         description: Something went wrong
+ *
  */

@@ -1,6 +1,6 @@
 import { Schema } from 'express-validator';
 
-export const lookupSchema: Schema = {
+export const fruitSchema: Schema = {
   value: {
     notEmpty: { errorMessage: 'Field "value" is required' },
     isLength: {

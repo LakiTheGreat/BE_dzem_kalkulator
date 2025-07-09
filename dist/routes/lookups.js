@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { checkSchema, validationResult } from 'express-validator';
-import { createNewFruit, deleteFruitById, getAllFruits, } from '../handlers/fruits.js';
+import { createNewFruit, deleteFruitById, getAllFruits, } from '../controllers/FruitController.js';
 import { lookupSchema } from '../validationSchemas/lookupsSchema.js';
 const router = Router();
 router.get('/fruits', getAllFruits);

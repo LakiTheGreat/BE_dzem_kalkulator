@@ -5,7 +5,7 @@ import {
   createNewFruit,
   deleteFruitById,
   getAllFruits,
-} from '../handlers/fruits.js';
+} from '../controllers/FruitController.js';
 import { lookupSchema } from '../validationSchemas/lookupsSchema.js';
 
 const router = Router();

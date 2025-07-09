@@ -1,7 +1,11 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { checkSchema, validationResult } from 'express-validator';
 
-import { createNewFruit, getAllFruits } from '../handlers/fruits.js';
+import {
+  createNewFruit,
+  deleteFruitById,
+  getAllFruits,
+} from '../handlers/fruits.js';
 import { lookupSchema } from '../validationSchemas/lookupsSchema.js';
 
 const router = Router();
@@ -21,5 +25,7 @@ router.post(
     createNewFruit(req, res);
   }
 );
+
+router.delete('/fruits/:id', deleteFruitById);
 
 export default router;

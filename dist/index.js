@@ -1,9 +1,9 @@
-import express from 'express';
-import dotenv from 'dotenv';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+import logRequests from './middlwares/logRequets.js';
 import router from './routes/index.js';
 import logger from './utils/logger.js';
-import logRequests from './middlwares/logRequets.js';
 // import checkForToken from './middlwares/auth/protect.js';
 dotenv.config(); // loads variables from .env file
 const allowedOrigins = [

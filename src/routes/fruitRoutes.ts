@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { checkSchema } from 'express-validator';
 
+import { fruitSchema } from '../validationSchemas/fruitSchema.js';
+import { handleValidationErrors } from '../utils/handleValidationErrors.js';
 import {
   createNewFruit,
   deleteFruitById,
   getAllFruits,
 } from '../controllers/fruitController.js';
-import { fruitSchema } from '../validationSchemas/fruitSchema.js';
-import { handleValidationErrors } from '../utils/handleValidationErrors.js';
 
 const router = Router();
 

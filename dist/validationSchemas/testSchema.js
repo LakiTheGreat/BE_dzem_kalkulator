@@ -1,9 +1,16 @@
-export const testValidationSchema = {
-    name: {
-        notEmpty: { errorMessage: 'Field "Name" is required' },
+export const lookupSchema = {
+    value: {
+        notEmpty: { errorMessage: 'Field "value" is required' },
         isLength: {
             options: { min: 3, max: 7 },
-            errorMessage: 'Field "Name" must be between 3 and 7 characters',
+            errorMessage: 'Field "value" must be between 3 and 7 characters',
+        },
+    },
+    menuItemLabel: {
+        notEmpty: { errorMessage: 'Field "menuItemLabel" is required' },
+        isLength: {
+            options: { min: 3, max: 7 },
+            errorMessage: 'Field "menuItemLabel" must be between 3 and 7 characters',
         },
     },
 };

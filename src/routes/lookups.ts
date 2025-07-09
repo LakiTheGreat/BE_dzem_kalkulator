@@ -1,12 +1,25 @@
-import { Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
+import { checkSchema, validationResult } from 'express-validator';
 
-import { fruits } from '../mockData/index.js';
-import logger from '../utils/logger.js';
+import { createNewFruit, getAllFruits } from '../handlers/fruits.js';
+import { lookupSchema } from '../validationSchemas/lookupsSchema.js';
 
 const router = Router();
 
-router.get('/fruits', (req, res) => {
-  res.status(200).json(fruits);
-});
+router.get('/fruits', getAllFruits);
+
+router.post(
+  '/fruits',
+  checkSchema(lookupSchema),
+  (req: Request, res: Response, next: NextFunction) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
+
+    createNewFruit(req, res);
+  }
+);
 
 export default router;

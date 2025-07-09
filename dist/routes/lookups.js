@@ -1,8 +1,16 @@
 import { Router } from 'express';
-import { fruits } from '../mockData/index.js';
+import { checkSchema, validationResult } from 'express-validator';
+import { createNewFruit, getAllFruits } from '../handlers/fruits.js';
+import { lookupSchema } from '../validationSchemas/lookupsSchema.js';
 const router = Router();
-router.get('/fruits', (req, res) => {
-    res.status(200).json(fruits);
+router.get('/fruits', getAllFruits);
+router.post('/fruits', checkSchema(lookupSchema), (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+    }
+    createNewFruit(req, res);
 });
 export default router;
 //# sourceMappingURL=lookups.js.map

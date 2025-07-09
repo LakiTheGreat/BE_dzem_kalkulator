@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 import { checkSchema, validationResult } from 'express-validator';
 
 import {
@@ -15,7 +15,7 @@ router.get('/fruits', getAllFruits);
 router.post(
   '/fruits',
   checkSchema(lookupSchema),
-  (req: Request, res: Response, next: NextFunction) => {
+  (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(400).json({ errors: errors.array() });

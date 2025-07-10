@@ -105,7 +105,7 @@ export const patchFruitLabel = async (req: Request, res: Response) => {
  *   get:
  *     tags:
  *       - Fruits
- *     summary: Get all fruits
+ *     summary: Get all fruits that are not deleted
  *     responses:
  *       200:
  *         description: List of fruits

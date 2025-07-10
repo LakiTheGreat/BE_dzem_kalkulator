@@ -28,8 +28,9 @@ model Cup {
 model CupCost {
   id   Int   @id @default(autoincrement())
   value Int
-  label String @default("")
+  label String
   cup  Cup?  @relation("CupToCost")
+  isDeleted    Boolean   @default(false)
 }
 
 model CupValue {
@@ -37,6 +38,7 @@ model CupValue {
   value Int
   label String
   cup  Cup?  @relation("CupToValue")
+  isDeleted    Boolean   @default(false)
 }
 
 

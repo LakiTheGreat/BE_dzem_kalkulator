@@ -10,7 +10,8 @@ import logger from './utils/logger.js';
 dotenv.config(); // loads variables from .env file
 const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
-    `http://localhost:${PORT}`,
+    `http://localhost:${PORT}`, // swagger
+    `http://localhost:3000`, // local UI
     'https://dzem-kalkulator.vercel.app',
 ];
 const swaggerOptions = {

@@ -31,6 +31,13 @@ import prisma from '../utils/db.js';
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Fruit'
+ *             examples:
+ *               sample:
+ *                 summary: Sample fruit list
+ *                 value:
+ *                   - id: 1
+ *                     label: Jasika
+ *                     isDeleted: false
  */
 export const getAllFruits = async (req, res) => {
     try {

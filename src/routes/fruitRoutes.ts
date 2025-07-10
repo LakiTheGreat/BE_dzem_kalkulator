@@ -7,6 +7,7 @@ import {
   createNewFruit,
   deleteFruitById,
   getAllFruits,
+  patchFruitLabel,
 } from '../controllers/fruitController-temp.js';
 
 const router = Router();
@@ -20,6 +21,7 @@ router.post(
   createNewFruit
 );
 
+router.patch('/:id', patchFruitLabel);
 router.delete('/:id', deleteFruitById);
 
 export default router;

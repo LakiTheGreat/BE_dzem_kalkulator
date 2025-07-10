@@ -13,4 +13,5 @@ model Fruits {
   id Int @id @default(autoincrement())
   value String 
   menuItemLabel String
+  isDeleted Boolean @default(false)
 }

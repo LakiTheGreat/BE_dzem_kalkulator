@@ -12,6 +12,9 @@ export const createNewFruit = async (req, res) => {
 export const getAllFruits = async (req, res) => {
     try {
         const fruits = await prisma.fruits.findMany({
+            where: {
+                isDeleted: false,
+            },
             orderBy: {
                 menuItemLabel: 'asc',
             },
@@ -25,22 +28,48 @@ export const getAllFruits = async (req, res) => {
 };
 export const deleteFruitById = async (req, res) => {
     const { id } = req.params;
+    const fruitId = Number(id);
+    if (isNaN(fruitId)) {
+        res.status(400).json({ message: 'Invalid fruit ID' });
+    }
     try {
-        // Convert id to number because Prisma expects number type for Int id
-        const fruitId = Number(id);
-        if (isNaN(fruitId)) {
-            res.status(400).json({ message: 'Invalid fruit ID' });
-        }
-        // Delete the fruit by ID
-        await prisma.fruits.delete({
+        const fruit = await prisma.fruits.update({
             where: { id: fruitId },
+            data: { isDeleted: true },
         });
-        res.status(200).json({ message: 'Fruit deleted successfully' });
+        res.status(200).json({ message: 'Fruit marked as deleted', fruit });
     }
     catch (e) {
         console.error(e);
         if (e.code === 'P2025') {
-            // Prisma error code for "Record to delete does not exist."
+            res.status(404).json({ message: 'Fruit not found' });
+        }
+        res.status(500).json({ message: 'Something went wrong!' });
+    }
+};
+export const patchFruitLabel = async (req, res) => {
+    const { id } = req.params;
+    const { label } = req.body;
+    const fruitId = Number(id);
+    if (isNaN(fruitId)) {
+        res.status(400).json({ message: 'Invalid fruit ID' });
+    }
+    if (!label || typeof label !== 'string') {
+        res.status(400).json({ message: 'Label must be a non-empty string' });
+    }
+    try {
+        const updatedFruit = await prisma.fruits.update({
+            where: { id: fruitId },
+            data: {
+                menuItemLabel: label,
+                value: label,
+            },
+        });
+        res.status(200).json(updatedFruit);
+    }
+    catch (e) {
+        console.error(e);
+        if (e.code === 'P2025') {
             res.status(404).json({ message: 'Fruit not found' });
         }
         res.status(500).json({ message: 'Something went wrong!' });
@@ -65,7 +94,7 @@ export const deleteFruitById = async (req, res) => {
  * /api/fruits:
  *   get:
  *     tags:
- *       - Lookups
+ *       - Fruits
  *     summary: Get all fruits
  *     responses:
  *       200:
@@ -82,7 +111,7 @@ export const deleteFruitById = async (req, res) => {
  * /api/fruits:
  *   post:
  *     tags:
- *       - Lookups
+ *       - Fruits
  *     summary: Create a new fruit
  *     requestBody:
  *       required: true
@@ -107,15 +136,54 @@ export const deleteFruitById = async (req, res) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Fruit'
-
+ */
+/**
+ * @swagger
+ * /api/fruits/{id}:
+ *   patch:
+ *     tags:
+ *       - Fruits
+ *     summary: Update a fruit's menuItemLabel and value
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the fruit to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - label
+ *             properties:
+ *               label:
+ *                 type: string
+ *                 example: "Updated Fruit Name"
+ *     responses:
+ *       200:
+ *         description: Updated fruit
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Fruit'
+ *       400:
+ *         description: Invalid ID or label
+ *       404:
+ *         description: Fruit not found
+ *       500:
+ *         description: Server error
  */
 /**
  * @swagger
  * /api/fruits/{id}:
  *   delete:
  *     tags:
- *       - Lookups
- *     summary: Delete a fruit by ID
+ *       - Fruits
+ *     summary: SOFT Delete a fruit by ID
  *     parameters:
  *       - in: path
  *         name: id

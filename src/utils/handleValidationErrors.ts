@@ -10,4 +10,5 @@ export function handleValidationErrors(
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() });
   }
+  next();
 }

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "CupCost" ALTER COLUMN "label" DROP DEFAULT;

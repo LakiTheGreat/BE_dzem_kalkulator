@@ -44,7 +44,7 @@ export const getAllFruits = async (req: Request, res: Response) => {
         isDeleted: false,
       },
       orderBy: {
-        menuItemLabel: 'asc',
+        label: 'asc',
       },
     });
     res.status(200).json(fruits);
@@ -83,10 +83,9 @@ export const getAllFruits = async (req: Request, res: Response) => {
  */
 
 export const createNewFruit = async (req: Request, res: Response) => {
-  const { label } = req.body;
   try {
     const fruit = await prisma.fruit.create({
-      data: { value: label, menuItemLabel: label },
+      data: req.body,
     });
     res.status(201).json(fruit);
   } catch (e) {
@@ -138,7 +137,6 @@ export const createNewFruit = async (req: Request, res: Response) => {
 
 export const patchFruitLabel = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { label } = req.body;
 
   const fruitId = Number(id);
   if (isNaN(fruitId)) {
@@ -148,10 +146,7 @@ export const patchFruitLabel = async (req: Request, res: Response) => {
   try {
     const updatedFruit = await prisma.fruit.update({
       where: { id: fruitId },
-      data: {
-        menuItemLabel: label,
-        value: label,
-      },
+      data: req.body,
     });
 
     res.status(200).json(updatedFruit);

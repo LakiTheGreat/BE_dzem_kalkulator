@@ -1,19 +1,34 @@
 import { Schema } from 'express-validator';
 
-export const cupSchema: Schema = {
-  value: {
-    notEmpty: { errorMessage: 'Field "value" is required' },
+export const cupCreateSchema: Schema = {
+  label: {
+    notEmpty: {
+      errorMessage: 'Field "label" is required',
+    },
+    isLength: {
+      options: { min: 3, max: 50 },
+      errorMessage: 'Field "label" must be between 3 and 50 characters',
+    },
+    trim: true,
+  },
+  costId: {
+    notEmpty: {
+      errorMessage: 'Field "costId" is required',
+    },
     isInt: {
-      options: { min: 1, max: 1000 },
-      errorMessage: 'Field "value" must be an integer between 1 and 1000',
+      options: { min: 1 },
+      errorMessage: 'Field "costId" must be a valid integer ID',
     },
     toInt: true,
   },
-  menuItemLabel: {
-    notEmpty: { errorMessage: 'Field "menuItemLabel" is required' },
-    isLength: {
-      options: { min: 3, max: 50 },
-      errorMessage: 'Field "menuItemLabel" must be between 3 and 50 characters',
+  valueId: {
+    notEmpty: {
+      errorMessage: 'Field "valueId" is required',
     },
+    isInt: {
+      options: { min: 1 },
+      errorMessage: 'Field "valueId" must be a valid integer ID',
+    },
+    toInt: true,
   },
 };

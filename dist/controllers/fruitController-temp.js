@@ -39,7 +39,7 @@ export const getAllFruits = async (req, res) => {
                 isDeleted: false,
             },
             orderBy: {
-                menuItemLabel: 'asc',
+                label: 'asc',
             },
         });
         res.status(200).json(fruits);
@@ -77,10 +77,9 @@ export const getAllFruits = async (req, res) => {
  *               $ref: '#/components/schemas/Fruit'
  */
 export const createNewFruit = async (req, res) => {
-    const { label } = req.body;
     try {
         const fruit = await prisma.fruit.create({
-            data: { value: label, menuItemLabel: label },
+            data: req.body,
         });
         res.status(201).json(fruit);
     }
@@ -131,7 +130,6 @@ export const createNewFruit = async (req, res) => {
  */
 export const patchFruitLabel = async (req, res) => {
     const { id } = req.params;
-    const { label } = req.body;
     const fruitId = Number(id);
     if (isNaN(fruitId)) {
         res.status(400).json({ message: 'Invalid fruit ID' });
@@ -139,10 +137,7 @@ export const patchFruitLabel = async (req, res) => {
     try {
         const updatedFruit = await prisma.fruit.update({
             where: { id: fruitId },
-            data: {
-                menuItemLabel: label,
-                value: label,
-            },
+            data: req.body,
         });
         res.status(200).json(updatedFruit);
     }

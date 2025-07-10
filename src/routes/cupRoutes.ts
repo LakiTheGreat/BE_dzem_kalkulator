@@ -8,15 +8,25 @@ import {
   getAllCups,
   putCup,
 } from '../controllers/cupController.js';
-import { cupSchema } from '../validationSchemas/cupSchema.js';
+import { cupCreateSchema } from '../validationSchemas/cupSchema.js';
 
 const router = Router();
 
 router.get('/', getAllCups);
 
-router.post('/', checkSchema(cupSchema), handleValidationErrors, createNewCup);
+router.post(
+  '/',
+  checkSchema(cupCreateSchema),
+  handleValidationErrors,
+  createNewCup
+);
 
-router.put('/:id', checkSchema(cupSchema), handleValidationErrors, putCup);
+router.put(
+  '/:id',
+  checkSchema(cupCreateSchema),
+  handleValidationErrors,
+  putCup
+);
 
 router.delete('/:id', deleteCupById);
 

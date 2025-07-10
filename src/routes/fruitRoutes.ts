@@ -1,10 +1,7 @@
 import { Router } from 'express';
 import { checkSchema } from 'express-validator';
 
-import {
-  fruitSchema,
-  patchFruitSchema,
-} from '../validationSchemas/fruitSchema.js';
+import { fruitSchema } from '../validationSchemas/fruitSchema.js';
 import { handleValidationErrors } from '../utils/handleValidationErrors.js';
 import {
   createNewFruit,
@@ -19,14 +16,14 @@ router.get('/', getAllFruits);
 
 router.post(
   '/',
-  checkSchema(patchFruitSchema),
+  checkSchema(fruitSchema),
   handleValidationErrors,
   createNewFruit
 );
 
 router.patch(
   '/:id',
-  checkSchema(patchFruitSchema),
+  checkSchema(fruitSchema),
   handleValidationErrors,
   patchFruitLabel
 );

@@ -11,15 +11,35 @@ datasource db {
 
 model Fruit {
   id Int @id @default(autoincrement())
-  value String 
-  menuItemLabel String
+  label String
   isDeleted Boolean @default(false)
 }
 
 model Cup {
-  id Int @id @default(autoincrement())
-  value Int 
-  menuItemLabel String
-  isDeleted Boolean @default(false)
+  id           Int       @id @default(autoincrement())
+  label        String
+  isDeleted    Boolean   @default(false)
+  costId       Int       @unique
+  valueId      Int       @unique
+  cost         CupCost   @relation("CupToCost", fields: [costId], references: [id], onDelete: Restrict)
+  sellingPrice CupValue  @relation("CupToValue", fields: [valueId], references: [id], onDelete: Restrict)
 }
+
+model CupCost {
+  id   Int   @id @default(autoincrement())
+  value Int
+  label String @default("")
+  cup  Cup?  @relation("CupToCost")
+}
+
+model CupValue {
+  id   Int   @id @default(autoincrement())
+  value Int
+  label String
+  cup  Cup?  @relation("CupToValue")
+}
+
+
+
+
 

@@ -6,18 +6,62 @@ import prisma from '../utils/db.js';
  * @swagger
  * components:
  *   schemas:
+ *     CupCost:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         value:
+ *           type: integer
+ *           example: 100
+ *         label:
+ *           type: string
+ *           example: "Cost Label"
+ *     CupValue:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 2
+ *         value:
+ *           type: integer
+ *           example: 150
+ *         label:
+ *           type: string
+ *           example: "Selling Price Label"
  *     Cup:
  *       type: object
  *       properties:
  *         id:
  *           type: integer
- *         value:
- *           type: integer
- *         menuItemLabel:
+ *           example: 1
+ *         label:
  *           type: string
+ *           example: "212ml"
  *         isDeleted:
  *           type: boolean
- *           default: false
+ *           example: false
+ *         cost:
+ *           $ref: '#/components/schemas/CupCost'
+ *         sellingPrice:
+ *           $ref: '#/components/schemas/CupValue'
+ *     CupCreateRequest:
+ *       type: object
+ *       required:
+ *         - label
+ *         - costId
+ *         - valueId
+ *       properties:
+ *         label:
+ *           type: string
+ *           example: "Large Cup"
+ *         costId:
+ *           type: integer
+ *           example: 1
+ *         valueId:
+ *           type: integer
+ *           example: 2
  */
 
 /**
@@ -26,16 +70,32 @@ import prisma from '../utils/db.js';
  *   get:
  *     tags:
  *       - Cups
- *     summary: Get all non-deleted cups
+ *     summary: Get all non-deleted cups with simplified cost and selling price values
  *     responses:
  *       200:
- *         description: List of cups
+ *         description: List of cups with simplified cost and selling price values
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Cup'
+ *             examples:
+ *               simplified:
+ *                 summary: Simplified cup response example
+ *                 value:
+ *                   - id: 1
+ *                     label: "212ml"
+ *                     isDeleted: false
+ *                     cost: 100
+ *                     sellingPrice: 150
+ *                   - id: 2
+ *                     label: "500ml"
+ *                     isDeleted: false
+ *                     cost: 120
+ *                     sellingPrice: 180
+ *       500:
+ *         description: Internal server error
  */
 
 export const getAllCups = async (req: Request, res: Response) => {
@@ -45,10 +105,22 @@ export const getAllCups = async (req: Request, res: Response) => {
         isDeleted: false,
       },
       orderBy: {
-        menuItemLabel: 'asc',
+        label: 'asc',
+      },
+      include: {
+        cost: true,
+        sellingPrice: true,
       },
     });
-    res.status(200).json(cups);
+
+    const simplifiedCups = cups.map((cup) => ({
+      id: cup.id,
+      label: cup.label,
+      isDeleted: cup.isDeleted,
+      cost: cup.cost?.value ?? null,
+      sellingPrice: cup.sellingPrice?.value ?? null,
+    }));
+    res.status(200).json(simplifiedCups);
   } catch (e) {
     console.error(e);
     res.status(500).json({ message: 'Something went wrong!!!!' });
@@ -68,14 +140,26 @@ export const getAllCups = async (req: Request, res: Response) => {
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - label
+ *               - costId
+ *               - valueId
  *             properties:
- *               value:
- *                 type: integer
- *               menuItemLabel:
+ *               label:
  *                 type: string
+ *                 description: The label/name of the cup
+ *                 example: "Large Cup"
+ *               costId:
+ *                 type: integer
+ *                 description: The ID of an existing CupCost
+ *                 example: 1
+ *               valueId:
+ *                 type: integer
+ *                 description: The ID of an existing CupValue (selling price)
+ *                 example: 2
  *     responses:
  *       201:
- *         description: Cup created
+ *         description: Cup created successfully
  *         content:
  *           application/json:
  *             schema:
@@ -83,12 +167,30 @@ export const getAllCups = async (req: Request, res: Response) => {
  */
 
 export const createNewCup = async (req: Request, res: Response) => {
+  const { label, costId, valueId } = req.body;
   try {
-    const cup = await prisma.cup.create({ data: req.body });
+    const cup = await prisma.cup.create({
+      data: {
+        label,
+        cost: { connect: { id: costId } },
+        sellingPrice: { connect: { id: valueId } },
+      },
+      include: {
+        cost: true,
+        sellingPrice: true,
+      },
+    });
     res.status(201).json(cup);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: 'Something went wrong!!!!' });
+  } catch (error: any) {
+    console.error('Create Cup Error:', error);
+
+    if (error.code === 'P2025') {
+      res.status(400).json({
+        message: 'Invalid costId or valueId: related record not found',
+      });
+    }
+
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -112,13 +214,17 @@ export const createNewCup = async (req: Request, res: Response) => {
  *           schema:
  *             type: object
  *             properties:
- *               value:
- *                 type: integer
- *               menuItemLabel:
+ *               label:
  *                 type: string
- *             required:
- *               - value
- *               - menuItemLabel
+ *                 example: "Large Cup"
+ *               costId:
+ *                 type: integer
+ *                 example: 1
+ *                 description: ID of existing CupCost
+ *               valueId:
+ *                 type: integer
+ *                 example: 2
+ *                 description: ID of existing CupValue (selling price)
  *     responses:
  *       200:
  *         description: Cup updated successfully
@@ -129,10 +235,12 @@ export const createNewCup = async (req: Request, res: Response) => {
  *               properties:
  *                 message:
  *                   type: string
+ *                   example: "Cup updated successfully"
  *                 updatedCup:
  *                   $ref: '#/components/schemas/Cup'
  *
  */
+
 export const putCup = async (req: Request, res: Response) => {
   const { id } = req.params;
   const cupId = Number(id);
@@ -141,10 +249,22 @@ export const putCup = async (req: Request, res: Response) => {
     res.status(400).json({ message: 'Invalid cup ID' });
   }
 
+  const { label, costId, valueId } = req.body;
+
   try {
     const updatedCup = await prisma.cup.update({
       where: { id: cupId },
-      data: req.body,
+      data: {
+        ...(label !== undefined && { label }),
+        ...(costId !== undefined && { cost: { connect: { id: costId } } }),
+        ...(valueId !== undefined && {
+          sellingPrice: { connect: { id: valueId } },
+        }),
+      },
+      include: {
+        cost: true,
+        sellingPrice: true,
+      },
     });
 
     res.status(200).json({ message: 'Cup updated successfully', updatedCup });

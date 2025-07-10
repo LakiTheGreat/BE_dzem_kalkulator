@@ -1,89 +1,77 @@
-import { Request, Response } from 'express';
-
 import prisma from '../utils/db.js';
-
-export const createNewFruit = async (req: Request, res: Response) => {
-  try {
-    const fruit = await prisma.fruits.create({ data: req.body });
-    res.status(201).json(fruit);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: 'Something went wrong!!!!' });
-  }
-};
-
-export const getAllFruits = async (req: Request, res: Response) => {
-  try {
-    const fruits = await prisma.fruits.findMany({
-      where: {
-        isDeleted: false,
-      },
-      orderBy: {
-        menuItemLabel: 'asc',
-      },
-    });
-    res.status(200).json(fruits);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: 'Something went wrong!!!!' });
-  }
-};
-
-export const deleteFruitById = async (req: Request, res: Response) => {
-  const { id } = req.params;
-
-  const fruitId = Number(id);
-  if (isNaN(fruitId)) {
-    res.status(400).json({ message: 'Invalid fruit ID' });
-  }
-
-  try {
-    const fruit = await prisma.fruits.update({
-      where: { id: fruitId },
-      data: { isDeleted: true },
-    });
-
-    res.status(200).json({ message: 'Fruit marked as deleted', fruit });
-  } catch (e: any) {
-    console.error(e);
-
-    if (e.code === 'P2025') {
-      res.status(404).json({ message: 'Fruit not found' });
+export const createNewFruit = async (req, res) => {
+    try {
+        const fruit = await prisma.fruits.create({ data: req.body });
+        res.status(201).json(fruit);
     }
-
-    res.status(500).json({ message: 'Something went wrong!' });
-  }
-};
-
-export const patchFruitLabel = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { label } = req.body;
-
-  const fruitId = Number(id);
-  if (isNaN(fruitId)) {
-    res.status(400).json({ message: 'Invalid fruit ID' });
-  }
-
-  try {
-    const updatedFruit = await prisma.fruits.update({
-      where: { id: fruitId },
-      data: {
-        menuItemLabel: label,
-        value: label,
-      },
-    });
-
-    res.status(200).json(updatedFruit);
-  } catch (e: any) {
-    console.error(e);
-    if (e.code === 'P2025') {
-      res.status(404).json({ message: 'Fruit not found' });
+    catch (e) {
+        console.error(e);
+        res.status(500).json({ message: 'Something went wrong!!!!' });
     }
-
-    res.status(500).json({ message: 'Something went wrong!' });
-  }
 };
-
+export const getAllFruits = async (req, res) => {
+    try {
+        const fruits = await prisma.fruits.findMany({
+            where: {
+                isDeleted: false,
+            },
+            orderBy: {
+                menuItemLabel: 'asc',
+            },
+        });
+        res.status(200).json(fruits);
+    }
+    catch (e) {
+        console.error(e);
+        res.status(500).json({ message: 'Something went wrong!!!!' });
+    }
+};
+export const deleteFruitById = async (req, res) => {
+    const { id } = req.params;
+    const fruitId = Number(id);
+    if (isNaN(fruitId)) {
+        res.status(400).json({ message: 'Invalid fruit ID' });
+    }
+    try {
+        const fruit = await prisma.fruits.update({
+            where: { id: fruitId },
+            data: { isDeleted: true },
+        });
+        res.status(200).json({ message: 'Fruit marked as deleted', fruit });
+    }
+    catch (e) {
+        console.error(e);
+        if (e.code === 'P2025') {
+            res.status(404).json({ message: 'Fruit not found' });
+        }
+        res.status(500).json({ message: 'Something went wrong!' });
+    }
+};
+export const patchFruitLabel = async (req, res) => {
+    const { id } = req.params;
+    const { label } = req.body;
+    const fruitId = Number(id);
+    if (isNaN(fruitId)) {
+        res.status(400).json({ message: 'Invalid fruit ID' });
+    }
+    try {
+        const updatedFruit = await prisma.fruits.update({
+            where: { id: fruitId },
+            data: {
+                menuItemLabel: label,
+                value: label,
+            },
+        });
+        res.status(200).json(updatedFruit);
+    }
+    catch (e) {
+        console.error(e);
+        if (e.code === 'P2025') {
+            res.status(404).json({ message: 'Fruit not found' });
+        }
+        res.status(500).json({ message: 'Something went wrong!' });
+    }
+};
 /**
  * @swagger
  * components:
@@ -98,14 +86,13 @@ export const patchFruitLabel = async (req: Request, res: Response) => {
  *         menuItemLabel:
  *           type: string
  */
-
 /**
  * @swagger
  * /api/fruits:
  *   get:
  *     tags:
  *       - Fruits
- *     summary: Get all non-deleted fruits
+ *     summary: Get all fruits that are not deleted
  *     responses:
  *       200:
  *         description: List of fruits
@@ -116,7 +103,6 @@ export const patchFruitLabel = async (req: Request, res: Response) => {
  *               items:
  *                 $ref: '#/components/schemas/Fruit'
  */
-
 /**
  * @swagger
  * /api/fruits:
@@ -148,7 +134,6 @@ export const patchFruitLabel = async (req: Request, res: Response) => {
  *             schema:
  *               $ref: '#/components/schemas/Fruit'
  */
-
 /**
  * @swagger
  * /api/fruits/{id}:
@@ -189,14 +174,13 @@ export const patchFruitLabel = async (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-
 /**
  * @swagger
  * /api/fruits/{id}:
  *   delete:
  *     tags:
  *       - Fruits
- *     summary: Soft delete a fruit by ID
+ *     summary: SOFT Delete a fruit by ID
  *     parameters:
  *       - in: path
  *         name: id
@@ -217,3 +201,4 @@ export const patchFruitLabel = async (req: Request, res: Response) => {
  *                   example: Fruit deleted successfully
  *
  */
+//# sourceMappingURL=fruitController.js.map

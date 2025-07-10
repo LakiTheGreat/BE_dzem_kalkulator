@@ -92,7 +92,7 @@ export const patchFruitLabel = async (req, res) => {
  *   get:
  *     tags:
  *       - Fruits
- *     summary: Get all fruits that are not deleted
+ *     summary: Get all non-deleted fruits
  *     responses:
  *       200:
  *         description: List of fruits
@@ -180,7 +180,7 @@ export const patchFruitLabel = async (req, res) => {
  *   delete:
  *     tags:
  *       - Fruits
- *     summary: SOFT Delete a fruit by ID
+ *     summary: Soft delete a fruit by ID
  *     parameters:
  *       - in: path
  *         name: id

@@ -15,3 +15,11 @@ model Fruits {
   menuItemLabel String
   isDeleted Boolean @default(false)
 }
+
+model Cups {
+  id Int @id @default(autoincrement())
+  value Int 
+  menuItemLabel String
+  isDeleted Boolean @default(false)
+}
+

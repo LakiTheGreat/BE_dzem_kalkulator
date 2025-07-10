@@ -8,7 +8,7 @@ import {
   putCupValue,
 } from '../controllers/cupValueController.js';
 import { handleValidationErrors } from '../utils/handleValidationErrors.js';
-import { cupCostSchema } from '../validationSchemas/cupSchema.js';
+import { cupValueSchema } from '../validationSchemas/cupSchema.js';
 
 const router = Router();
 
@@ -16,14 +16,14 @@ router.get('/', getAllCupValues);
 
 router.post(
   '/',
-  checkSchema(cupCostSchema),
+  checkSchema(cupValueSchema),
   handleValidationErrors,
   createCupValue
 );
 
 router.put(
   '/:id',
-  checkSchema(cupCostSchema),
+  checkSchema(cupValueSchema),
   handleValidationErrors,
   putCupValue
 );

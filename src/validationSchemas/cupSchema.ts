@@ -55,3 +55,26 @@ export const cupCostSchema: Schema = {
     toInt: true,
   },
 };
+
+export const cupValueSchema: Schema = {
+  label: {
+    notEmpty: {
+      errorMessage: 'Field "label" is required',
+    },
+    isLength: {
+      options: { min: 3, max: 50 },
+      errorMessage: 'Field "label" must be between 3 and 50 characters',
+    },
+    trim: true,
+  },
+  value: {
+    notEmpty: {
+      errorMessage: 'Field "value" is required',
+    },
+    isInt: {
+      options: { min: 1 },
+      errorMessage: 'Field "value" must be a positive integer',
+    },
+    toInt: true,
+  },
+};

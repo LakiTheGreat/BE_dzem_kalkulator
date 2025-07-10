@@ -1,77 +1,4 @@
 import prisma from '../utils/db.js';
-export const createNewFruit = async (req, res) => {
-    try {
-        const fruit = await prisma.fruits.create({ data: req.body });
-        res.status(201).json(fruit);
-    }
-    catch (e) {
-        console.error(e);
-        res.status(500).json({ message: 'Something went wrong!!!!' });
-    }
-};
-export const getAllFruits = async (req, res) => {
-    try {
-        const fruits = await prisma.fruits.findMany({
-            where: {
-                isDeleted: false,
-            },
-            orderBy: {
-                menuItemLabel: 'asc',
-            },
-        });
-        res.status(200).json(fruits);
-    }
-    catch (e) {
-        console.error(e);
-        res.status(500).json({ message: 'Something went wrong!!!!' });
-    }
-};
-export const deleteFruitById = async (req, res) => {
-    const { id } = req.params;
-    const fruitId = Number(id);
-    if (isNaN(fruitId)) {
-        res.status(400).json({ message: 'Invalid fruit ID' });
-    }
-    try {
-        const fruit = await prisma.fruits.update({
-            where: { id: fruitId },
-            data: { isDeleted: true },
-        });
-        res.status(200).json({ message: 'Fruit marked as deleted', fruit });
-    }
-    catch (e) {
-        console.error(e);
-        if (e.code === 'P2025') {
-            res.status(404).json({ message: 'Fruit not found' });
-        }
-        res.status(500).json({ message: 'Something went wrong!' });
-    }
-};
-export const patchFruitLabel = async (req, res) => {
-    const { id } = req.params;
-    const { label } = req.body;
-    const fruitId = Number(id);
-    if (isNaN(fruitId)) {
-        res.status(400).json({ message: 'Invalid fruit ID' });
-    }
-    try {
-        const updatedFruit = await prisma.fruits.update({
-            where: { id: fruitId },
-            data: {
-                menuItemLabel: label,
-                value: label,
-            },
-        });
-        res.status(200).json(updatedFruit);
-    }
-    catch (e) {
-        console.error(e);
-        if (e.code === 'P2025') {
-            res.status(404).json({ message: 'Fruit not found' });
-        }
-        res.status(500).json({ message: 'Something went wrong!' });
-    }
-};
 /**
  * @swagger
  * components:
@@ -85,6 +12,8 @@ export const patchFruitLabel = async (req, res) => {
  *           type: string
  *         menuItemLabel:
  *           type: string
+ *         isDeleted:
+ *           type: boolean
  */
 /**
  * @swagger
@@ -103,6 +32,23 @@ export const patchFruitLabel = async (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/Fruit'
  */
+export const getAllFruits = async (req, res) => {
+    try {
+        const fruits = await prisma.fruit.findMany({
+            where: {
+                isDeleted: false,
+            },
+            orderBy: {
+                menuItemLabel: 'asc',
+            },
+        });
+        res.status(200).json(fruits);
+    }
+    catch (e) {
+        console.error(e);
+        res.status(500).json({ message: 'Something went wrong!!!!' });
+    }
+};
 /**
  * @swagger
  * /api/fruits:
@@ -117,15 +63,11 @@ export const patchFruitLabel = async (req, res) => {
  *           schema:
  *             type: object
  *             required:
- *               - value
- *               - menuItemLabel
+ *               - label
  *             properties:
- *               value:
+ *               label:
  *                 type: string
- *                 example: "Apple"
- *               menuItemLabel:
- *                 type: string
- *                 example: "Red Apple"
+ *                 example: "Jasika"
  *     responses:
  *       201:
  *         description: The created fruit object
@@ -134,6 +76,19 @@ export const patchFruitLabel = async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Fruit'
  */
+export const createNewFruit = async (req, res) => {
+    const { label } = req.body;
+    try {
+        const fruit = await prisma.fruit.create({
+            data: { value: label, menuItemLabel: label },
+        });
+        res.status(201).json(fruit);
+    }
+    catch (e) {
+        console.error(e);
+        res.status(500).json({ message: 'Something went wrong!!!!' });
+    }
+};
 /**
  * @swagger
  * /api/fruits/{id}:
@@ -174,8 +129,33 @@ export const patchFruitLabel = async (req, res) => {
  *       500:
  *         description: Server error
  */
+export const patchFruitLabel = async (req, res) => {
+    const { id } = req.params;
+    const { label } = req.body;
+    const fruitId = Number(id);
+    if (isNaN(fruitId)) {
+        res.status(400).json({ message: 'Invalid fruit ID' });
+    }
+    try {
+        const updatedFruit = await prisma.fruit.update({
+            where: { id: fruitId },
+            data: {
+                menuItemLabel: label,
+                value: label,
+            },
+        });
+        res.status(200).json(updatedFruit);
+    }
+    catch (e) {
+        console.error(e);
+        if (e.code === 'P2025') {
+            res.status(404).json({ message: 'Fruit not found' });
+        }
+        res.status(500).json({ message: 'Something went wrong!' });
+    }
+};
 /**
- * @swagger
+ *  @swagger
  * /api/fruits/{id}:
  *   delete:
  *     tags:
@@ -201,4 +181,25 @@ export const patchFruitLabel = async (req, res) => {
  *                   example: Fruit deleted successfully
  *
  */
+export const deleteFruitById = async (req, res) => {
+    const { id } = req.params;
+    const fruitId = Number(id);
+    if (isNaN(fruitId)) {
+        res.status(400).json({ message: 'Invalid fruit ID' });
+    }
+    try {
+        const fruit = await prisma.fruit.update({
+            where: { id: fruitId },
+            data: { isDeleted: true },
+        });
+        res.status(200).json({ message: 'Fruit marked as deleted', fruit });
+    }
+    catch (e) {
+        console.error(e);
+        if (e.code === 'P2025') {
+            res.status(404).json({ message: 'Fruit not found' });
+        }
+        res.status(500).json({ message: 'Something went wrong!' });
+    }
+};
 //# sourceMappingURL=fruitController-temp.js.map

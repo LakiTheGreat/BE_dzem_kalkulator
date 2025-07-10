@@ -35,7 +35,7 @@ import prisma from '../utils/db.js';
  */
 export const getAllCups = async (req, res) => {
     try {
-        const cups = await prisma.cups.findMany({
+        const cups = await prisma.cup.findMany({
             where: {
                 isDeleted: false,
             },
@@ -78,7 +78,7 @@ export const getAllCups = async (req, res) => {
  */
 export const createNewCup = async (req, res) => {
     try {
-        const cup = await prisma.cups.create({ data: req.body });
+        const cup = await prisma.cup.create({ data: req.body });
         res.status(201).json(cup);
     }
     catch (e) {
@@ -134,7 +134,7 @@ export const putCup = async (req, res) => {
         res.status(400).json({ message: 'Invalid cup ID' });
     }
     try {
-        const updatedCup = await prisma.cups.update({
+        const updatedCup = await prisma.cup.update({
             where: { id: cupId },
             data: req.body,
         });
@@ -181,7 +181,7 @@ export const deleteCupById = async (req, res) => {
         res.status(400).json({ message: 'Invalid cup ID' });
     }
     try {
-        const cup = await prisma.cups.update({
+        const cup = await prisma.cup.update({
             where: { id: cupId },
             data: { isDeleted: true },
         });

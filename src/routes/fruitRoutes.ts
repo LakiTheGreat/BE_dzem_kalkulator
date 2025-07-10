@@ -19,7 +19,7 @@ router.get('/', getAllFruits);
 
 router.post(
   '/',
-  checkSchema(fruitSchema),
+  checkSchema(patchFruitSchema),
   handleValidationErrors,
   createNewFruit
 );

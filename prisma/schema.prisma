@@ -9,14 +9,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Fruits {
+model Fruit {
   id Int @id @default(autoincrement())
   value String 
   menuItemLabel String
   isDeleted Boolean @default(false)
 }
 
-model Cups {
+model Cup {
   id Int @id @default(autoincrement())
   value Int 
   menuItemLabel String

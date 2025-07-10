@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { checkSchema } from 'express-validator';
 
-import { fruitSchema } from '../validationSchemas/fruitSchema.js';
+import {
+  fruitSchema,
+  patchFruitSchema,
+} from '../validationSchemas/fruitSchema.js';
 import { handleValidationErrors } from '../utils/handleValidationErrors.js';
 import {
   createNewFruit,
@@ -21,7 +24,13 @@ router.post(
   createNewFruit
 );
 
-router.patch('/:id', patchFruitLabel);
+router.patch(
+  '/:id',
+  checkSchema(patchFruitSchema),
+  handleValidationErrors,
+  patchFruitLabel
+);
+
 router.delete('/:id', deleteFruitById);
 
 export default router;

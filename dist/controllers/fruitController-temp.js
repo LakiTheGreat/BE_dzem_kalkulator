@@ -54,9 +54,6 @@ export const patchFruitLabel = async (req, res) => {
     if (isNaN(fruitId)) {
         res.status(400).json({ message: 'Invalid fruit ID' });
     }
-    if (!label || typeof label !== 'string') {
-        res.status(400).json({ message: 'Label must be a non-empty string' });
-    }
     try {
         const updatedFruit = await prisma.fruits.update({
             where: { id: fruitId },

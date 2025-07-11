@@ -177,7 +177,7 @@ export const patchFruitLabel = async (req: Request, res: Response) => {
   const fruitId = Number(id);
 
   if (isNaN(fruitId)) {
-    return res.status(400).json({ message: 'Invalid fruit ID' });
+    res.status(400).json({ message: 'Invalid fruit ID' });
   }
 
   try {
@@ -218,7 +218,7 @@ export const patchFruitLabel = async (req: Request, res: Response) => {
     console.error(e);
 
     if (e.code === 'P2025') {
-      return res.status(404).json({ message: 'Fruit not found' });
+      res.status(404).json({ message: 'Fruit not found' });
     }
 
     res.status(500).json({ message: 'Something went wrong!' });

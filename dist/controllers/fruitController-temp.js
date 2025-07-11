@@ -85,8 +85,29 @@ export const getAllFruits = async (req, res) => {
  */
 export const createNewFruit = async (req, res) => {
     try {
+        const baseName = req.body.label?.trim();
+        if (!baseName) {
+            res.status(400).json({ message: 'Fruit name is required' });
+        }
+        // Find all fruits with the same base name or with (n) suffix
+        const existingFruits = await prisma.fruit.findMany({
+            where: {
+                label: {
+                    startsWith: baseName,
+                },
+            },
+        });
+        // Filter to count how many follow the format: "name" or "name (n)"
+        const sameNameCount = existingFruits.filter((fruit) => {
+            return (fruit.label === baseName ||
+                fruit.label.match(new RegExp(`^${baseName} \\(\\d+\\)$`)));
+        }).length;
+        const newName = sameNameCount === 0 ? baseName : `${baseName} (${sameNameCount + 1})`;
         const fruit = await prisma.fruit.create({
-            data: req.body,
+            data: {
+                ...req.body,
+                label: newName,
+            },
         });
         res.status(201).json(fruit);
     }
@@ -139,9 +160,29 @@ export const patchFruitLabel = async (req, res) => {
     const { id } = req.params;
     const fruitId = Number(id);
     if (isNaN(fruitId)) {
-        res.status(400).json({ message: 'Invalid fruit ID' });
+        return res.status(400).json({ message: 'Invalid fruit ID' });
     }
     try {
+        const baseName = req.body.label?.trim();
+        if (baseName) {
+            // Get all fruits with same name prefix
+            const existingFruits = await prisma.fruit.findMany({
+                where: {
+                    label: {
+                        startsWith: baseName,
+                    },
+                },
+            });
+            // Exclude the current fruit being updated
+            const filtered = existingFruits.filter((fruit) => fruit.id !== fruitId);
+            const sameNameCount = filtered.filter((fruit) => {
+                return (fruit.label === baseName ||
+                    fruit.label.match(new RegExp(`^${baseName} \\(\\d+\\)$`)));
+            }).length;
+            // Rename only if there are other fruits with the same name
+            req.body.label =
+                sameNameCount === 0 ? baseName : `${baseName} (${sameNameCount + 1})`;
+        }
         const updatedFruit = await prisma.fruit.update({
             where: { id: fruitId },
             data: req.body,
@@ -151,7 +192,7 @@ export const patchFruitLabel = async (req, res) => {
     catch (e) {
         console.error(e);
         if (e.code === 'P2025') {
-            res.status(404).json({ message: 'Fruit not found' });
+            return res.status(404).json({ message: 'Fruit not found' });
         }
         res.status(500).json({ message: 'Something went wrong!' });
     }

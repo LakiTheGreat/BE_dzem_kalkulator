@@ -60,6 +60,7 @@ model Order {
    profit Int
    profitMargin Int 
   createdAt DateTime @default(now())
+  isDeleted    Boolean   @default(false)
 }
 
 

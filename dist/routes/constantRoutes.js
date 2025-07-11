@@ -1,7 +1,10 @@
 import { Router } from 'express';
+import { checkSchema } from 'express-validator';
 import { getConstantById, patchConstantById, } from '../controllers/constantController.js';
+import { constantSchema } from '../validationSchemas/constantSchema.js';
+import { handleValidationErrors } from '../utils/handleValidationErrors.js';
 const router = Router();
 router.get('/:id', getConstantById);
-router.patch('/:id', patchConstantById);
+router.patch('/:id', checkSchema(constantSchema), handleValidationErrors, patchConstantById);
 export default router;
 //# sourceMappingURL=constantRoutes.js.map

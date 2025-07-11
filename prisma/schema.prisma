@@ -49,6 +49,18 @@ model ConfigConstant {
   isDeleted    Boolean   @default(false)
 }
 
+model Order {
+   id   Int   @id @default(autoincrement())
+   orderTypeId Int
+   orderName String
+   numberOfSmallCups Int
+   numberOfLargeCups Int
+   totalExpense Int
+   totalValue Int
+   profit Int
+   profitMargin Int 
+  createdAt DateTime @default(now())
+}
 
 
 

@@ -25,7 +25,7 @@ export const getAllCupCosts = async (req: Request, res: Response) => {
   try {
     const cupCosts = await prisma.cupCost.findMany({
       where: { isDeleted: false },
-      orderBy: { value: 'asc' },
+      orderBy: { label: 'asc' },
     });
     res.status(200).json(cupCosts);
   } catch (error) {

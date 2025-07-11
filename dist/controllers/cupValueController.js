@@ -22,7 +22,7 @@ export const getAllCupValues = async (req, res) => {
     try {
         const cupValues = await prisma.cupValue.findMany({
             where: { isDeleted: false },
-            orderBy: { value: 'asc' },
+            orderBy: { label: 'asc' },
         });
         res.status(200).json(cupValues);
     }

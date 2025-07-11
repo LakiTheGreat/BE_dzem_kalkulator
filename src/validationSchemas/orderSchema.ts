@@ -39,32 +39,32 @@ export const createOrderSchema: Schema = {
     notEmpty: {
       errorMessage: 'Field "totalExpense" is required',
     },
-    isInt: {
-      errorMessage: 'Field "totalExpense" must be an integer',
+    isFloat: {
+      errorMessage: 'Field "totalExpense" must be a number',
     },
   },
   totalValue: {
     notEmpty: {
       errorMessage: 'Field "totalValue" is required',
     },
-    isInt: {
-      errorMessage: 'Field "totalValue" must be an integer',
+    isFloat: {
+      errorMessage: 'Field "totalValue" must be a number',
     },
   },
   profit: {
     notEmpty: {
       errorMessage: 'Field "profit" is required',
     },
-    isInt: {
-      errorMessage: 'Field "profit" must be an integer',
+    isFloat: {
+      errorMessage: 'Field "profit" must be a number',
     },
   },
   profitMargin: {
     notEmpty: {
       errorMessage: 'Field "profitMargin" is required',
     },
-    isInt: {
-      errorMessage: 'Field "profitMargin" must be an integer',
+    isFloat: {
+      errorMessage: 'Field "profitMargin" must be a number',
     },
   },
 };

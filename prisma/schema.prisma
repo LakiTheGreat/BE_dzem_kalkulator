@@ -45,6 +45,7 @@ model ConfigConstant {
   id   Int   @id @default(autoincrement())
   value Int
   label String
+  description String @default("")
   isDeleted    Boolean   @default(false)
 }
 

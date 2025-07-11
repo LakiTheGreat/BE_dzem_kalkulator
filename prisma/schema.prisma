@@ -41,6 +41,14 @@ model CupValue {
   isDeleted    Boolean   @default(false)
 }
 
+model ConfigConstant {
+  id   Int   @id @default(autoincrement())
+  value Int
+  label String
+  isDeleted    Boolean   @default(false)
+}
+
+
 
 
 

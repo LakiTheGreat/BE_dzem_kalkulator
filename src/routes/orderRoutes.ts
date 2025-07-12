@@ -3,6 +3,7 @@ import { checkSchema } from 'express-validator';
 
 import {
   createNewOrder,
+  deleteOrder,
   getAllOrders,
   getOrderById,
 } from '../controllers/orderController.js';
@@ -21,5 +22,7 @@ router.post(
   handleValidationErrors,
   createNewOrder
 );
+
+router.delete('/:id', deleteOrder);
 
 export default router;

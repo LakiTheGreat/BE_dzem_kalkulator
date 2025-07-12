@@ -269,4 +269,56 @@ export const createNewOrder = async (req, res) => {
             .json({ message: 'Something went wrong while creating the order.' });
     }
 };
+/**
+ * @swagger
+ * /api/orders/{id}:
+ *   delete:
+ *     summary: Soft-delete an order by ID
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the order to delete
+ *     responses:
+ *       200:
+ *         description: Order successfully deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Order deleted successfully
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Failed to delete order
+ */
+export const deleteOrder = async (req, res) => {
+    const id = Number(req.params.id);
+    if (isNaN(id) || id <= 0) {
+        res.status(400).json({ message: 'Invalid order ID' });
+    }
+    try {
+        const existingOrder = await prisma.order.findUnique({
+            where: { id },
+        });
+        if (!existingOrder || existingOrder.isDeleted) {
+            res.status(404).json({ message: 'Order not found' });
+        }
+        await prisma.order.update({
+            where: { id },
+            data: { isDeleted: true },
+        });
+        res.status(200).json({ message: 'Order deleted successfully' });
+    }
+    catch (error) {
+        console.error('Error deleting order:', error);
+        res.status(500).json({ message: 'Failed to delete order' });
+    }
+};
 //# sourceMappingURL=orderController.js.map

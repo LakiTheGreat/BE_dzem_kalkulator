@@ -111,7 +111,16 @@ export const getAllOrders = async (req, res) => {
             profitMargin: order.profitMargin,
             createdAt: order.createdAt,
         }));
-        res.status(200).json(formattedOrders);
+        // Calculate totals
+        const totalValue = orders.reduce((acc, o) => acc + o.totalValue, 0);
+        const totalExpense = orders.reduce((acc, o) => acc + o.totalExpense, 0);
+        const totalProfit = orders.reduce((acc, o) => acc + o.profit, 0);
+        res.status(200).json({
+            orders: formattedOrders,
+            totalValue,
+            totalExpense,
+            totalProfit,
+        });
     }
     catch (error) {
         console.error('Error fetching orders:', error);

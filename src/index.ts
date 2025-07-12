@@ -7,6 +7,7 @@ import swaggerUi from 'swagger-ui-express';
 import logRequests from './middlwares/logRequets.js';
 import router from './routes/index.js';
 import logger from './utils/logger.js';
+
 // import checkForToken from './middlwares/auth/protect.js';
 
 dotenv.config(); // loads variables from .env file

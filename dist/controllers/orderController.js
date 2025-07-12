@@ -1,5 +1,4 @@
 import prisma from '../utils/db.js';
-import logger from '../utils/logger.js';
 /**
  * @swagger
  * components:
@@ -128,10 +127,7 @@ export const createNewOrder = async (req, res) => {
         res.status(201).json(newOrder);
     }
     catch (error) {
-        logger.error('Error creating order:', {
-            message: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined,
-        });
+        console.error('Error creating order:', error);
         res
             .status(500)
             .json({ message: 'Something went wrong while creating the order.' });

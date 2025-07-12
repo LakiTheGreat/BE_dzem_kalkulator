@@ -37,18 +37,70 @@ import prisma from '../utils/db.js';
  * @swagger
  * /api/orders:
  *   get:
- *     summary: Get all orders
+ *     summary: Get all orders, optionally filtered by orderTypeId
  *     tags: [Orders]
+ *     parameters:
+ *       - in: query
+ *         name: orderTypeId
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         required: false
+ *         description: Filter orders by orderTypeId
  *     responses:
  *       200:
- *         description: List of all orders
+ *         description: List of orders
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   orderName:
+ *                     type: string
+ *                   orderTypeName:
+ *                     type: string
+ *                   numberOfSmallCups:
+ *                     type: integer
+ *                   numberOfLargeCups:
+ *                     type: integer
+ *                   totalExpense:
+ *                     type: number
+ *                   totalValue:
+ *                     type: number
+ *                   profit:
+ *                     type: number
+ *                   profitMargin:
+ *                     type: number
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *
  */
+
 export const getAllOrders = async (req: Request, res: Response) => {
   try {
+    // Extract orderTypeId from query params, convert to number if exists
+    const orderTypeId = req.query.orderTypeId
+      ? Number(req.query.orderTypeId)
+      : undefined;
+
+    // Validate orderTypeId if provided
+    if (orderTypeId !== undefined && (isNaN(orderTypeId) || orderTypeId <= 0)) {
+      res.status(400).json({ message: 'Invalid orderTypeId query parameter' });
+    }
+
+    const whereClause: any = { isDeleted: false };
+
+    if (orderTypeId) {
+      whereClause.orderTypeId = orderTypeId;
+    }
+
     const orders = await prisma.order.findMany({
-      where: {
-        isDeleted: false,
-      },
+      where: whereClause,
       include: {
         orderType: true,
       },

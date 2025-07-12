@@ -10,15 +10,6 @@ export const createOrderSchema: Schema = {
       errorMessage: 'Field "orderTypeId" must be a positive integer',
     },
   },
-  orderName: {
-    notEmpty: {
-      errorMessage: 'Field "orderName" is required',
-    },
-    isLength: {
-      options: { min: 1, max: 100 },
-      errorMessage: 'Field "orderName" must be between 1 and 100 characters',
-    },
-  },
   numberOfSmallCups: {
     notEmpty: {
       errorMessage: 'Field "numberOfSmallCups" is required',

@@ -8,15 +8,6 @@ export const createOrderSchema = {
             errorMessage: 'Field "orderTypeId" must be a positive integer',
         },
     },
-    orderName: {
-        notEmpty: {
-            errorMessage: 'Field "orderName" is required',
-        },
-        isLength: {
-            options: { min: 1, max: 100 },
-            errorMessage: 'Field "orderName" must be between 1 and 100 characters',
-        },
-    },
     numberOfSmallCups: {
         notEmpty: {
             errorMessage: 'Field "numberOfSmallCups" is required',
@@ -37,32 +28,32 @@ export const createOrderSchema = {
         notEmpty: {
             errorMessage: 'Field "totalExpense" is required',
         },
-        isInt: {
-            errorMessage: 'Field "totalExpense" must be an integer',
+        isFloat: {
+            errorMessage: 'Field "totalExpense" must be a number',
         },
     },
     totalValue: {
         notEmpty: {
             errorMessage: 'Field "totalValue" is required',
         },
-        isInt: {
-            errorMessage: 'Field "totalValue" must be an integer',
+        isFloat: {
+            errorMessage: 'Field "totalValue" must be a number',
         },
     },
     profit: {
         notEmpty: {
             errorMessage: 'Field "profit" is required',
         },
-        isInt: {
-            errorMessage: 'Field "profit" must be an integer',
+        isFloat: {
+            errorMessage: 'Field "profit" must be a number',
         },
     },
     profitMargin: {
         notEmpty: {
             errorMessage: 'Field "profitMargin" is required',
         },
-        isInt: {
-            errorMessage: 'Field "profitMargin" must be an integer',
+        isFloat: {
+            errorMessage: 'Field "profitMargin" must be a number',
         },
     },
 };

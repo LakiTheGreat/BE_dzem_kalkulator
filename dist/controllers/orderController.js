@@ -1,6 +1,78 @@
 import prisma from '../utils/db.js';
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     Order:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         orderName:
+ *           type: string
+ *         orderTypeName:
+ *           type: string
+ *           description: Label of the fruit (linked from Fruit model)
+ *         numberOfSmallCups:
+ *           type: integer
+ *         numberOfLargeCups:
+ *           type: integer
+ *         totalExpense:
+ *           type: number
+ *         totalValue:
+ *           type: number
+ *         profit:
+ *           type: number
+ *         profitMargin:
+ *           type: number
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ */
+/**
+ * @swagger
+ * /api/orders:
+ *   get:
+ *     summary: Get all orders
+ *     tags: [Orders]
+ *     responses:
+ *       200:
+ *         description: List of all orders
+ */
+export const getAllOrders = async (req, res) => {
+    try {
+        const orders = await prisma.order.findMany({
+            where: {
+                isDeleted: false,
+            },
+            include: {
+                orderType: true,
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+        const formattedOrders = orders.map((order) => ({
+            id: order.id,
+            orderName: order.orderName,
+            orderTypeName: order.orderType.label, // instead of orderTypeId
+            numberOfSmallCups: order.numberOfSmallCups,
+            numberOfLargeCups: order.numberOfLargeCups,
+            totalExpense: order.totalExpense,
+            totalValue: order.totalValue,
+            profit: order.profit,
+            profitMargin: order.profitMargin,
+            createdAt: order.createdAt,
+        }));
+        res.status(200).json(formattedOrders);
+    }
+    catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({ message: 'Failed to fetch orders' });
+    }
+};
+/**
+ * @swagger
  * /api/orders:
  *   post:
  *     tags:

@@ -141,6 +141,91 @@ export const getAllOrders = async (req: Request, res: Response) => {
 
 /**
  * @swagger
+ * /api/orders/{id}:
+ *   get:
+ *     summary: Get a single order by ID
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The ID of the order to retrieve
+ *     responses:
+ *       200:
+ *         description: The requested order
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 orderName:
+ *                   type: string
+ *                 orderTypeName:
+ *                   type: string
+ *                 numberOfSmallCups:
+ *                   type: integer
+ *                 numberOfLargeCups:
+ *                   type: integer
+ *                 totalExpense:
+ *                   type: number
+ *                 totalValue:
+ *                   type: number
+ *                 profit:
+ *                   type: number
+ *                 profitMargin:
+ *                   type: number
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Failed to fetch order
+ */
+export const getOrderById = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+  if (isNaN(id) || id <= 0) {
+    res.status(400).json({ message: 'Invalid order ID' });
+  }
+
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id, isDeleted: false },
+      include: { orderType: true },
+    });
+
+    if (!order) {
+      res.status(404).json({ message: 'Order not found' });
+      return;
+    }
+
+    const formattedOrder = {
+      id: order.id,
+      orderName: order.orderName,
+      orderTypeName: order.orderType.label,
+      numberOfSmallCups: order.numberOfSmallCups,
+      numberOfLargeCups: order.numberOfLargeCups,
+      totalExpense: order.totalExpense,
+      totalValue: order.totalValue,
+      profit: order.profit,
+      profitMargin: order.profitMargin,
+      createdAt: order.createdAt,
+    };
+
+    res.status(200).json(formattedOrder);
+  } catch (error) {
+    console.error('Error fetching order by ID:', error);
+    res.status(500).json({ message: 'Failed to fetch order' });
+  }
+};
+
+/**
+ * @swagger
  * /api/orders:
  *   post:
  *     tags:

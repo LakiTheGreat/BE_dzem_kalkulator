@@ -4,6 +4,7 @@ import { checkSchema } from 'express-validator';
 import {
   createNewOrder,
   getAllOrders,
+  getOrderById,
 } from '../controllers/orderController.js';
 import { handleValidationErrors } from '../utils/handleValidationErrors.js';
 import { createOrderSchema } from '../validationSchemas/orderSchema.js';
@@ -11,6 +12,8 @@ import { createOrderSchema } from '../validationSchemas/orderSchema.js';
 const router = Router();
 
 router.get('/', getAllOrders);
+
+router.get('/:id', getOrderById);
 
 router.post(
   '/',

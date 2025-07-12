@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
 import prisma from '../utils/db.js';
+import logger from '../utils/logger.js';
 
 /**
  * @swagger
@@ -128,10 +129,6 @@ export const createNewOrder = async (req: Request, res: Response) => {
       profitMargin,
     } = req.body;
 
-    if (!orderTypeId || !orderName) {
-      res.status(400).json({ message: 'Missing required fields' });
-    }
-
     const newOrder = await prisma.order.create({
       data: {
         orderTypeId,
@@ -147,7 +144,10 @@ export const createNewOrder = async (req: Request, res: Response) => {
 
     res.status(201).json(newOrder);
   } catch (error) {
-    console.error('Error creating order:', error);
+    logger.error('Error creating order:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     res
       .status(500)
       .json({ message: 'Something went wrong while creating the order.' });

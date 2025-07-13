@@ -120,6 +120,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
       profit: order.profit,
       profitMargin: order.profitMargin,
       createdAt: order.createdAt,
+      baseFruitIsFree: order.baseFruitIsFree,
     }));
 
     // Calculate totals
@@ -216,6 +217,7 @@ export const getOrderById = async (req: Request, res: Response) => {
       profit: order.profit,
       profitMargin: order.profitMargin,
       createdAt: order.createdAt,
+      baseFruitIsFree: order.baseFruitIsFree,
     };
 
     res.status(200).json(formattedOrder);

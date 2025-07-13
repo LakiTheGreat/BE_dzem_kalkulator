@@ -110,6 +110,7 @@ export const getAllOrders = async (req, res) => {
             profit: order.profit,
             profitMargin: order.profitMargin,
             createdAt: order.createdAt,
+            baseFruitIsFree: order.baseFruitIsFree,
         }));
         // Calculate totals
         const totalValue = orders.reduce((acc, o) => acc + o.totalValue, 0);
@@ -199,6 +200,7 @@ export const getOrderById = async (req, res) => {
             profit: order.profit,
             profitMargin: order.profitMargin,
             createdAt: order.createdAt,
+            baseFruitIsFree: order.baseFruitIsFree,
         };
         res.status(200).json(formattedOrder);
     }

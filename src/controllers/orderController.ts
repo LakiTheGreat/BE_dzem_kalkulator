@@ -94,15 +94,11 @@ export const getAllOrders = async (req: Request, res: Response) => {
 
     // Validate query params
     if (orderTypeId !== undefined && (isNaN(orderTypeId) || orderTypeId <= 0)) {
-      return res
-        .status(400)
-        .json({ message: 'Invalid orderTypeId query parameter' });
+      res.status(400).json({ message: 'Invalid orderTypeId query parameter' });
     }
 
     if (priceStatus !== undefined && ![1, 2].includes(priceStatus)) {
-      return res
-        .status(400)
-        .json({ message: 'Invalid priceStatus query parameter' });
+      res.status(400).json({ message: 'Invalid priceStatus query parameter' });
     }
 
     const whereClause: any = { isDeleted: false };

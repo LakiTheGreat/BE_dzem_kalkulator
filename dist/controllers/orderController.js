@@ -240,6 +240,8 @@ export const getOrderById = async (req, res) => {
  *                 type: integer
  *               profitMargin:
  *                 type: integer
+ *               baseFruitIsFree:
+ *                 type: boolean
  *     responses:
  *       201:
  *         description: Order successfully created
@@ -247,7 +249,7 @@ export const getOrderById = async (req, res) => {
  */
 export const createNewOrder = async (req, res) => {
     try {
-        const { orderTypeId, orderName, numberOfSmallCups, numberOfLargeCups, totalExpense, totalValue, profit, profitMargin, } = req.body;
+        const { orderTypeId, orderName, numberOfSmallCups, numberOfLargeCups, totalExpense, totalValue, profit, profitMargin, baseFruitIsFree, } = req.body;
         const newOrder = await prisma.order.create({
             data: {
                 orderTypeId,
@@ -258,6 +260,7 @@ export const createNewOrder = async (req, res) => {
                 totalValue,
                 profit,
                 profitMargin,
+                baseFruitIsFree,
             },
         });
         res.status(201).json(newOrder);

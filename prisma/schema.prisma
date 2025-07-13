@@ -63,6 +63,7 @@ model Order {
   profitMargin      Int
   createdAt         DateTime @default(now())
   isDeleted         Boolean  @default(false)
+  baseFruitIsFree Boolean @default(false)
 }
 
 

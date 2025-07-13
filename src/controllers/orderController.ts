@@ -83,20 +83,38 @@ import prisma from '../utils/db.js';
 
 export const getAllOrders = async (req: Request, res: Response) => {
   try {
-    // Extract orderTypeId from query params, convert to number if exists
     const orderTypeId = req.query.orderTypeId
       ? Number(req.query.orderTypeId)
       : undefined;
 
-    // Validate orderTypeId if provided
+    const priceStatus =
+      req.query.priceStatus !== undefined
+        ? Number(req.query.priceStatus)
+        : undefined;
+
+    // Validate query params
     if (orderTypeId !== undefined && (isNaN(orderTypeId) || orderTypeId <= 0)) {
-      res.status(400).json({ message: 'Invalid orderTypeId query parameter' });
+      return res
+        .status(400)
+        .json({ message: 'Invalid orderTypeId query parameter' });
+    }
+
+    if (priceStatus !== undefined && ![1, 2].includes(priceStatus)) {
+      return res
+        .status(400)
+        .json({ message: 'Invalid priceStatus query parameter' });
     }
 
     const whereClause: any = { isDeleted: false };
 
     if (orderTypeId) {
       whereClause.orderTypeId = orderTypeId;
+    }
+
+    if (priceStatus === 1) {
+      whereClause.baseFruitIsFree = true;
+    } else if (priceStatus === 2) {
+      whereClause.baseFruitIsFree = false;
     }
 
     const orders = await prisma.order.findMany({
@@ -112,7 +130,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
     const formattedOrders = orders.map((order) => ({
       id: order.id,
       orderName: order.orderName,
-      orderTypeName: order.orderType.label, // instead of orderTypeId
+      orderTypeName: order.orderType.label,
       numberOfSmallCups: order.numberOfSmallCups,
       numberOfLargeCups: order.numberOfLargeCups,
       totalExpense: order.totalExpense,
@@ -123,7 +141,6 @@ export const getAllOrders = async (req: Request, res: Response) => {
       baseFruitIsFree: order.baseFruitIsFree,
     }));
 
-    // Calculate totals
     const totalValue = orders.reduce((acc, o) => acc + o.totalValue, 0);
     const totalExpense = orders.reduce((acc, o) => acc + o.totalExpense, 0);
     const totalProfit = orders.reduce((acc, o) => acc + o.profit, 0);

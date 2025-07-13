@@ -54,7 +54,7 @@ model Order {
   id                Int      @id @default(autoincrement())
   orderTypeId       Int
   orderType         Fruit    @relation(fields: [orderTypeId], references: [id], onDelete: Restrict)
-  orderName         String
+  orderName         String   @default("")
   numberOfSmallCups Int
   numberOfLargeCups Int
   totalExpense      Int

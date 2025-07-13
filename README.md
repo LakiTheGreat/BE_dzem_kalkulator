@@ -4,7 +4,7 @@
 
 ### Deploy
 
-On push to main, code will automatically be deployed by render. Entry file is dist/index.js.
+On push to main, code will automatically be deployed by Render. Entry file is dist/index.js.
 
 ### For migrations - if prisma can't connect to DB for any reason (.env file isn't loaded)
 

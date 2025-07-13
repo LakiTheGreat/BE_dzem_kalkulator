@@ -126,11 +126,15 @@ export const getAllOrders = async (req, res) => {
         const totalValue = orders.reduce((acc, o) => acc + o.totalValue, 0);
         const totalExpense = orders.reduce((acc, o) => acc + o.totalExpense, 0);
         const totalProfit = orders.reduce((acc, o) => acc + o.profit, 0);
+        const totalSmallCups = orders.reduce((acc, o) => acc + o.numberOfSmallCups, 0);
+        const totalLargeCups = orders.reduce((acc, o) => acc + o.numberOfLargeCups, 0);
         res.status(200).json({
             orders: formattedOrders,
             totalValue,
             totalExpense,
             totalProfit,
+            totalSmallCups,
+            totalLargeCups,
         });
     }
     catch (error) {

@@ -93,22 +93,22 @@ export const createOrderSchema = {
             errorMessage: 'Fruit grams must be a string',
         },
     },
-    'fruits.*.price': {
-        notEmpty: {
-            errorMessage: 'Fruit price is required',
-        },
-        isString: {
-            errorMessage: 'Fruit price must be a string',
-        },
-    },
-    'fruits.*.total': {
-        notEmpty: {
-            errorMessage: 'Fruit total is required',
-        },
-        isString: {
-            errorMessage: 'Fruit total must be a string',
-        },
-    },
+    // 'fruits.*.price': {
+    //   notEmpty: {
+    //     errorMessage: 'Fruit price is required',
+    //   },
+    //   isString: {
+    //     errorMessage: 'Fruit price must be a string',
+    //   },
+    // },
+    // 'fruits.*.total': {
+    //   notEmpty: {
+    //     errorMessage: 'Fruit total is required',
+    //   },
+    //   isString: {
+    //     errorMessage: 'Fruit total must be a string',
+    //   },
+    // },
     'fruits.*.fruitId': {
         notEmpty: {
             errorMessage: 'Fruit fruitId is required',

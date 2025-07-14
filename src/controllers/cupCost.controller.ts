@@ -1,6 +1,14 @@
 import { Request, Response } from 'express';
+import status from 'http-status';
 
-import prisma from '../utils/db.js';
+import { asyncHandler } from '../middlewares/asyncHandler.js';
+import {
+  createNewCupCostService,
+  deleteCupCostService,
+  getAllCupCostsService,
+  putCupCostService,
+} from '../services/cupCost.service.js';
+import AppError from '../utils/AppError.js';
 
 /**
  * @swagger
@@ -21,18 +29,17 @@ import prisma from '../utils/db.js';
  *       500:
  *         description: Internal server error
  */
-export const getAllCupCosts = async (req: Request, res: Response) => {
-  try {
-    const cupCosts = await prisma.cupCost.findMany({
-      where: { isDeleted: false },
-      orderBy: { label: 'asc' },
-    });
+export const getAllCupCosts = asyncHandler(
+  async (req: Request, res: Response) => {
+    const cupCosts = await getAllCupCostsService();
+
+    if (!cupCosts) {
+      throw new AppError('CupCosts not found', status.NOT_FOUND);
+    }
+
     res.status(200).json(cupCosts);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Something went wrong!' });
   }
-};
+);
 
 /**
  * @swagger
@@ -69,24 +76,22 @@ export const getAllCupCosts = async (req: Request, res: Response) => {
 
  */
 
-export const createCupCost = async (req: Request, res: Response) => {
-  const { label, value } = req.body;
+export const createCupCost = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { label, value } = req.body;
 
-  try {
-    const newCupCost = await prisma.cupCost.create({
-      data: {
-        label,
-        value,
-        isDeleted: false,
-      },
-    });
+    if (!label || !value) {
+      throw new AppError('Label and value are required', status.BAD_REQUEST);
+    }
+
+    const newCupCost = await createNewCupCostService(label, value);
+    if (!newCupCost) {
+      throw new AppError('CupCost not created', status.INTERNAL_SERVER_ERROR);
+    }
 
     res.status(201).json(newCupCost);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Something went wrong!' });
   }
-};
+);
 
 /**
  * @swagger
@@ -135,38 +140,33 @@ export const createCupCost = async (req: Request, res: Response) => {
  *       500:
  *         description: Internal server error
  */
-export const putCupCost = async (req: Request, res: Response) => {
+export const putCupCost = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const cupCostId = Number(id);
 
   if (isNaN(cupCostId)) {
-    res.status(400).json({ message: 'Invalid CupCost ID' });
+    throw new AppError('Invalid cupCost ID', status.BAD_REQUEST);
   }
 
   const { value, label } = req.body;
 
-  try {
-    const updatedCupCost = await prisma.cupCost.update({
-      where: { id: cupCostId },
-      data: {
-        ...(value !== undefined && { value }),
-        ...(label !== undefined && { label }),
-      },
-    });
-
-    res
-      .status(200)
-      .json({ message: 'CupCost updated successfully', updatedCupCost });
-  } catch (error: any) {
-    console.error(error);
-
-    if (error.code === 'P2025') {
-      res.status(404).json({ message: 'CupCost not found' });
-    }
-
-    res.status(500).json({ message: 'Something went wrong!' });
+  if (!value && !label) {
+    throw new AppError(
+      'Missing required fields - value and label',
+      status.BAD_REQUEST
+    );
   }
-};
+
+  const updatedCupCost = await putCupCostService(cupCostId, label, value);
+
+  if (!updatedCupCost) {
+    throw new AppError('CupCost not updated', status.INTERNAL_SERVER_ERROR);
+  }
+
+  res
+    .status(200)
+    .json({ message: 'CupCost updated successfully', updatedCupCost });
+});
 
 /**
  * @swagger
@@ -202,30 +202,23 @@ export const putCupCost = async (req: Request, res: Response) => {
  *       500:
  *         description: Internal server error
  */
-export const deleteCupCost = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const cupCostId = Number(id);
+export const deleteCupCost = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const cupCostId = Number(id);
 
-  if (isNaN(cupCostId)) {
-    res.status(400).json({ message: 'Invalid CupCost ID' });
-  }
+    if (isNaN(cupCostId)) {
+      throw new AppError('Invalid cupCost ID', status.BAD_REQUEST);
+    }
 
-  try {
-    const deletedCupCost = await prisma.cupCost.update({
-      where: { id: cupCostId },
-      data: { isDeleted: true },
-    });
+    const deletedCupCost = deleteCupCostService(cupCostId);
+
+    if (!deletedCupCost) {
+      throw new AppError('CupCost not deleted', status.INTERNAL_SERVER_ERROR);
+    }
 
     res
       .status(200)
       .json({ message: 'CupCost soft-deleted successfully', deletedCupCost });
-  } catch (error: any) {
-    console.error(error);
-
-    if (error.code === 'P2025') {
-      res.status(404).json({ message: 'CupCost not found' });
-    }
-
-    res.status(500).json({ message: 'Something went wrong!' });
   }
-};
+);

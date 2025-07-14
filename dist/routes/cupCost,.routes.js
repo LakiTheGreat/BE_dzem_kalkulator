@@ -9,4 +9,4 @@ router.post('/', checkSchema(cupCostSchema), handleValidationErrors, createCupCo
 router.put('/:id', checkSchema(cupCostSchema), handleValidationErrors, putCupCost);
 router.delete('/:id', deleteCupCost);
 export default router;
-//# sourceMappingURL=cupCostRoutes.js.map
+//# sourceMappingURL=cupCost,.routes.js.map

@@ -1,14 +1,14 @@
 import { Router } from 'express';
 import { checkSchema } from 'express-validator';
 
-import { handleValidationErrors } from '../utils/handleValidationErrors.js';
-import { cupCostSchema } from '../validationSchemas/cupSchema.js';
 import {
   createCupCost,
   deleteCupCost,
   getAllCupCosts,
   putCupCost,
-} from '../controllers/cupCostController.js';
+} from '../controllers/cupCost.controller.js';
+import { handleValidationErrors } from '../utils/handleValidationErrors.js';
+import { cupCostSchema } from '../validationSchemas/cupSchema.js';
 
 const router = Router();
 

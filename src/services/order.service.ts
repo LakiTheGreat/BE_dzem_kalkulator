@@ -30,7 +30,7 @@ export const createNewOrderService = async ({
   orderName,
   fruits,
   cups,
-  profitMargin,
+  otherExpensesMargin,
 }: OrderReq) => {
   const newOrder = await prisma.order.create({
     data: {
@@ -39,7 +39,7 @@ export const createNewOrderService = async ({
       orderName,
       fruits,
       cups,
-      profitMargin,
+      otherExpensesMargin,
     },
   });
 

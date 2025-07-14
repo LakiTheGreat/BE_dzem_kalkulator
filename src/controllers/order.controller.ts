@@ -162,7 +162,7 @@ export const getAllOrders = asyncHandler(
       const totalFruitsCost = fruits.reduce((acc, f) => acc + f.total, 0);
       const orderTotalCost = totalCupsCost + totalFruitsCost;
       const calculatedTotalCost = Math.round(
-        orderTotalCost + orderTotalCost * (order.profitMargin / 100)
+        orderTotalCost + orderTotalCost * (order.otherExpensesMargin / 100)
       );
 
       const calculatedTotalValue = cups.reduce(
@@ -315,7 +315,7 @@ export const getOrderById = asyncHandler(
  *               baseFruitIsFree:
  *                 type: boolean
  *                 example: true
- *               profitMargin:
+ *               otherExpensesMargin:
  *                 type: integer
  *                 example: 25
  *             required:

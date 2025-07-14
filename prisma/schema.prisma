@@ -62,7 +62,7 @@ model Order {
   baseFruitIsFree Boolean       @default(false)
   cups       Json[]
   fruits     Json[]
-  profitMargin Int @default(25)
+  otherExpensesMargin Int @default(25)
 }
 
 

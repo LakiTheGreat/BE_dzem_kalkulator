@@ -4,7 +4,7 @@ export type OrderReq = {
   orderTypeId: number;
   orderName: string;
   baseFruitIsFree: boolean;
-  profitMargin: number;
+  otherExpensesMargin: number;
 };
 
 export type CupInput = {

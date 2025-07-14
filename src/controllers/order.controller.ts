@@ -1,6 +1,14 @@
 import { Request, Response } from 'express';
+import status from 'http-status';
 
-import prisma from '../utils/db.js';
+import { asyncHandler } from '../middlewares/asyncHandler.js';
+import {
+  createNewOrderService,
+  deleteOrderService,
+  getAllOrdersService,
+  getOrderByIdService,
+} from '../services/order.service.js';
+import AppError from '../utils/AppError.js';
 
 /**
  * @swagger
@@ -37,7 +45,7 @@ import prisma from '../utils/db.js';
  * @swagger
  * /api/orders:
  *   get:
- *     summary: Get all orders, optionally filtered by orderTypeId
+ *     summary: Get all orders, optionally filtered by orderTypeId and priceStatus
  *     tags: [Orders]
  *     parameters:
  *       - in: query
@@ -47,6 +55,13 @@ import prisma from '../utils/db.js';
  *           minimum: 1
  *         required: false
  *         description: Filter orders by orderTypeId
+ *       - in: query
+ *         name: priceStatus
+ *         schema:
+ *           type: string
+ *           enum: [ 1, 2]
+ *         required: false
+ *         description: Filter orders by price status (e.g., profitable, loss, or all)
  *     responses:
  *       200:
  *         description: List of orders
@@ -78,11 +93,10 @@ import prisma from '../utils/db.js';
  *                   createdAt:
  *                     type: string
  *                     format: date-time
- *
  */
 
-export const getAllOrders = async (req: Request, res: Response) => {
-  try {
+export const getAllOrders = asyncHandler(
+  async (req: Request, res: Response) => {
     const orderTypeId = req.query.orderTypeId
       ? Number(req.query.orderTypeId)
       : undefined;
@@ -94,11 +108,17 @@ export const getAllOrders = async (req: Request, res: Response) => {
 
     // Validate query params
     if (orderTypeId !== undefined && (isNaN(orderTypeId) || orderTypeId <= 0)) {
-      res.status(400).json({ message: 'Invalid orderTypeId query parameter' });
+      throw new AppError(
+        'Invalid orderTypeId query parameter',
+        status.BAD_REQUEST
+      );
     }
 
     if (priceStatus !== undefined && ![1, 2].includes(priceStatus)) {
-      res.status(400).json({ message: 'Invalid priceStatus query parameter' });
+      throw new AppError(
+        'Invalid priceStatus query parameter',
+        status.BAD_REQUEST
+      );
     }
 
     const whereClause: any = { isDeleted: false };
@@ -113,15 +133,11 @@ export const getAllOrders = async (req: Request, res: Response) => {
       whereClause.baseFruitIsFree = false;
     }
 
-    const orders = await prisma.order.findMany({
-      where: whereClause,
-      include: {
-        orderType: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const orders = await getAllOrdersService(whereClause);
+
+    if (!orders) {
+      throw new AppError('No orders found', status.NOT_FOUND);
+    }
 
     const formattedOrders = orders.map((order) => ({
       id: order.id,
@@ -149,7 +165,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
       0
     );
 
-    res.status(200).json({
+    res.status(status.OK).json({
       orders: formattedOrders,
       totalValue,
       totalExpense,
@@ -157,11 +173,8 @@ export const getAllOrders = async (req: Request, res: Response) => {
       totalSmallCups,
       totalLargeCups,
     });
-  } catch (error) {
-    console.error('Error fetching orders:', error);
-    res.status(500).json({ message: 'Failed to fetch orders' });
   }
-};
+);
 
 /**
  * @swagger
@@ -211,22 +224,18 @@ export const getAllOrders = async (req: Request, res: Response) => {
  *         description: Failed to fetch order
  */
 
-export const getOrderById = async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
+export const getOrderById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = Number(req.params.id);
 
-  if (isNaN(id) || id <= 0) {
-    res.status(400).json({ message: 'Invalid order ID' });
-  }
+    if (isNaN(id) || id <= 0) {
+      throw new AppError('Invalid order ID', status.BAD_REQUEST);
+    }
 
-  try {
-    const order = await prisma.order.findUnique({
-      where: { id, isDeleted: false },
-      include: { orderType: true },
-    });
+    const order = await getOrderByIdService(id);
 
     if (!order) {
-      res.status(404).json({ message: 'Order not found' });
-      return;
+      throw new AppError('Order not found', status.NOT_FOUND);
     }
 
     const formattedOrder = {
@@ -243,12 +252,9 @@ export const getOrderById = async (req: Request, res: Response) => {
       baseFruitIsFree: order.baseFruitIsFree,
     };
 
-    res.status(200).json(formattedOrder);
-  } catch (error) {
-    console.error('Error fetching order by ID:', error);
-    res.status(500).json({ message: 'Failed to fetch order' });
+    res.status(status.OK).json(formattedOrder);
   }
-};
+);
 
 /**
  * @swagger
@@ -290,42 +296,39 @@ export const getOrderById = async (req: Request, res: Response) => {
  *         description: Order successfully created
  *
  */
-export const createNewOrder = async (req: Request, res: Response) => {
-  try {
+export const createNewOrder = asyncHandler(
+  async (req: Request, res: Response) => {
     const {
       orderTypeId,
-      orderName,
       numberOfSmallCups,
       numberOfLargeCups,
       totalExpense,
       totalValue,
       profit,
       profitMargin,
-      baseFruitIsFree,
     } = req.body;
 
-    const newOrder = await prisma.order.create({
-      data: {
-        orderTypeId,
-        orderName,
-        numberOfSmallCups,
-        numberOfLargeCups,
-        totalExpense,
-        totalValue,
-        profit,
-        profitMargin,
-        baseFruitIsFree,
-      },
-    });
+    if (
+      !orderTypeId ||
+      !numberOfSmallCups ||
+      !numberOfLargeCups ||
+      !totalExpense ||
+      !totalValue ||
+      !profit ||
+      !profitMargin
+    ) {
+      throw new AppError('Missing required fields', status.BAD_REQUEST);
+    }
 
-    res.status(201).json(newOrder);
-  } catch (error) {
-    console.error('Error creating order:', error);
-    res
-      .status(500)
-      .json({ message: 'Something went wrong while creating the order.' });
+    const newOrder = await createNewOrderService(req.body);
+
+    if (!newOrder) {
+      throw new AppError('Order not created', status.INTERNAL_SERVER_ERROR);
+    }
+
+    res.status(status.CREATED).json(newOrder);
   }
-};
+);
 
 /**
  * @swagger
@@ -357,30 +360,24 @@ export const createNewOrder = async (req: Request, res: Response) => {
  *         description: Failed to delete order
  */
 
-export const deleteOrder = async (req: Request, res: Response) => {
+export const deleteOrder = asyncHandler(async (req: Request, res: Response) => {
   const id = Number(req.params.id);
 
   if (isNaN(id) || id <= 0) {
-    res.status(400).json({ message: 'Invalid order ID' });
+    throw new AppError('Invalid order ID', status.BAD_REQUEST);
   }
 
-  try {
-    const existingOrder = await prisma.order.findUnique({
-      where: { id },
-    });
+  const existingOrder = await getOrderByIdService(id);
 
-    if (!existingOrder || existingOrder.isDeleted) {
-      res.status(404).json({ message: 'Order not found' });
-    }
-
-    await prisma.order.update({
-      where: { id },
-      data: { isDeleted: true },
-    });
-
-    res.status(200).json({ message: 'Order deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting order:', error);
-    res.status(500).json({ message: 'Failed to delete order' });
+  if (!existingOrder) {
+    throw new AppError('Order not found', status.NOT_FOUND);
   }
-};
+
+  const order = await deleteOrderService(id);
+
+  if (!order) {
+    throw new AppError('Failed to delete order', status.INTERNAL_SERVER_ERROR);
+  }
+
+  res.status(status.OK).json({ message: 'Order soft-deleted successfully' });
+});

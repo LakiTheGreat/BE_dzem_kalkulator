@@ -1,5 +1,14 @@
 import { Request, Response } from 'express';
+import status from 'http-status';
 
+import { asyncHandler } from '../middlewares/asyncHandler.js';
+import {
+  createCupValueService,
+  deleteCupValueService,
+  getAllCupValuesService,
+  putCupValueService,
+} from '../services/cupValue.service.js';
+import AppError from '../utils/AppError.js';
 import prisma from '../utils/db.js';
 
 /**
@@ -21,18 +30,16 @@ import prisma from '../utils/db.js';
  *       500:
  *         description: Internal server error
  */
-export const getAllCupValues = async (req: Request, res: Response) => {
-  try {
-    const cupValues = await prisma.cupValue.findMany({
-      where: { isDeleted: false },
-      orderBy: { label: 'asc' },
-    });
-    res.status(200).json(cupValues);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Something went wrong!' });
+export const getAllCupValues = asyncHandler(
+  async (req: Request, res: Response) => {
+    const cupValues = await getAllCupValuesService();
+    if (!cupValues) {
+      throw new AppError('CupValues not found', status.INTERNAL_SERVER_ERROR);
+    }
+
+    res.status(status.OK).json(cupValues);
   }
-};
+);
 
 /**
  * @swagger
@@ -71,24 +78,26 @@ export const getAllCupValues = async (req: Request, res: Response) => {
  *       500:
  *         description: Internal server error
  */
-export const createCupValue = async (req: Request, res: Response) => {
-  const { label, value } = req.body;
+export const createCupValue = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { label, value } = req.body;
 
-  try {
-    const newCupValue = await prisma.cupValue.create({
-      data: {
-        label,
-        value,
-        isDeleted: false,
-      },
-    });
+    if (!label || !value) {
+      throw new AppError(
+        'Missing required fields - label and value',
+        status.BAD_REQUEST
+      );
+    }
 
-    res.status(201).json(newCupValue);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Something went wrong!' });
+    const newCupValue = createCupValueService(label, value);
+
+    if (!newCupValue) {
+      throw new AppError('CupValue not created', status.INTERNAL_SERVER_ERROR);
+    }
+
+    res.status(status.CREATED).json(newCupValue);
   }
-};
+);
 
 /**
  * @swagger
@@ -137,7 +146,7 @@ export const createCupValue = async (req: Request, res: Response) => {
  *       500:
  *         description: Internal server error
  */
-export const putCupValue = async (req: Request, res: Response) => {
+export const putCupValue = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const cupValueId = Number(id);
 
@@ -147,28 +156,18 @@ export const putCupValue = async (req: Request, res: Response) => {
 
   const { value, label } = req.body;
 
-  try {
-    const updatedCupValue = await prisma.cupValue.update({
-      where: { id: cupValueId },
-      data: {
-        ...(value !== undefined && { value }),
-        ...(label !== undefined && { label }),
-      },
-    });
-
-    res
-      .status(200)
-      .json({ message: 'CupValue updated successfully', updatedCupValue });
-  } catch (error: any) {
-    console.error(error);
-
-    if (error.code === 'P2025') {
-      res.status(404).json({ message: 'CupValue not found' });
-    }
-
-    res.status(500).json({ message: 'Something went wrong!' });
+  if (!value && !label) {
+    throw new AppError(
+      'Missing required fields - value and label',
+      status.BAD_REQUEST
+    );
   }
-};
+  const updatedCupValue = await putCupValueService(cupValueId, label, value);
+
+  res
+    .status(200)
+    .json({ message: 'CupValue updated successfully', updatedCupValue });
+});
 
 /**
  * @swagger
@@ -204,30 +203,24 @@ export const putCupValue = async (req: Request, res: Response) => {
  *       500:
  *         description: Internal server error
  */
-export const deleteCupValue = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const cupValueId = Number(id);
+export const deleteCupValue = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const cupValueId = Number(id);
 
-  if (isNaN(cupValueId)) {
-    res.status(400).json({ message: 'Invalid CupValue ID' });
-  }
-
-  try {
-    const deletedCupValue = await prisma.cupValue.update({
-      where: { id: cupValueId },
-      data: { isDeleted: true },
-    });
-
-    res
-      .status(200)
-      .json({ message: 'CupValue soft-deleted successfully', deletedCupValue });
-  } catch (error: any) {
-    console.error(error);
-
-    if (error.code === 'P2025') {
-      res.status(404).json({ message: 'CupValue not found' });
+    if (isNaN(cupValueId)) {
+      throw new AppError('Invalid CupValue ID', status.BAD_REQUEST);
     }
 
-    res.status(500).json({ message: 'Something went wrong!' });
+    const deletedCupValue = await deleteCupValueService(cupValueId);
+
+    if (!deletedCupValue) {
+      throw new AppError('CupValue not deleted', status.INTERNAL_SERVER_ERROR);
+    }
+
+    res.status(200).json({
+      message: 'CupValue soft-deleted successfully',
+      deletedCupValue,
+    });
   }
-};
+);

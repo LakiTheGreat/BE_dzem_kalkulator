@@ -50,7 +50,7 @@ export const getConstantById = asyncHandler(
       throw new AppError('Constant not found', status.NOT_FOUND);
     }
 
-    res.status(200).json(constant);
+    res.status(status.OK).json(constant);
   }
 );
 
@@ -128,6 +128,6 @@ export const patchConstantById = asyncHandler(
       );
     }
 
-    res.status(200).json(updated);
+    res.status(status.OK).json(updated);
   }
 );

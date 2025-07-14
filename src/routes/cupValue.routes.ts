@@ -6,7 +6,7 @@ import {
   deleteCupValue,
   getAllCupValues,
   putCupValue,
-} from '../controllers/cupValueController.js';
+} from '../controllers/cupValue.controller.js';
 import { handleValidationErrors } from '../utils/handleValidationErrors.js';
 import { cupValueSchema } from '../validationSchemas/cupSchema.js';
 

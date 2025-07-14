@@ -26,7 +26,7 @@ export const getAllCupCosts = asyncHandler(async (req, res) => {
     if (!cupCosts) {
         throw new AppError('CupCosts not found', status.NOT_FOUND);
     }
-    res.status(200).json(cupCosts);
+    res.status(status.OK).json(cupCosts);
 });
 /**
  * @swagger
@@ -71,7 +71,7 @@ export const createCupCost = asyncHandler(async (req, res) => {
     if (!newCupCost) {
         throw new AppError('CupCost not created', status.INTERNAL_SERVER_ERROR);
     }
-    res.status(201).json(newCupCost);
+    res.status(status.CREATED).json(newCupCost);
 });
 /**
  * @swagger
@@ -135,7 +135,7 @@ export const putCupCost = asyncHandler(async (req, res) => {
         throw new AppError('CupCost not updated', status.INTERNAL_SERVER_ERROR);
     }
     res
-        .status(200)
+        .status(status.OK)
         .json({ message: 'CupCost updated successfully', updatedCupCost });
 });
 /**
@@ -183,7 +183,7 @@ export const deleteCupCost = asyncHandler(async (req, res) => {
         throw new AppError('CupCost not deleted', status.INTERNAL_SERVER_ERROR);
     }
     res
-        .status(200)
+        .status(status.OK)
         .json({ message: 'CupCost soft-deleted successfully', deletedCupCost });
 });
 //# sourceMappingURL=cupCost.controller.js.map

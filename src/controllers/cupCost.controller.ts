@@ -37,7 +37,7 @@ export const getAllCupCosts = asyncHandler(
       throw new AppError('CupCosts not found', status.NOT_FOUND);
     }
 
-    res.status(200).json(cupCosts);
+    res.status(status.OK).json(cupCosts);
   }
 );
 
@@ -89,7 +89,7 @@ export const createCupCost = asyncHandler(
       throw new AppError('CupCost not created', status.INTERNAL_SERVER_ERROR);
     }
 
-    res.status(201).json(newCupCost);
+    res.status(status.CREATED).json(newCupCost);
   }
 );
 
@@ -164,7 +164,7 @@ export const putCupCost = asyncHandler(async (req: Request, res: Response) => {
   }
 
   res
-    .status(200)
+    .status(status.OK)
     .json({ message: 'CupCost updated successfully', updatedCupCost });
 });
 
@@ -218,7 +218,7 @@ export const deleteCupCost = asyncHandler(
     }
 
     res
-      .status(200)
+      .status(status.OK)
       .json({ message: 'CupCost soft-deleted successfully', deletedCupCost });
   }
 );

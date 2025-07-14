@@ -108,7 +108,7 @@ export const getAllCups = asyncHandler(async (req, res) => {
         cost: cup.cost?.value ?? null,
         sellingPrice: cup.sellingPrice?.value ?? null,
     }));
-    res.status(200).json(simplifiedCups);
+    res.status(status.OK).json(simplifiedCups);
 });
 /**
  * @swagger
@@ -154,7 +154,7 @@ export const createNewCup = asyncHandler(async (req, res) => {
     if (!cup) {
         throw new AppError('Cup was not created', status.INTERNAL_SERVER_ERROR);
     }
-    res.status(201).json(cup);
+    res.status(status.CREATED).json(cup);
 });
 /**
  * @swagger
@@ -224,7 +224,9 @@ export const putCup = asyncHandler(async (req, res) => {
     if (!updatedCup) {
         throw new AppError('Cup was not updated', status.INTERNAL_SERVER_ERROR);
     }
-    res.status(200).json({ message: 'Cup updated successfully', updatedCup });
+    res
+        .status(status.OK)
+        .json({ message: 'Cup updated successfully', updatedCup });
 });
 /**
  * @swagger
@@ -262,6 +264,6 @@ export const deleteCupById = asyncHandler(async (req, res) => {
     if (!cup) {
         throw new AppError('Cup was not deleted', status.INTERNAL_SERVER_ERROR);
     }
-    res.status(200).json({ message: 'Cup marked as deleted', cup });
+    res.status(status.OK).json({ message: 'Cup marked as deleted', cup });
 });
 //# sourceMappingURL=cup.controller.js.map

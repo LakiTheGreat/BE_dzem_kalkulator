@@ -41,7 +41,7 @@ export const getConstantById = asyncHandler(async (req, res) => {
     if (!constant) {
         throw new AppError('Constant not found', status.NOT_FOUND);
     }
-    res.status(200).json(constant);
+    res.status(status.OK).json(constant);
 });
 /**
  * @swagger
@@ -102,6 +102,6 @@ export const patchConstantById = asyncHandler(async (req, res) => {
     if (!updated) {
         throw new AppError('Constant was not updated', status.INTERNAL_SERVER_ERROR);
     }
-    res.status(200).json(updated);
+    res.status(status.OK).json(updated);
 });
 //# sourceMappingURL=constant.controller.js.map

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import fruitsRouter from './fruitRoutes.js';
 import cupsRouter from './cup.routes.js';
 import cupCostRouter from './cupCost.routes.js';
-import cupValuesRouter from './cupValueRoutes.js';
+import cupValuesRouter from './cupValue.routes.js';
 import constantsRouter from './constant.routes.js';
 import ordersRouter from './orderRoutes.js';
 const router = Router();

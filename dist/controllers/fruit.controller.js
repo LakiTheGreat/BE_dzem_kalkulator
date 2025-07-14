@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
-
-import prisma from '../utils/db.js';
-
+import status from 'http-status';
+import { asyncHandler } from '../middlewares/asyncHandler.js';
+import { createNewFruitService, deleteFruitService, getAllFruitsService, getAlLFruitsWithSameNameService, patchFruitService, } from '../services/fruit.service.js';
+import AppError from '../utils/AppError.js';
 /**
  * @swagger
  * components:
@@ -18,7 +18,6 @@ import prisma from '../utils/db.js';
  *         isDeleted:
  *           type: boolean
  */
-
 /**
  * @swagger
  * /api/fruits:
@@ -43,24 +42,13 @@ import prisma from '../utils/db.js';
  *                     label: Jasika
  *                     isDeleted: false
  */
-
-export const getAllFruits = async (req: Request, res: Response) => {
-  try {
-    const fruits = await prisma.fruit.findMany({
-      where: {
-        isDeleted: false,
-      },
-      orderBy: {
-        label: 'asc',
-      },
-    });
-    res.status(200).json(fruits);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: 'Something went wrong!!!!' });
-  }
-};
-
+export const getAllFruits = asyncHandler(async (req, res) => {
+    const fruits = await getAllFruitsService();
+    if (!fruits) {
+        throw new AppError('Fruits not found', status.NOT_FOUND);
+    }
+    res.status(status.OK).json(fruits);
+});
 /**
  * @swagger
  * /api/fruits:
@@ -88,49 +76,25 @@ export const getAllFruits = async (req: Request, res: Response) => {
  *             schema:
  *               $ref: '#/components/schemas/Fruit'
  */
-
-export const createNewFruit = async (req: Request, res: Response) => {
-  try {
+export const createNewFruit = asyncHandler(async (req, res) => {
     const baseName = req.body.label?.trim();
-
     if (!baseName) {
-      res.status(400).json({ message: 'Fruit name is required' });
+        throw new AppError('Missing required field - label', status.BAD_REQUEST);
     }
-
     // Find all fruits with the same base name or with (n) suffix
-    const existingFruits = await prisma.fruit.findMany({
-      where: {
-        label: {
-          startsWith: baseName,
-        },
-      },
-    });
-
+    const existingFruits = await getAlLFruitsWithSameNameService(baseName);
     // Filter to count how many follow the format: "name" or "name (n)"
     const sameNameCount = existingFruits.filter((fruit) => {
-      return (
-        fruit.label === baseName ||
-        fruit.label.match(new RegExp(`^${baseName} \\(\\d+\\)$`))
-      );
+        return (fruit.label === baseName ||
+            fruit.label.match(new RegExp(`^${baseName} \\(\\d+\\)$`)));
     }).length;
-
-    const newName =
-      sameNameCount === 0 ? baseName : `${baseName} (${sameNameCount + 1})`;
-
-    const fruit = await prisma.fruit.create({
-      data: {
-        ...req.body,
-        label: newName,
-      },
-    });
-
-    res.status(201).json(fruit);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: 'Something went wrong!!!!' });
-  }
-};
-
+    const newName = sameNameCount === 0 ? baseName : `${baseName} (${sameNameCount + 1})`;
+    const fruit = await createNewFruitService(newName);
+    if (!fruit) {
+        throw new AppError('Something went wrong - fruit was not created!', status.INTERNAL_SERVER_ERROR);
+    }
+    res.status(status.CREATED).json(fruit);
+});
 /**
  * @swagger
  * /api/fruits/{id}:
@@ -171,60 +135,33 @@ export const createNewFruit = async (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-
-export const patchFruitLabel = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const fruitId = Number(id);
-
-  if (isNaN(fruitId)) {
-    res.status(400).json({ message: 'Invalid fruit ID' });
-  }
-
-  try {
-    const baseName = req.body.label?.trim();
-
-    if (baseName) {
-      // Get all fruits with same name prefix
-      const existingFruits = await prisma.fruit.findMany({
-        where: {
-          label: {
-            startsWith: baseName,
-          },
-        },
-      });
-
-      // Exclude the current fruit being updated
-      const filtered = existingFruits.filter((fruit) => fruit.id !== fruitId);
-
-      const sameNameCount = filtered.filter((fruit) => {
-        return (
-          fruit.label === baseName ||
-          fruit.label.match(new RegExp(`^${baseName} \\(\\d+\\)$`))
-        );
-      }).length;
-
-      // Rename only if there are other fruits with the same name
-      req.body.label =
+export const patchFruitLabel = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { label } = req.body;
+    const fruitId = Number(id);
+    if (isNaN(fruitId)) {
+        throw new AppError('Invalid fruit ID', status.BAD_REQUEST);
+    }
+    if (!label) {
+        throw new AppError('Missing required field - label', status.BAD_REQUEST);
+    }
+    const baseName = req.body.label.trim();
+    const existingFruits = await getAlLFruitsWithSameNameService(baseName);
+    // Exclude the current fruit being updated
+    const filtered = existingFruits.filter((fruit) => fruit.id !== fruitId);
+    const sameNameCount = filtered.filter((fruit) => {
+        return (fruit.label === baseName ||
+            fruit.label.match(new RegExp(`^${baseName} \\(\\d+\\)$`)));
+    }).length;
+    // Rename only if there are other fruits with the same name
+    req.body.label =
         sameNameCount === 0 ? baseName : `${baseName} (${sameNameCount + 1})`;
+    const updatedFruit = await patchFruitService(fruitId, req.body.label);
+    if (!updatedFruit) {
+        throw new AppError('Something went wrong - fruit was not updated!', status.INTERNAL_SERVER_ERROR);
     }
-
-    const updatedFruit = await prisma.fruit.update({
-      where: { id: fruitId },
-      data: req.body,
-    });
-
-    res.status(200).json(updatedFruit);
-  } catch (e: any) {
-    console.error(e);
-
-    if (e.code === 'P2025') {
-      res.status(404).json({ message: 'Fruit not found' });
-    }
-
-    res.status(500).json({ message: 'Something went wrong!' });
-  }
-};
-
+    res.status(status.OK).json(updatedFruit);
+});
 /**
  *  @swagger
  * /api/fruits/{id}:
@@ -252,29 +189,18 @@ export const patchFruitLabel = async (req: Request, res: Response) => {
  *                   example: Fruit deleted successfully
  *
  */
-
-export const deleteFruitById = async (req: Request, res: Response) => {
-  const { id } = req.params;
-
-  const fruitId = Number(id);
-  if (isNaN(fruitId)) {
-    res.status(400).json({ message: 'Invalid fruit ID' });
-  }
-
-  try {
-    const fruit = await prisma.fruit.update({
-      where: { id: fruitId },
-      data: { isDeleted: true },
-    });
-
-    res.status(200).json({ message: 'Fruit marked as deleted', fruit });
-  } catch (e: any) {
-    console.error(e);
-
-    if (e.code === 'P2025') {
-      res.status(404).json({ message: 'Fruit not found' });
+export const deleteFruitById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const fruitId = Number(id);
+    if (isNaN(fruitId)) {
+        throw new AppError('Invalid fruit ID', status.BAD_REQUEST);
     }
-
-    res.status(500).json({ message: 'Something went wrong!' });
-  }
-};
+    const fruit = await deleteFruitService(fruitId);
+    if (!fruit) {
+        throw new AppError('Something went wrong - fruit was not deleted!', status.INTERNAL_SERVER_ERROR);
+    }
+    res
+        .status(status.OK)
+        .json({ message: 'Fruit marked as soft-deleted', fruit });
+});
+//# sourceMappingURL=fruit.controller.js.map

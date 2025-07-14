@@ -9,7 +9,6 @@ import {
   putCupValueService,
 } from '../services/cupValue.service.js';
 import AppError from '../utils/AppError.js';
-import prisma from '../utils/db.js';
 
 /**
  * @swagger
@@ -151,7 +150,7 @@ export const putCupValue = asyncHandler(async (req: Request, res: Response) => {
   const cupValueId = Number(id);
 
   if (isNaN(cupValueId)) {
-    res.status(400).json({ message: 'Invalid CupValue ID' });
+    res.status(status.BAD_REQUEST).json({ message: 'Invalid CupValue ID' });
   }
 
   const { value, label } = req.body;
@@ -165,7 +164,7 @@ export const putCupValue = asyncHandler(async (req: Request, res: Response) => {
   const updatedCupValue = await putCupValueService(cupValueId, label, value);
 
   res
-    .status(200)
+    .status(status.OK)
     .json({ message: 'CupValue updated successfully', updatedCupValue });
 });
 
@@ -218,7 +217,7 @@ export const deleteCupValue = asyncHandler(
       throw new AppError('CupValue not deleted', status.INTERNAL_SERVER_ERROR);
     }
 
-    res.status(200).json({
+    res.status(status.OK).json({
       message: 'CupValue soft-deleted successfully',
       deletedCupValue,
     });

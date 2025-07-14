@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import fruitsRouter from './fruitRoutes.js';
+import fruitsRouter from './fruit.routes.js';
 import cupsRouter from './cup.routes.js';
 import cupCostRouter from './cupCost.routes.js';
 import cupValuesRouter from './cupValue.routes.js';

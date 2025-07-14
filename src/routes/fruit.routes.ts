@@ -8,7 +8,7 @@ import {
   deleteFruitById,
   getAllFruits,
   patchFruitLabel,
-} from '../controllers/fruitController-temp.js';
+} from '../controllers/fruit.controller.js';
 
 const router = Router();
 

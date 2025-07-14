@@ -127,7 +127,7 @@ export const putCupValue = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const cupValueId = Number(id);
     if (isNaN(cupValueId)) {
-        res.status(400).json({ message: 'Invalid CupValue ID' });
+        res.status(status.BAD_REQUEST).json({ message: 'Invalid CupValue ID' });
     }
     const { value, label } = req.body;
     if (!value && !label) {
@@ -135,7 +135,7 @@ export const putCupValue = asyncHandler(async (req, res) => {
     }
     const updatedCupValue = await putCupValueService(cupValueId, label, value);
     res
-        .status(200)
+        .status(status.OK)
         .json({ message: 'CupValue updated successfully', updatedCupValue });
 });
 /**
@@ -182,7 +182,7 @@ export const deleteCupValue = asyncHandler(async (req, res) => {
     if (!deletedCupValue) {
         throw new AppError('CupValue not deleted', status.INTERNAL_SERVER_ERROR);
     }
-    res.status(200).json({
+    res.status(status.OK).json({
         message: 'CupValue soft-deleted successfully',
         deletedCupValue,
     });

@@ -7,7 +7,7 @@ import {
   getAllCupValues,
   putCupValue,
 } from '../controllers/cupValue.controller.js';
-import { handleValidationErrors } from '../utils/handleValidationErrors.js';
+import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
 import { cupValueSchema } from '../validationSchemas/cupSchema.js';
 
 const router = Router();

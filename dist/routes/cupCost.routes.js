@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { checkSchema } from 'express-validator';
 import { createCupCost, deleteCupCost, getAllCupCosts, putCupCost, } from '../controllers/cupCost.controller.js';
-import { handleValidationErrors } from '../utils/handleValidationErrors.js';
+import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
 import { cupCostSchema } from '../validationSchemas/cupSchema.js';
 const router = Router();
 router.get('/', getAllCupCosts);

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { checkSchema } from 'express-validator';
 
 import { fruitSchema } from '../validationSchemas/fruitSchema.js';
-import { handleValidationErrors } from '../utils/handleValidationErrors.js';
+import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
 import {
   createNewFruit,
   deleteFruitById,

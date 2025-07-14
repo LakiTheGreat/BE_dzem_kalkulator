@@ -6,8 +6,8 @@ import {
   deleteOrder,
   getAllOrders,
   getOrderById,
-} from '../controllers/orderController.js';
-import { handleValidationErrors } from '../utils/handleValidationErrors.js';
+} from '../controllers/order.controller.js';
+import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
 import { createOrderSchema } from '../validationSchemas/orderSchema.js';
 
 const router = Router();

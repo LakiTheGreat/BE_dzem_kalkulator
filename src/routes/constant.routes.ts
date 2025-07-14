@@ -6,7 +6,7 @@ import {
   patchConstantById,
 } from '../controllers/constant.controller.js';
 import { constantSchema } from '../validationSchemas/constantSchema.js';
-import { handleValidationErrors } from '../utils/handleValidationErrors.js';
+import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
 
 const router = Router();
 

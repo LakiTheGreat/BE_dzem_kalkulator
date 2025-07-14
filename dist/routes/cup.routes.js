@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { checkSchema } from 'express-validator';
-import { handleValidationErrors } from '../utils/handleValidationErrors.js';
+import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
 import { createNewCup, deleteCupById, getAllCups, putCup, } from '../controllers/cup.controller.js';
 import { cupCreateSchema } from '../validationSchemas/cupSchema.js';
 const router = Router();

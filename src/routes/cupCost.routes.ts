@@ -7,7 +7,7 @@ import {
   getAllCupCosts,
   putCupCost,
 } from '../controllers/cupCost.controller.js';
-import { handleValidationErrors } from '../utils/handleValidationErrors.js';
+import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
 import { cupCostSchema } from '../validationSchemas/cupSchema.js';
 
 const router = Router();

@@ -118,6 +118,7 @@ export const getAllOrders = asyncHandler(async (req, res) => {
     let totalValue = 0;
     let totalCost = 0;
     let totalProfit = 0;
+    const cupTotalsByLabel = {};
     const formattedOrders = orders.map((order) => {
         const fruits = (order.fruits || []).map((fruit) => ({
             grams: fruit.grams,
@@ -126,13 +127,24 @@ export const getAllOrders = asyncHandler(async (req, res) => {
             fruitId: fruit.fruitId,
             fruitName: fruitLookup[fruit.fruitId] || 'Unknown',
         }));
-        const cups = (order.cups || []).map((cup) => ({
-            label: cup.label,
-            numberOf: Number(cup.numberOf),
-            cost: Number(cup.cost),
-            sellingPrice: Number(cup.sellingPrice),
-            total: Number(cup.total),
-        }));
+        const cups = (order.cups || []).map((cup) => {
+            const label = cup.label;
+            const numberOf = Number(cup.numberOf);
+            // Update global cup totals per label
+            if (cupTotalsByLabel[label]) {
+                cupTotalsByLabel[label] += numberOf;
+            }
+            else {
+                cupTotalsByLabel[label] = numberOf;
+            }
+            return {
+                label,
+                numberOf,
+                cost: Number(cup.cost),
+                sellingPrice: Number(cup.sellingPrice),
+                total: Number(cup.total),
+            };
+        });
         const totalCupsCost = cups.reduce((acc, c) => acc + c.total, 0);
         const totalFruitsCost = fruits.reduce((acc, f) => acc + f.total, 0);
         const orderTotalCost = totalCupsCost + totalFruitsCost;
@@ -167,6 +179,10 @@ export const getAllOrders = asyncHandler(async (req, res) => {
         totalValue: Math.round(totalValue),
         totalExpense: Math.round(totalCost),
         totalProfit: Math.round(totalProfit),
+        totalCups: Object.entries(cupTotalsByLabel).map(([label, numberOf]) => ({
+            label,
+            numberOf,
+        })),
     });
 });
 /**

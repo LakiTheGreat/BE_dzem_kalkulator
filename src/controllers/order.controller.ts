@@ -140,6 +140,7 @@ export const getAllOrders = asyncHandler(
     let totalValue = 0;
     let totalCost = 0;
     let totalProfit = 0;
+    const cupTotalsByLabel: Record<string, number> = {};
 
     const formattedOrders = orders.map((order) => {
       const fruits = (order.fruits || []).map((fruit: any) => ({
@@ -150,13 +151,25 @@ export const getAllOrders = asyncHandler(
         fruitName: fruitLookup[fruit.fruitId] || 'Unknown',
       }));
 
-      const cups = (order.cups || []).map((cup: any) => ({
-        label: cup.label,
-        numberOf: Number(cup.numberOf),
-        cost: Number(cup.cost),
-        sellingPrice: Number(cup.sellingPrice),
-        total: Number(cup.total),
-      }));
+      const cups = (order.cups || []).map((cup: any) => {
+        const label = cup.label;
+        const numberOf = Number(cup.numberOf);
+
+        // Update global cup totals per label
+        if (cupTotalsByLabel[label]) {
+          cupTotalsByLabel[label] += numberOf;
+        } else {
+          cupTotalsByLabel[label] = numberOf;
+        }
+
+        return {
+          label,
+          numberOf,
+          cost: Number(cup.cost),
+          sellingPrice: Number(cup.sellingPrice),
+          total: Number(cup.total),
+        };
+      });
 
       const totalCupsCost = cups.reduce((acc, c) => acc + c.total, 0);
       const totalFruitsCost = fruits.reduce((acc, f) => acc + f.total, 0);
@@ -205,6 +218,10 @@ export const getAllOrders = asyncHandler(
       totalValue: Math.round(totalValue),
       totalExpense: Math.round(totalCost),
       totalProfit: Math.round(totalProfit),
+      totalCups: Object.entries(cupTotalsByLabel).map(([label, numberOf]) => ({
+        label,
+        numberOf,
+      })),
     });
   }
 );

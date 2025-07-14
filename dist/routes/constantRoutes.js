@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { checkSchema } from 'express-validator';
-import { getConstantById, patchConstantById, } from '../controllers/constantController.js';
+import { getConstantById, patchConstantById, } from '../controllers/constant.controller.js';
 import { constantSchema } from '../validationSchemas/constantSchema.js';
 import { handleValidationErrors } from '../utils/handleValidationErrors.js';
 const router = Router();

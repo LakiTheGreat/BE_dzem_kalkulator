@@ -4,7 +4,7 @@ import { checkSchema } from 'express-validator';
 import {
   getConstantById,
   patchConstantById,
-} from '../controllers/constantController.js';
+} from '../controllers/constant.controller.js';
 import { constantSchema } from '../validationSchemas/constantSchema.js';
 import { handleValidationErrors } from '../utils/handleValidationErrors.js';
 

@@ -4,10 +4,10 @@ import express from 'express';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
-import logRequests from './middlwares/logRequets.js';
+import errorHandler from './middlewares/errorHandler.js';
+import logRequests from './middlewares/logRequets.js';
 import router from './routes/index.js';
 import logger from './utils/logger.js';
-import { errorHandler } from './middlwares/errorHandler.js';
 
 // import checkForToken from './middlwares/auth/protect.js';
 

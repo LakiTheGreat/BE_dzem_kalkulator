@@ -1,5 +1,16 @@
 import { Request, Response } from 'express';
+import status from 'http-status';
 
+import { asyncHandler } from '../middlewares/asyncHandler.js';
+import {
+  createNewCupService,
+  deleteCupService,
+  findCostCupService,
+  findCostValueService,
+  getAllCupsWithDataService,
+  putCupService,
+} from '../services/cup.service.js';
+import AppError from '../utils/AppError.js';
 import prisma from '../utils/db.js';
 
 /**
@@ -98,34 +109,23 @@ import prisma from '../utils/db.js';
  *         description: Internal server error
  */
 
-export const getAllCups = async (req: Request, res: Response) => {
-  try {
-    const cups = await prisma.cup.findMany({
-      where: {
-        isDeleted: false,
-      },
-      orderBy: {
-        label: 'asc',
-      },
-      include: {
-        cost: true,
-        sellingPrice: true,
-      },
-    });
+export const getAllCups = asyncHandler(async (req: Request, res: Response) => {
+  const cups = await getAllCupsWithDataService();
 
-    const simplifiedCups = cups.map((cup) => ({
-      id: cup.id,
-      label: cup.label,
-      isDeleted: cup.isDeleted,
-      cost: cup.cost?.value ?? null,
-      sellingPrice: cup.sellingPrice?.value ?? null,
-    }));
-    res.status(200).json(simplifiedCups);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: 'Something went wrong!!!!' });
+  if (!cups) {
+    throw new AppError('Cups not found', status.NOT_FOUND);
   }
-};
+
+  const simplifiedCups = cups.map((cup) => ({
+    id: cup.id,
+    label: cup.label,
+    isDeleted: cup.isDeleted,
+    cost: cup.cost?.value ?? null,
+    sellingPrice: cup.sellingPrice?.value ?? null,
+  }));
+
+  res.status(200).json(simplifiedCups);
+});
 
 /**
  * @swagger
@@ -166,33 +166,19 @@ export const getAllCups = async (req: Request, res: Response) => {
  *               $ref: '#/components/schemas/Cup'
  */
 
-export const createNewCup = async (req: Request, res: Response) => {
-  const { label, costId, valueId } = req.body;
-  try {
-    const cup = await prisma.cup.create({
-      data: {
-        label,
-        cost: { connect: { id: costId } },
-        sellingPrice: { connect: { id: valueId } },
-      },
-      include: {
-        cost: true,
-        sellingPrice: true,
-      },
-    });
-    res.status(201).json(cup);
-  } catch (error: any) {
-    console.error('Create Cup Error:', error);
+export const createNewCup = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { label, costId, valueId } = req.body;
 
-    if (error.code === 'P2025') {
-      res.status(400).json({
-        message: 'Invalid costId or valueId: related record not found',
-      });
+    const cup = await createNewCupService(label, costId, valueId);
+
+    if (!cup) {
+      throw new AppError('Cup was not created', status.INTERNAL_SERVER_ERROR);
     }
 
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(201).json(cup);
   }
-};
+);
 
 /**
  * @swagger
@@ -241,43 +227,45 @@ export const createNewCup = async (req: Request, res: Response) => {
  *
  */
 
-export const putCup = async (req: Request, res: Response) => {
+export const putCup = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const cupId = Number(id);
 
   if (isNaN(cupId)) {
-    res.status(400).json({ message: 'Invalid cup ID' });
+    throw new AppError('Invalid cup ID', status.BAD_REQUEST);
   }
 
   const { label, costId, valueId } = req.body;
 
-  try {
-    const updatedCup = await prisma.cup.update({
-      where: { id: cupId },
-      data: {
-        ...(label !== undefined && { label }),
-        ...(costId !== undefined && { cost: { connect: { id: costId } } }),
-        ...(valueId !== undefined && {
-          sellingPrice: { connect: { id: valueId } },
-        }),
-      },
-      include: {
-        cost: true,
-        sellingPrice: true,
-      },
-    });
-
-    res.status(200).json({ message: 'Cup updated successfully', updatedCup });
-  } catch (e: any) {
-    console.error(e);
-
-    if (e.code === 'P2025') {
-      res.status(404).json({ message: 'Cup not found' });
-    }
-
-    res.status(500).json({ message: 'Something went wrong!' });
+  if (!label || !costId || !valueId) {
+    throw new AppError('Missing required fields', status.BAD_REQUEST);
   }
-};
+
+  const costCup = await findCostCupService(costId);
+
+  if (!costCup) {
+    throw new AppError(
+      'CupCost not found - costId not valid',
+      status.NOT_FOUND
+    );
+  }
+
+  const valueCup = await findCostValueService(valueId);
+
+  if (!valueCup) {
+    throw new AppError(
+      'CupValue not found - valueId not valid',
+      status.NOT_FOUND
+    );
+  }
+  const updatedCup = await putCupService(cupId, label, costId, valueId);
+
+  if (!updatedCup) {
+    throw new AppError('Cup was not updated', status.INTERNAL_SERVER_ERROR);
+  }
+
+  res.status(200).json({ message: 'Cup updated successfully', updatedCup });
+});
 
 /**
  * @swagger
@@ -306,28 +294,21 @@ export const putCup = async (req: Request, res: Response) => {
  *         description: Cup not found
  */
 
-export const deleteCupById = async (req: Request, res: Response) => {
-  const { id } = req.params;
+export const deleteCupById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
 
-  const cupId = Number(id);
-  if (isNaN(cupId)) {
-    res.status(400).json({ message: 'Invalid cup ID' });
-  }
-
-  try {
-    const cup = await prisma.cup.update({
-      where: { id: cupId },
-      data: { isDeleted: true },
-    });
-
-    res.status(200).json({ message: 'Cup marked as deleted', cup });
-  } catch (e: any) {
-    console.error(e);
-
-    if (e.code === 'P2025') {
-      res.status(404).json({ message: 'Cup not found' });
+    const cupId = Number(id);
+    if (isNaN(cupId)) {
+      throw new AppError('Invalid cup ID', status.BAD_REQUEST);
     }
 
-    res.status(500).json({ message: 'Something went wrong!' });
+    const cup = await deleteCupService(cupId);
+
+    if (!cup) {
+      throw new AppError('Cup was not deleted', status.INTERNAL_SERVER_ERROR);
+    }
+
+    res.status(200).json({ message: 'Cup marked as deleted', cup });
   }
-};
+);

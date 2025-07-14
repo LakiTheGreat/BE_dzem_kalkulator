@@ -1,5 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
+import status from 'http-status';
+
+import AppError from '../utils/AppError.js';
+import logger from '../utils/logger.js';
 
 export function handleValidationErrors(
   req: Request,
@@ -8,7 +12,18 @@ export function handleValidationErrors(
 ) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(400).json({ errors: errors.array() });
+    const errorDetails = errors.array();
+
+    const message = JSON.stringify(errorDetails);
+
+    logger.warn({
+      type: 'validation',
+      path: req.path,
+      method: req.method,
+      errors: errorDetails,
+    });
+
+    next(new AppError(message, status.BAD_REQUEST));
     return;
   }
   next();

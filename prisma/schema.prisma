@@ -20,8 +20,8 @@ model Cup {
   id           Int       @id @default(autoincrement())
   label        String
   isDeleted    Boolean   @default(false)
-  costId       Int       @unique
-  valueId      Int       @unique
+  costId       Int       
+  valueId      Int       
   cost         CupCost   @relation("CupToCost", fields: [costId], references: [id], onDelete: Restrict)
   sellingPrice CupValue  @relation("CupToValue", fields: [valueId], references: [id], onDelete: Restrict)
 }
@@ -30,7 +30,7 @@ model CupCost {
   id   Int   @id @default(autoincrement())
   value Int
   label String
-  cup  Cup?  @relation("CupToCost")
+  cup  Cup[]  @relation("CupToCost")
   isDeleted    Boolean   @default(false)
 }
 
@@ -38,7 +38,7 @@ model CupValue {
   id   Int   @id @default(autoincrement())
   value Int
   label String
-  cup  Cup?  @relation("CupToValue")
+  cup  Cup[]  @relation("CupToValue")
   isDeleted    Boolean   @default(false)
 }
 

@@ -1,4 +1,7 @@
+import status from 'http-status';
 import prisma from '../utils/db.js';
+import { asyncHandler } from '../middlwares/asyncHandler.js';
+import AppError from '../utils/AppError.js';
 /**
  * @swagger
  * /api/constants/{id}:
@@ -30,24 +33,18 @@ import prisma from '../utils/db.js';
  *                 isDeleted:
  *                   type: boolean
  */
-export const getConstantById = async (req, res) => {
+export const getConstantById = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    try {
-        const constant = await prisma.configConstant.findUnique({
-            where: {
-                id: Number(id),
-            },
-        });
-        if (!constant) {
-            res.status(404).json({ message: 'Constant not found' });
-        }
-        res.status(200).json(constant);
+    const constant = await prisma.configConstant.findUnique({
+        where: {
+            id: Number(id),
+        },
+    });
+    if (!constant) {
+        throw new AppError('Constant not found', status.NOT_FOUND);
     }
-    catch (error) {
-        console.error('Error fetching constant by ID:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-};
+    res.status(200).json(constant);
+});
 /**
  * @swagger
  * /api/constants/{id}:
@@ -92,29 +89,26 @@ export const getConstantById = async (req, res) => {
  *                 isDeleted:
  *                   type: boolean
  */
-export const patchConstantById = async (req, res) => {
+export const patchConstantById = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { value, label, isDeleted } = req.body;
-    try {
-        const existing = await prisma.configConstant.findUnique({
-            where: { id: Number(id) },
-        });
-        if (!existing) {
-            res.status(404).json({ message: 'Constant not found' });
-        }
-        const updated = await prisma.configConstant.update({
-            where: { id: Number(id) },
-            data: {
-                ...(value !== undefined && { value }),
-                ...(label !== undefined && { label }),
-                ...(isDeleted !== undefined && { isDeleted }),
-            },
-        });
-        res.status(200).json(updated);
+    const existing = await prisma.configConstant.findUnique({
+        where: { id: Number(id) },
+    });
+    if (!existing) {
+        throw new AppError('Constant not found', status.NOT_FOUND);
     }
-    catch (error) {
-        console.error('Error updating constant:', error);
-        res.status(500).json({ message: 'Server error' });
+    const updated = await prisma.configConstant.update({
+        where: { id: Number(id) },
+        data: {
+            ...(value !== undefined && { value }),
+            ...(label !== undefined && { label }),
+            ...(isDeleted !== undefined && { isDeleted }),
+        },
+    });
+    if (!updated) {
+        throw new AppError('Constant was not updated', status.INTERNAL_SERVER_ERROR);
     }
-};
+    res.status(200).json(updated);
+});
 //# sourceMappingURL=constantController.js.map

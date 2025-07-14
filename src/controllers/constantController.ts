@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
+import status from 'http-status';
 
 import prisma from '../utils/db.js';
+import { asyncHandler } from '../middlwares/asyncHandler.js';
+import AppError from '../utils/AppError.js';
 
 /**
  * @swagger
@@ -33,10 +36,10 @@ import prisma from '../utils/db.js';
  *                 isDeleted:
  *                   type: boolean
  */
-export const getConstantById = async (req: Request, res: Response) => {
-  const { id } = req.params;
+export const getConstantById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
 
-  try {
     const constant = await prisma.configConstant.findUnique({
       where: {
         id: Number(id),
@@ -44,15 +47,12 @@ export const getConstantById = async (req: Request, res: Response) => {
     });
 
     if (!constant) {
-      res.status(404).json({ message: 'Constant not found' });
+      throw new AppError('Constant not found', status.NOT_FOUND);
     }
 
     res.status(200).json(constant);
-  } catch (error) {
-    console.error('Error fetching constant by ID:', error);
-    res.status(500).json({ message: 'Server error' });
   }
-};
+);
 
 /**
  * @swagger
@@ -99,17 +99,17 @@ export const getConstantById = async (req: Request, res: Response) => {
  *                   type: boolean
  */
 
-export const patchConstantById = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { value, label, isDeleted } = req.body;
+export const patchConstantById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { value, label, isDeleted } = req.body;
 
-  try {
     const existing = await prisma.configConstant.findUnique({
       where: { id: Number(id) },
     });
 
     if (!existing) {
-      res.status(404).json({ message: 'Constant not found' });
+      throw new AppError('Constant not found', status.NOT_FOUND);
     }
 
     const updated = await prisma.configConstant.update({
@@ -121,9 +121,13 @@ export const patchConstantById = async (req: Request, res: Response) => {
       },
     });
 
+    if (!updated) {
+      throw new AppError(
+        'Constant was not updated',
+        status.INTERNAL_SERVER_ERROR
+      );
+    }
+
     res.status(200).json(updated);
-  } catch (error) {
-    console.error('Error updating constant:', error);
-    res.status(500).json({ message: 'Server error' });
   }
-};
+);

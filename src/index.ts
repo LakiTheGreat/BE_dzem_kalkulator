@@ -7,6 +7,7 @@ import swaggerUi from 'swagger-ui-express';
 import logRequests from './middlwares/logRequets.js';
 import router from './routes/index.js';
 import logger from './utils/logger.js';
+import { errorHandler } from './middlwares/errorHandler.js';
 
 // import checkForToken from './middlwares/auth/protect.js';
 
@@ -35,7 +36,7 @@ const swaggerOptions = {
 const app = express();
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
-// --------- Middleware ---------
+// --------- Pre-routes middleware ---------
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -56,10 +57,14 @@ app.use(express.urlencoded({ extended: true })); // parses query parameters from
 // app.use(checkForToken);
 app.use(logRequests);
 
-// ------------------------------
+// ------------------------------------------
 
 // Routes
 app.use('/api', router);
+
+// --------- Post-routes middleware ---------
+app.use(errorHandler);
+// ------------------------------------------
 
 app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);

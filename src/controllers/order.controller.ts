@@ -193,6 +193,9 @@ export const getAllOrders = asyncHandler(
         baseFruitIsFree: order.baseFruitIsFree,
         cups,
         fruits,
+        orderValue: calculatedTotalValue,
+        orderExpense: calculatedTotalCost,
+        orderProfit: profit,
         profitMargin: `${calculatedProfitMargin}%`,
       };
     });

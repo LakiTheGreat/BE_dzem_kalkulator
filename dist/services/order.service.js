@@ -18,7 +18,7 @@ export const getOrderByIdService = async (id) => {
     });
     return order;
 };
-export const createNewOrderService = async ({ baseFruitIsFree, orderTypeId, orderName, fruits, cups, profitMargin, }) => {
+export const createNewOrderService = async ({ baseFruitIsFree, orderTypeId, orderName, fruits, cups, otherExpensesMargin, }) => {
     const newOrder = await prisma.order.create({
         data: {
             baseFruitIsFree,
@@ -26,7 +26,7 @@ export const createNewOrderService = async ({ baseFruitIsFree, orderTypeId, orde
             orderName,
             fruits,
             cups,
-            profitMargin,
+            otherExpensesMargin,
         },
     });
     return newOrder;

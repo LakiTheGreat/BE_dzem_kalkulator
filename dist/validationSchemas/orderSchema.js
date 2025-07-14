@@ -5,10 +5,10 @@ export const createOrderSchema = {
             errorMessage: 'Field "orderName" must be a string',
         },
     },
-    profitMargin: {
+    otherExpensesMargin: {
         isInt: {
             options: { min: 1, max: 100 },
-            errorMessage: 'Field "profitMargin" must be an integer between 1 and 100',
+            errorMessage: 'Field "otherExpensesMargin" must be an integer between 1 and 100',
         },
     },
     orderTypeId: {

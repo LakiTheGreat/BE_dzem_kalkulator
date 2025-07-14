@@ -136,7 +136,7 @@ export const getAllOrders = asyncHandler(async (req, res) => {
         const totalCupsCost = cups.reduce((acc, c) => acc + c.total, 0);
         const totalFruitsCost = fruits.reduce((acc, f) => acc + f.total, 0);
         const orderTotalCost = totalCupsCost + totalFruitsCost;
-        const calculatedTotalCost = Math.round(orderTotalCost + orderTotalCost * (order.profitMargin / 100));
+        const calculatedTotalCost = Math.round(orderTotalCost + orderTotalCost * (order.otherExpensesMargin / 100));
         const calculatedTotalValue = cups.reduce((acc, f) => acc + f.sellingPrice * f.numberOf, 0);
         const profit = calculatedTotalValue - calculatedTotalCost;
         const calculatedProfitMargin = (Number(calculatedTotalValue) > 0
@@ -156,6 +156,9 @@ export const getAllOrders = asyncHandler(async (req, res) => {
             baseFruitIsFree: order.baseFruitIsFree,
             cups,
             fruits,
+            orderValue: calculatedTotalValue,
+            orderExpense: calculatedTotalCost,
+            orderProfit: profit,
             profitMargin: `${calculatedProfitMargin}%`,
         };
     });
@@ -267,7 +270,7 @@ export const getOrderById = asyncHandler(async (req, res) => {
  *               baseFruitIsFree:
  *                 type: boolean
  *                 example: true
- *               profitMargin:
+ *               otherExpensesMargin:
  *                 type: integer
  *                 example: 25
  *             required:
@@ -338,7 +341,7 @@ export const createNewOrder = asyncHandler(async (req, res) => {
         req.body.cups,
         req.body.orderTypeId,
         req.body.baseFruitIsFree,
-        req.body.profitMargin,
+        req.body.otherExpensesMargin,
     ];
     if (requiredFields.some((field) => field === undefined || field === null)) {
         throw new AppError('Missing required fields', status.BAD_REQUEST);

@@ -28,24 +28,18 @@ export const createNewOrderService = async ({
   baseFruitIsFree,
   orderTypeId,
   orderName,
-  numberOfSmallCups,
-  numberOfLargeCups,
-  totalExpense,
-  totalValue,
-  profit,
+  fruits,
+  cups,
   profitMargin,
 }: OrderReq) => {
   const newOrder = await prisma.order.create({
     data: {
+      baseFruitIsFree,
       orderTypeId,
       orderName,
-      numberOfSmallCups,
-      numberOfLargeCups,
-      totalExpense,
-      totalValue,
-      profit,
+      fruits,
+      cups,
       profitMargin,
-      baseFruitIsFree,
     },
   });
 

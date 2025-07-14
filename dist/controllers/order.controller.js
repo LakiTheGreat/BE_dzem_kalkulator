@@ -2,6 +2,7 @@ import status from 'http-status';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
 import { createNewOrderService, deleteOrderService, getAllOrdersService, getOrderByIdService, } from '../services/order.service.js';
 import AppError from '../utils/AppError.js';
+import { getAllFruitsService } from '../services/fruit.service.js';
 /**
  * @swagger
  * components:
@@ -92,7 +93,6 @@ export const getAllOrders = asyncHandler(async (req, res) => {
     const priceStatus = req.query.priceStatus !== undefined
         ? Number(req.query.priceStatus)
         : undefined;
-    // Validate query params
     if (orderTypeId !== undefined && (isNaN(orderTypeId) || orderTypeId <= 0)) {
         throw new AppError('Invalid orderTypeId query parameter', status.BAD_REQUEST);
     }
@@ -100,92 +100,103 @@ export const getAllOrders = asyncHandler(async (req, res) => {
         throw new AppError('Invalid priceStatus query parameter', status.BAD_REQUEST);
     }
     const whereClause = { isDeleted: false };
-    if (orderTypeId) {
+    if (orderTypeId)
         whereClause.orderTypeId = orderTypeId;
-    }
-    if (priceStatus === 1) {
+    if (priceStatus === 1)
         whereClause.baseFruitIsFree = true;
-    }
-    else if (priceStatus === 2) {
+    else if (priceStatus === 2)
         whereClause.baseFruitIsFree = false;
-    }
     const orders = await getAllOrdersService(whereClause);
-    if (!orders) {
+    if (!orders || orders.length === 0)
         throw new AppError('No orders found', status.NOT_FOUND);
-    }
-    const formattedOrders = orders.map((order) => ({
-        id: order.id,
-        orderName: order.orderName,
-        orderTypeName: order.orderType.label,
-        numberOfSmallCups: order.numberOfSmallCups,
-        numberOfLargeCups: order.numberOfLargeCups,
-        totalExpense: order.totalExpense,
-        totalValue: order.totalValue,
-        profit: order.profit,
-        profitMargin: order.profitMargin,
-        createdAt: order.createdAt,
-        baseFruitIsFree: order.baseFruitIsFree,
-    }));
-    const totalValue = orders.reduce((acc, o) => acc + o.totalValue, 0);
-    const totalExpense = orders.reduce((acc, o) => acc + o.totalExpense, 0);
-    const totalProfit = orders.reduce((acc, o) => acc + o.profit, 0);
-    const totalSmallCups = orders.reduce((acc, o) => acc + o.numberOfSmallCups, 0);
-    const totalLargeCups = orders.reduce((acc, o) => acc + o.numberOfLargeCups, 0);
+    const allFruits = await getAllFruitsService();
+    const fruitLookup = allFruits.reduce((acc, fruit) => {
+        acc[fruit.id] = fruit.label;
+        return acc;
+    }, {});
+    // Totals
+    let totalValue = 0;
+    let totalCost = 0;
+    let totalProfit = 0;
+    const formattedOrders = orders.map((order) => {
+        const fruits = (order.fruits || []).map((fruit) => ({
+            grams: fruit.grams,
+            price: Number(fruit.price),
+            total: Number(fruit.total),
+            fruitId: fruit.fruitId,
+            fruitName: fruitLookup[fruit.fruitId] || 'Unknown',
+        }));
+        const cups = (order.cups || []).map((cup) => ({
+            label: cup.label,
+            numberOf: Number(cup.numberOf),
+            cost: Number(cup.cost),
+            sellingPrice: Number(cup.sellingPrice),
+            total: Number(cup.total),
+        }));
+        const totalCupsCost = cups.reduce((acc, c) => acc + c.total, 0);
+        const totalFruitsCost = fruits.reduce((acc, f) => acc + f.total, 0);
+        const orderTotalCost = totalCupsCost + totalFruitsCost;
+        const calculatedTotalCost = Math.round(orderTotalCost + orderTotalCost * (order.profitMargin / 100));
+        const calculatedTotalValue = cups.reduce((acc, f) => acc + f.sellingPrice * f.numberOf, 0);
+        const profit = calculatedTotalValue - calculatedTotalCost;
+        const calculatedProfitMargin = (Number(calculatedTotalValue) > 0
+            ? (profit / Number(calculatedTotalValue)) * 100
+            : 0).toFixed(0);
+        // Accumulate totals
+        totalCost += calculatedTotalCost;
+        totalValue += calculatedTotalValue;
+        totalProfit += profit;
+        return {
+            id: order.id,
+            orderName: order.orderName,
+            orderTypeId: order.orderTypeId,
+            orderTypeName: order.orderType?.label || '',
+            createdAt: order.createdAt,
+            isDeleted: order.isDeleted,
+            baseFruitIsFree: order.baseFruitIsFree,
+            cups,
+            fruits,
+            profitMargin: `${calculatedProfitMargin}%`,
+        };
+    });
     res.status(status.OK).json({
         orders: formattedOrders,
-        totalValue,
-        totalExpense,
-        totalProfit,
-        totalSmallCups,
-        totalLargeCups,
+        totalValue: Math.round(totalValue),
+        totalExpense: Math.round(totalCost),
+        totalProfit: Math.round(totalProfit),
     });
 });
 /**
  * @swagger
+ * tags:
+ *   - name: Orders
+ *
  * /api/orders/{id}:
  *   get:
- *     summary: Get a single order by ID
+ *     summary: Get order by ID
  *     tags: [Orders]
  *     parameters:
  *       - in: path
  *         name: id
  *         schema:
  *           type: integer
+ *           minimum: 1
  *         required: true
- *         description: The ID of the order to retrieve
+ *         description: Numeric ID of the order to get
  *     responses:
  *       200:
- *         description: The requested order
+ *         description: Order found
  *         content:
  *           application/json:
  *             schema:
  *               type: object
- *               properties:
- *                 id:
- *                   type: integer
- *                 orderName:
- *                   type: string
- *                 orderTypeName:
- *                   type: string
- *                 numberOfSmallCups:
- *                   type: integer
- *                 numberOfLargeCups:
- *                   type: integer
- *                 totalExpense:
- *                   type: number
- *                 totalValue:
- *                   type: number
- *                 profit:
- *                   type: number
- *                 profitMargin:
- *                   type: number
- *                 createdAt:
- *                   type: string
- *                   format: date-time
+ *               # you can define schema properties here or reference a model
+ *       400:
+ *         description: Invalid order ID
  *       404:
  *         description: Order not found
  *       500:
- *         description: Failed to fetch order
+ *         description: Internal server error
  */
 export const getOrderById = asyncHandler(async (req, res) => {
     const id = Number(req.params.id);
@@ -196,70 +207,140 @@ export const getOrderById = asyncHandler(async (req, res) => {
     if (!order) {
         throw new AppError('Order not found', status.NOT_FOUND);
     }
-    const formattedOrder = {
-        id: order.id,
-        orderName: order.orderName,
-        orderTypeName: order.orderType.label,
-        numberOfSmallCups: order.numberOfSmallCups,
-        numberOfLargeCups: order.numberOfLargeCups,
-        totalExpense: order.totalExpense,
-        totalValue: order.totalValue,
-        profit: order.profit,
-        profitMargin: order.profitMargin,
-        createdAt: order.createdAt,
-        baseFruitIsFree: order.baseFruitIsFree,
-    };
-    res.status(status.OK).json(formattedOrder);
+    res.status(status.OK).json(order);
 });
 /**
  * @swagger
  * /api/orders:
  *   post:
- *     tags:
- *       - Orders
  *     summary: Create a new order
+ *     tags: [Orders]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - orderTypeId
- *               - orderName
  *             properties:
+ *               fruits:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     grams:
+ *                       type: string
+ *                       example: "233"
+ *                     price:
+ *                       type: string
+ *                       example: "222"
+ *                     total:
+ *                       type: string
+ *                       example: "52"
+ *                     fruitId:
+ *                       type: integer
+ *                       example: 23
+ *               cups:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     label:
+ *                       type: string
+ *                       example: "212ml "
+ *                     numberOf:
+ *                       oneOf:
+ *                         - type: string
+ *                         - type: integer
+ *                       example: "4"
+ *                     cost:
+ *                       type: integer
+ *                       example: 35
+ *                     sellingPrice:
+ *                       type: integer
+ *                       example: 350
+ *                     total:
+ *                       type: integer
+ *                       example: 140
  *               orderTypeId:
  *                 type: integer
- *               orderName:
- *                 type: string
- *               numberOfSmallCups:
- *                 type: integer
- *               numberOfLargeCups:
- *                 type: integer
- *               totalExpense:
- *                 type: integer
- *               totalValue:
- *                 type: integer
- *               profit:
- *                 type: integer
- *               profitMargin:
- *                 type: integer
+ *                 example: 23
  *               baseFruitIsFree:
  *                 type: boolean
+ *                 example: true
+ *               profitMargin:
+ *                 type: integer
+ *                 example: 25
+ *             required:
+ *               - orderTypeId
+ *               - cups
+ *               - profitMargin
  *     responses:
  *       201:
  *         description: Order successfully created
- *
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   example: 1
+ *                 orderName:
+ *                   type: string
+ *                   example: "Some order note"
+ *                 orderTypeId:
+ *                   type: integer
+ *                   example: 23
+ *                 baseFruitIsFree:
+ *                   type: boolean
+ *                   example: true
+ *                 cups:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       label:
+ *                         type: string
+ *                         example: "212ml "
+ *                       numberOf:
+ *                         type: integer
+ *                         example: 4
+ *                       cost:
+ *                         type: integer
+ *                         example: 35
+ *                       sellingPrice:
+ *                         type: integer
+ *                         example: 350
+ *                       total:
+ *                         type: integer
+ *                         example: 140
+ *                 fruits:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       grams:
+ *                         type: string
+ *                         example: "233"
+ *                       price:
+ *                         type: string
+ *                         example: "222"
+ *                       total:
+ *                         type: string
+ *                         example: "52"
+ *                       fruitId:
+ *                         type: integer
+ *                         example: 23
  */
 export const createNewOrder = asyncHandler(async (req, res) => {
-    const { orderTypeId, numberOfSmallCups, numberOfLargeCups, totalExpense, totalValue, profit, profitMargin, } = req.body;
-    if (!orderTypeId ||
-        !numberOfSmallCups ||
-        !numberOfLargeCups ||
-        !totalExpense ||
-        !totalValue ||
-        !profit ||
-        !profitMargin) {
+    const requiredFields = [
+        req.body.fruits,
+        req.body.cups,
+        req.body.orderTypeId,
+        req.body.baseFruitIsFree,
+        req.body.profitMargin,
+    ];
+    if (requiredFields.some((field) => field === undefined || field === null)) {
         throw new AppError('Missing required fields', status.BAD_REQUEST);
     }
     const newOrder = await createNewOrderService(req.body);

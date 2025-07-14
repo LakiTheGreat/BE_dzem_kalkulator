@@ -1,6 +1,18 @@
 import { Schema } from 'express-validator';
 
 export const createOrderSchema: Schema = {
+  orderName: {
+    optional: true, // since orderName has default ""
+    isString: {
+      errorMessage: 'Field "orderName" must be a string',
+    },
+  },
+  profitMargin: {
+    isInt: {
+      options: { min: 1, max: 100 },
+      errorMessage: 'Field "profitMargin" must be an integer between 1 and 100',
+    },
+  },
   orderTypeId: {
     notEmpty: {
       errorMessage: 'Field "orderTypeId" is required',
@@ -10,52 +22,102 @@ export const createOrderSchema: Schema = {
       errorMessage: 'Field "orderTypeId" must be a positive integer',
     },
   },
-  numberOfSmallCups: {
+  baseFruitIsFree: {
+    optional: true,
+    isBoolean: {
+      errorMessage: 'Field "baseFruitIsFree" must be boolean',
+    },
+    toBoolean: true,
+  },
+  cups: {
     notEmpty: {
-      errorMessage: 'Field "numberOfSmallCups" is required',
+      errorMessage: 'Field "cups" is required',
+    },
+    isArray: {
+      errorMessage: 'Field "cups" must be an array',
+    },
+  },
+  'cups.*.label': {
+    notEmpty: {
+      errorMessage: 'Cup label is required',
+    },
+    isString: {
+      errorMessage: 'Cup label must be a string',
+    },
+  },
+  'cups.*.numberOf': {
+    notEmpty: {
+      errorMessage: 'Cup numberOf is required',
     },
     isInt: {
-      errorMessage: 'Field "numberOfSmallCups" must be an integer',
+      errorMessage: 'Cup numberOf must be an integer',
     },
+    toInt: true,
   },
-  numberOfLargeCups: {
+  'cups.*.cost': {
     notEmpty: {
-      errorMessage: 'Field "numberOfLargeCups" is required',
+      errorMessage: 'Cup cost is required',
     },
     isInt: {
-      errorMessage: 'Field "numberOfLargeCups" must be an integer',
+      errorMessage: 'Cup cost must be an integer',
+    },
+    toInt: true,
+  },
+  'cups.*.sellingPrice': {
+    notEmpty: {
+      errorMessage: 'Cup sellingPrice is required',
+    },
+    isInt: {
+      errorMessage: 'Cup sellingPrice must be an integer',
+    },
+    toInt: true,
+  },
+  'cups.*.total': {
+    notEmpty: {
+      errorMessage: 'Cup total is required',
+    },
+    isInt: {
+      errorMessage: 'Cup total must be an integer',
+    },
+    toInt: true,
+  },
+  fruits: {
+    optional: true,
+    isArray: {
+      errorMessage: 'Field "fruits" must be an array',
     },
   },
-  totalExpense: {
+  'fruits.*.grams': {
     notEmpty: {
-      errorMessage: 'Field "totalExpense" is required',
+      errorMessage: 'Fruit grams is required',
     },
-    isFloat: {
-      errorMessage: 'Field "totalExpense" must be a number',
+    isString: {
+      errorMessage: 'Fruit grams must be a string',
     },
   },
-  totalValue: {
+  'fruits.*.price': {
     notEmpty: {
-      errorMessage: 'Field "totalValue" is required',
+      errorMessage: 'Fruit price is required',
     },
-    isFloat: {
-      errorMessage: 'Field "totalValue" must be a number',
+    isString: {
+      errorMessage: 'Fruit price must be a string',
     },
   },
-  profit: {
+  'fruits.*.total': {
     notEmpty: {
-      errorMessage: 'Field "profit" is required',
+      errorMessage: 'Fruit total is required',
     },
-    isFloat: {
-      errorMessage: 'Field "profit" must be a number',
+    isString: {
+      errorMessage: 'Fruit total must be a string',
     },
   },
-  profitMargin: {
+  'fruits.*.fruitId': {
     notEmpty: {
-      errorMessage: 'Field "profitMargin" is required',
+      errorMessage: 'Fruit fruitId is required',
     },
-    isFloat: {
-      errorMessage: 'Field "profitMargin" must be a number',
+    isInt: {
+      errorMessage: 'Fruit fruitId must be an integer',
     },
+    toInt: true,
   },
 };

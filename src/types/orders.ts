@@ -1,11 +1,24 @@
 export type OrderReq = {
+  fruits: FruitInput[];
+  cups: CupInput[];
   orderTypeId: number;
   orderName: string;
-  numberOfSmallCups: number;
-  numberOfLargeCups: number;
-  totalExpense: number;
-  totalValue: number;
-  profit: number;
-  profitMargin: number;
   baseFruitIsFree: boolean;
+  profitMargin: number;
+};
+
+export type CupInput = {
+  label: string;
+  numberOf: string | number;
+  cost: number;
+  sellingPrice: number;
+  total: number;
+};
+
+export type FruitInput = {
+  grams: string;
+  price: string;
+  total: string;
+  fruitName: number;
+  fruitId: number;
 };

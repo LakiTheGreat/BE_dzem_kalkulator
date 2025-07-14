@@ -388,7 +388,7 @@ export const createNewOrder = asyncHandler(
       req.body.cups,
       req.body.orderTypeId,
       req.body.baseFruitIsFree,
-      req.body.profitMargin,
+      req.body.otherExpensesMargin,
     ];
 
     if (requiredFields.some((field) => field === undefined || field === null)) {

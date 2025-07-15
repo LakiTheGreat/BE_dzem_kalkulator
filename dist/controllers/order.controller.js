@@ -1,6 +1,6 @@
 import status from 'http-status';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
-import { createNewOrderService, deleteOrderService, getAllOrdersService, getOrderByIdService, } from '../services/order.service.js';
+import { createNewOrderService, deleteOrderService, getAllOrdersService, getOrderByIdService, putOrderService, } from '../services/order.service.js';
 import AppError from '../utils/AppError.js';
 import { getAllFruitsService } from '../services/fruit.service.js';
 /**
@@ -367,6 +367,95 @@ export const createNewOrder = asyncHandler(async (req, res) => {
         throw new AppError('Order not created', status.INTERNAL_SERVER_ERROR);
     }
     res.status(status.CREATED).json(newOrder);
+});
+/**
+ * @swagger
+ * /api/orders/{id}:
+ *   put:
+ *     summary: Update an existing order
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the order to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fruits:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     grams:
+ *                       type: string
+ *                     price:
+ *                       type: string
+ *                     total:
+ *                       type: string
+ *                     fruitId:
+ *                       type: integer
+ *               cups:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     label:
+ *                       type: string
+ *                     numberOf:
+ *                       type: integer
+ *                     cost:
+ *                       type: integer
+ *                     sellingPrice:
+ *                       type: integer
+ *                     total:
+ *                       type: integer
+ *               orderTypeId:
+ *                 type: integer
+ *               baseFruitIsFree:
+ *                 type: boolean
+ *               otherExpensesMargin:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Order updated successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Failed to update order
+ */
+export const putOrder = asyncHandler(async (req, res) => {
+    const id = Number(req.params.id);
+    if (isNaN(id) || id <= 0) {
+        throw new AppError('Invalid order ID', status.BAD_REQUEST);
+    }
+    const existingOrder = await getOrderByIdService(id);
+    if (!existingOrder) {
+        throw new AppError('Order not found', status.NOT_FOUND);
+    }
+    const requiredFields = [
+        req.body.fruits,
+        req.body.cups,
+        req.body.orderTypeId,
+        req.body.baseFruitIsFree,
+        req.body.otherExpensesMargin,
+    ];
+    if (requiredFields.some((field) => field === undefined || field === null)) {
+        throw new AppError('Missing required fields', status.BAD_REQUEST);
+    }
+    const updatedOrder = await putOrderService(id, req.body);
+    if (!updatedOrder) {
+        throw new AppError('Failed to update order', status.INTERNAL_SERVER_ERROR);
+    }
+    res.status(status.OK).json(updatedOrder);
 });
 /**
  * @swagger

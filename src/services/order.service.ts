@@ -54,3 +54,19 @@ export const deleteOrderService = async (id: number) => {
 
   return order;
 };
+
+export const putOrderService = async (id: number, data: OrderReq) => {
+  const updatedOrder = await prisma.order.update({
+    where: { id },
+    data: {
+      orderName: data.orderName,
+      orderTypeId: data.orderTypeId,
+      baseFruitIsFree: data.baseFruitIsFree,
+      otherExpensesMargin: data.otherExpensesMargin,
+      cups: data.cups,
+      fruits: data.fruits,
+    },
+  });
+
+  return updatedOrder;
+};

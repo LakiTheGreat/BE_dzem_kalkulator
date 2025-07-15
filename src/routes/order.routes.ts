@@ -6,6 +6,7 @@ import {
   deleteOrder,
   getAllOrders,
   getOrderById,
+  putOrder,
 } from '../controllers/order.controller.js';
 import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
 import { createOrderSchema } from '../validationSchemas/orderSchema.js';
@@ -21,6 +22,13 @@ router.post(
   checkSchema(createOrderSchema),
   handleValidationErrors,
   createNewOrder
+);
+
+router.put(
+  '/:id',
+  checkSchema(createOrderSchema),
+  handleValidationErrors,
+  putOrder
 );
 
 router.delete('/:id', deleteOrder);

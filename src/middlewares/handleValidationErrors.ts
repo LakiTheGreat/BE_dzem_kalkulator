@@ -24,6 +24,7 @@ export function handleValidationErrors(
     });
 
     next(new AppError(message, status.BAD_REQUEST));
+
     return;
   }
   next();

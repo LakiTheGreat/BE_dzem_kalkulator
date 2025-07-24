@@ -24,7 +24,14 @@ import AppError from '../utils/AppError.js';
  *   get:
  *     tags:
  *       - Fruits
- *     summary: Get all non-deleted fruits
+ *     summary: Get all non-deleted fruits for a specific user
+ *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The user ID associated with the request
  *     responses:
  *       200:
  *         description: List of fruits
@@ -41,9 +48,17 @@ import AppError from '../utils/AppError.js';
  *                   - id: 1
  *                     label: Jasika
  *                     isDeleted: false
+ *                     userId: 7
+ *       401:
+ *         description: Unauthorized - user ID header missing or invalid
+ *       404:
+ *         description: No fruits found
+ *       500:
+ *         description: Internal server error
  */
 export const getAllFruits = asyncHandler(async (req, res) => {
-    const fruits = await getAllFruitsService();
+    const userId = Number(req.header('x-user-id'));
+    const fruits = await getAllFruitsService(userId);
     if (!fruits) {
         throw new AppError('Fruits not found', status.NOT_FOUND);
     }
@@ -56,6 +71,13 @@ export const getAllFruits = asyncHandler(async (req, res) => {
  *     tags:
  *       - Fruits
  *     summary: Create a new fruit
+ *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the user creating the fruit
  *     requestBody:
  *       required: true
  *       content:
@@ -75,21 +97,28 @@ export const getAllFruits = asyncHandler(async (req, res) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Fruit'
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Missing or invalid user ID header
+ *       500:
+ *         description: Internal server error
  */
 export const createNewFruit = asyncHandler(async (req, res) => {
+    const userId = Number(req.header('x-user-id'));
     const baseName = req.body.label?.trim();
     if (!baseName) {
         throw new AppError('Missing required field - label', status.BAD_REQUEST);
     }
     // Find all fruits with the same base name or with (n) suffix
-    const existingFruits = await getAlLFruitsWithSameNameService(baseName);
+    const existingFruits = await getAlLFruitsWithSameNameService(baseName, userId);
     // Filter to count how many follow the format: "name" or "name (n)"
     const sameNameCount = existingFruits.filter((fruit) => {
         return (fruit.label === baseName ||
             fruit.label.match(new RegExp(`^${baseName} \\(\\d+\\)$`)));
     }).length;
     const newName = sameNameCount === 0 ? baseName : `${baseName} (${sameNameCount + 1})`;
-    const fruit = await createNewFruitService(newName);
+    const fruit = await createNewFruitService(newName, userId);
     if (!fruit) {
         throw new AppError('Something went wrong - fruit was not created!', status.INTERNAL_SERVER_ERROR);
     }
@@ -101,7 +130,7 @@ export const createNewFruit = asyncHandler(async (req, res) => {
  *   patch:
  *     tags:
  *       - Fruits
- *     summary: Update a fruit's menuItemLabel and value
+ *     summary: Update a fruit's label
  *     parameters:
  *       - in: path
  *         name: id
@@ -109,6 +138,12 @@ export const createNewFruit = asyncHandler(async (req, res) => {
  *         schema:
  *           type: integer
  *         description: The ID of the fruit to update
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the user making the request
  *     requestBody:
  *       required: true
  *       content:
@@ -130,12 +165,15 @@ export const createNewFruit = asyncHandler(async (req, res) => {
  *               $ref: '#/components/schemas/Fruit'
  *       400:
  *         description: Invalid ID or label
+ *       401:
+ *         description: Missing or invalid user ID
  *       404:
  *         description: Fruit not found
  *       500:
  *         description: Server error
  */
 export const patchFruitLabel = asyncHandler(async (req, res) => {
+    const userId = Number(req.header('x-user-id'));
     const { id } = req.params;
     const { label } = req.body;
     const fruitId = Number(id);
@@ -146,7 +184,7 @@ export const patchFruitLabel = asyncHandler(async (req, res) => {
         throw new AppError('Missing required field - label', status.BAD_REQUEST);
     }
     const baseName = req.body.label.trim();
-    const existingFruits = await getAlLFruitsWithSameNameService(baseName);
+    const existingFruits = await getAlLFruitsWithSameNameService(baseName, userId);
     // Exclude the current fruit being updated
     const filtered = existingFruits.filter((fruit) => fruit.id !== fruitId);
     const sameNameCount = filtered.filter((fruit) => {
@@ -156,29 +194,35 @@ export const patchFruitLabel = asyncHandler(async (req, res) => {
     // Rename only if there are other fruits with the same name
     req.body.label =
         sameNameCount === 0 ? baseName : `${baseName} (${sameNameCount + 1})`;
-    const updatedFruit = await patchFruitService(fruitId, req.body.label);
+    const updatedFruit = await patchFruitService(fruitId, req.body.label, userId);
     if (!updatedFruit) {
         throw new AppError('Something went wrong - fruit was not updated!', status.INTERNAL_SERVER_ERROR);
     }
     res.status(status.OK).json(updatedFruit);
 });
 /**
- *  @swagger
+ * @swagger
  * /api/fruits/{id}:
  *   delete:
  *     tags:
  *       - Fruits
- *     summary: Soft delete a fruit by ID
+ *     summary: Soft-delete a fruit by ID
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: integer
+ *         description: The ID of the fruit to delete
+ *       - in: header
+ *         name: x-user-id
  *         required: true
- *         description: Numeric ID of the fruit to delete
+ *         schema:
+ *           type: integer
+ *         description: ID of the user making the request
  *     responses:
  *       200:
- *         description: Fruit deleted successfully
+ *         description: Fruit marked as soft-deleted
  *         content:
  *           application/json:
  *             schema:
@@ -186,16 +230,26 @@ export const patchFruitLabel = asyncHandler(async (req, res) => {
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Fruit deleted successfully
- *
+ *                   example: Fruit marked as soft-deleted
+ *                 fruit:
+ *                   $ref: '#/components/schemas/Fruit'
+ *       400:
+ *         description: Invalid fruit ID
+ *       401:
+ *         description: Missing or invalid user ID
+ *       404:
+ *         description: Fruit not found
+ *       500:
+ *         description: Server error
  */
 export const deleteFruitById = asyncHandler(async (req, res) => {
+    const userId = Number(req.header('x-user-id'));
     const { id } = req.params;
     const fruitId = Number(id);
     if (isNaN(fruitId)) {
         throw new AppError('Invalid fruit ID', status.BAD_REQUEST);
     }
-    const fruit = await deleteFruitService(fruitId);
+    const fruit = await deleteFruitService(fruitId, userId);
     if (!fruit) {
         throw new AppError('Something went wrong - fruit was not deleted!', status.INTERNAL_SERVER_ERROR);
     }

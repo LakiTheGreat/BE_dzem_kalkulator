@@ -1,8 +1,9 @@
 import prisma from '../utils/db.js';
-export const getAllFruitsService = async () => {
+export const getAllFruitsService = async (userId) => {
     const fruits = await prisma.fruit.findMany({
         where: {
             isDeleted: false,
+            userId,
         },
         orderBy: {
             label: 'asc',
@@ -10,9 +11,10 @@ export const getAllFruitsService = async () => {
     });
     return fruits;
 };
-export const getAlLFruitsWithSameNameService = async (baseName) => {
+export const getAlLFruitsWithSameNameService = async (baseName, userId) => {
     const existingFruits = await prisma.fruit.findMany({
         where: {
+            userId,
             label: {
                 startsWith: baseName,
             },
@@ -20,24 +22,25 @@ export const getAlLFruitsWithSameNameService = async (baseName) => {
     });
     return existingFruits;
 };
-export const createNewFruitService = async (name) => {
+export const createNewFruitService = async (name, userId) => {
     const newFruit = await prisma.fruit.create({
         data: {
             label: name,
+            userId,
         },
     });
     return newFruit;
 };
-export const patchFruitService = async (fruitId, label) => {
+export const patchFruitService = async (fruitId, label, userId) => {
     const updatedFruit = await prisma.fruit.update({
-        where: { id: fruitId },
+        where: { id: fruitId, userId },
         data: { label },
     });
     return updatedFruit;
 };
-export const deleteFruitService = async (fruitId) => {
+export const deleteFruitService = async (fruitId, userId) => {
     const fruit = await prisma.fruit.update({
-        where: { id: fruitId },
+        where: { id: fruitId, userId },
         data: { isDeleted: true },
     });
     return fruit;

@@ -15,14 +15,16 @@ export const getAllOrdersService = async (whereClause: any) => {
   return orders;
 };
 
-export const getOrderByIdService = async (id: number) => {
+export const getOrderByIdService = async (id: number, userId: number) => {
   const order = await prisma.order.findUnique({
-    where: { id, isDeleted: false },
+    where: { id, isDeleted: false, userId },
     include: { orderType: true },
   });
 
   return order;
 };
+
+type OrderReqWithUser = OrderReq & { userId: number };
 
 export const createNewOrderService = async ({
   baseFruitIsFree,
@@ -31,7 +33,8 @@ export const createNewOrderService = async ({
   fruits,
   cups,
   otherExpensesMargin,
-}: OrderReq) => {
+  userId,
+}: OrderReqWithUser) => {
   const newOrder = await prisma.order.create({
     data: {
       baseFruitIsFree,
@@ -40,24 +43,29 @@ export const createNewOrderService = async ({
       fruits,
       cups,
       otherExpensesMargin,
+      userId, // <-- add userId here
     },
   });
 
   return newOrder;
 };
 
-export const deleteOrderService = async (id: number) => {
+export const deleteOrderService = async (id: number, userId: number) => {
   const order = await prisma.order.update({
-    where: { id },
+    where: { id, userId },
     data: { isDeleted: true },
   });
 
   return order;
 };
 
-export const putOrderService = async (id: number, data: OrderReq) => {
+export const putOrderService = async (
+  id: number,
+  data: OrderReq,
+  userId: number
+) => {
   const updatedOrder = await prisma.order.update({
-    where: { id },
+    where: { id, userId },
     data: {
       orderName: data.orderName,
       orderTypeId: data.orderTypeId,

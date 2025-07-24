@@ -1,0 +1,35 @@
+-- AlterTable
+ALTER TABLE "ConfigConstant" ADD COLUMN     "userId" INTEGER NOT NULL DEFAULT 1;
+
+-- AlterTable
+ALTER TABLE "Cup" ADD COLUMN     "userId" INTEGER NOT NULL DEFAULT 1;
+
+-- AlterTable
+ALTER TABLE "CupCost" ADD COLUMN     "userId" INTEGER NOT NULL DEFAULT 1;
+
+-- AlterTable
+ALTER TABLE "CupValue" ADD COLUMN     "userId" INTEGER NOT NULL DEFAULT 1;
+
+-- AlterTable
+ALTER TABLE "Fruit" ADD COLUMN     "userId" INTEGER NOT NULL DEFAULT 1;
+
+-- AlterTable
+ALTER TABLE "Order" ADD COLUMN     "userId" INTEGER NOT NULL DEFAULT 1;
+
+-- AddForeignKey
+ALTER TABLE "Fruit" ADD CONSTRAINT "Fruit_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Cup" ADD CONSTRAINT "Cup_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CupCost" ADD CONSTRAINT "CupCost_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CupValue" ADD CONSTRAINT "CupValue_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ConfigConstant" ADD CONSTRAINT "ConfigConstant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

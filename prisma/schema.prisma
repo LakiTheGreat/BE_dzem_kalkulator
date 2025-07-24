@@ -9,12 +9,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Fruit {
-  id Int @id @default(autoincrement())
-  label String
-  isDeleted Boolean @default(false)
-  Order Order[]
+model User {
+  id      Int      @id @default(autoincrement())
+   Fruits  Fruit[]
+  Cups    Cup[]
+  CupCosts CupCost[]
+  CupValues CupValue[]
+  ConfigConstants ConfigConstant[]
+  Orders  Order[]
 }
+
+model Fruit {
+  id        Int     @id @default(autoincrement())
+  label     String
+  isDeleted Boolean @default(false)
+  Order     Order[]
+
+  userId Int @default(1)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+ 
 
 model Cup {
   id           Int       @id @default(autoincrement())
@@ -24,46 +38,65 @@ model Cup {
   valueId      Int       
   cost         CupCost   @relation("CupToCost", fields: [costId], references: [id], onDelete: Restrict)
   sellingPrice CupValue  @relation("CupToValue", fields: [valueId], references: [id], onDelete: Restrict)
+
+  userId Int @default(1)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CupCost {
-  id   Int   @id @default(autoincrement())
-  value Int
-  label String
-  cup  Cup[]  @relation("CupToCost")
-  isDeleted    Boolean   @default(false)
+  id        Int     @id @default(autoincrement())
+  value     Int
+  label     String
+  cup       Cup[]   @relation("CupToCost")
+  isDeleted Boolean @default(false)
+
+  userId Int @default(1)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
 
 model CupValue {
-  id   Int   @id @default(autoincrement())
-  value Int
-  label String
-  cup  Cup[]  @relation("CupToValue")
-  isDeleted    Boolean   @default(false)
+  id        Int     @id @default(autoincrement())
+  value     Int
+  label     String
+  cup       Cup[]   @relation("CupToValue")
+  isDeleted Boolean @default(false)
+
+  userId Int @default(1)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+ 
 
 model ConfigConstant {
-  id   Int   @id @default(autoincrement())
-  value Int
-  label String
-  description String @default("")
-  isDeleted    Boolean   @default(false)
+  id          Int     @id @default(autoincrement())
+  value       Int
+  label       String
+  description String  @default("")
+  isDeleted   Boolean @default(false)
+
+  userId Int @default(1)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
 
 
 
 model Order {
-  id              Int           @id @default(autoincrement())
-  orderName String @default("")
-  orderTypeId     Int
-  orderType       Fruit         @relation(fields: [orderTypeId], references: [id], onDelete: Restrict)
-  createdAt       DateTime      @default(now())
-  isDeleted       Boolean       @default(false)
-  baseFruitIsFree Boolean       @default(false)
-  cups       Json[]
-  fruits     Json[]
-  otherExpensesMargin Int @default(25)
+  id                  Int       @id @default(autoincrement())
+  orderName           String    @default("")
+  orderTypeId         Int
+  orderType           Fruit     @relation(fields: [orderTypeId], references: [id], onDelete: Restrict)
+  createdAt           DateTime  @default(now())
+  isDeleted           Boolean   @default(false)
+  baseFruitIsFree     Boolean   @default(false)
+  cups                Json[]
+  fruits              Json[]
+  otherExpensesMargin Int       @default(25)
+
+  userId Int @default(1)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
 
 
 

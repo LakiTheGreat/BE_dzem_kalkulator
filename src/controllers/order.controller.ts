@@ -51,6 +51,13 @@ import { getAllFruitsService } from '../services/fruit.service.js';
  *     summary: Get all orders, optionally filtered by orderTypeId and priceStatus
  *     tags: [Orders]
  *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         required: true
+ *         description: User ID for authentication / filtering
  *       - in: query
  *         name: orderTypeId
  *         schema:
@@ -62,7 +69,7 @@ import { getAllFruitsService } from '../services/fruit.service.js';
  *         name: priceStatus
  *         schema:
  *           type: string
- *           enum: [ 1, 2]
+ *           enum: [1, 2]
  *         required: false
  *         description: Filter orders by price status (e.g., profitable, loss, or all)
  *     responses:
@@ -100,6 +107,8 @@ import { getAllFruitsService } from '../services/fruit.service.js';
 
 export const getAllOrders = asyncHandler(
   async (req: Request, res: Response) => {
+    const userId = Number(req.header('x-user-id'));
+
     const orderTypeId = req.query.orderTypeId
       ? Number(req.query.orderTypeId)
       : undefined;
@@ -122,7 +131,7 @@ export const getAllOrders = asyncHandler(
       );
     }
 
-    const whereClause: any = { isDeleted: false };
+    const whereClause: any = { isDeleted: false, userId };
     if (orderTypeId) whereClause.orderTypeId = orderTypeId;
     if (priceStatus === 1) whereClause.baseFruitIsFree = true;
     else if (priceStatus === 2) whereClause.baseFruitIsFree = false;
@@ -234,9 +243,16 @@ export const getAllOrders = asyncHandler(
  *
  * /api/orders/{id}:
  *   get:
- *     summary: Get order by ID
+ *     summary: Get order by ID (only for the authenticated user)
  *     tags: [Orders]
  *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         required: true
+ *         description: User ID for authentication / authorization
  *       - in: path
  *         name: id
  *         schema:
@@ -254,8 +270,10 @@ export const getAllOrders = asyncHandler(
  *               # you can define schema properties here or reference a model
  *       400:
  *         description: Invalid order ID
+ *       401:
+ *         description: Missing or invalid user ID header
  *       404:
- *         description: Order not found
+ *         description: Order not found or does not belong to user
  *       500:
  *         description: Internal server error
  */
@@ -263,12 +281,13 @@ export const getAllOrders = asyncHandler(
 export const getOrderById = asyncHandler(
   async (req: Request, res: Response) => {
     const id = Number(req.params.id);
+    const userId = Number(req.header('x-user-id'));
 
     if (isNaN(id) || id <= 0) {
       throw new AppError('Invalid order ID', status.BAD_REQUEST);
     }
 
-    const order = await getOrderByIdService(id);
+    const order = await getOrderByIdService(id, userId);
 
     if (!order) {
       throw new AppError('Order not found', status.NOT_FOUND);
@@ -284,6 +303,14 @@ export const getOrderById = asyncHandler(
  *   post:
  *     summary: Create a new order
  *     tags: [Orders]
+ *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         required: true
+ *         description: User ID for authentication / ownership of order
  *     requestBody:
  *       required: true
  *       content:
@@ -404,6 +431,8 @@ export const getOrderById = asyncHandler(
 
 export const createNewOrder = asyncHandler(
   async (req: Request, res: Response) => {
+    const userId = Number(req.header('x-user-id'));
+
     const requiredFields = [
       req.body.fruits,
       req.body.cups,
@@ -416,7 +445,10 @@ export const createNewOrder = asyncHandler(
       throw new AppError('Missing required fields', status.BAD_REQUEST);
     }
 
-    const newOrder = await createNewOrderService(req.body);
+    const newOrder = await createNewOrderService({
+      ...req.body,
+      userId,
+    });
 
     if (!newOrder) {
       throw new AppError('Order not created', status.INTERNAL_SERVER_ERROR);
@@ -430,9 +462,16 @@ export const createNewOrder = asyncHandler(
  * @swagger
  * /api/orders/{id}:
  *   put:
- *     summary: Update an existing order
+ *     summary: Update an existing order (only for the authenticated user)
  *     tags: [Orders]
  *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         required: true
+ *         description: User ID for authentication / authorization
  *       - in: path
  *         name: id
  *         required: true
@@ -485,20 +524,23 @@ export const createNewOrder = asyncHandler(
  *         description: Order updated successfully
  *       400:
  *         description: Invalid input
+ *       401:
+ *         description: Missing or invalid user ID header
  *       404:
- *         description: Order not found
+ *         description: Order not found or does not belong to user
  *       500:
  *         description: Failed to update order
  */
 
 export const putOrder = asyncHandler(async (req: Request, res: Response) => {
   const id = Number(req.params.id);
+  const userId = Number(req.header('x-user-id'));
 
   if (isNaN(id) || id <= 0) {
     throw new AppError('Invalid order ID', status.BAD_REQUEST);
   }
 
-  const existingOrder = await getOrderByIdService(id);
+  const existingOrder = await getOrderByIdService(id, userId);
   if (!existingOrder) {
     throw new AppError('Order not found', status.NOT_FOUND);
   }
@@ -515,7 +557,7 @@ export const putOrder = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError('Missing required fields', status.BAD_REQUEST);
   }
 
-  const updatedOrder = await putOrderService(id, req.body);
+  const updatedOrder = await putOrderService(id, req.body, userId);
 
   if (!updatedOrder) {
     throw new AppError('Failed to update order', status.INTERNAL_SERVER_ERROR);
@@ -528,15 +570,22 @@ export const putOrder = asyncHandler(async (req: Request, res: Response) => {
  * @swagger
  * /api/orders/{id}:
  *   delete:
- *     summary: Soft-delete an order by ID
+ *     summary: Soft-delete an order by ID (only if it belongs to the user)
  *     tags: [Orders]
  *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: ID of the authenticated user
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: The ID of the order to delete
+ *         description: ID of the order to delete
  *     responses:
  *       200:
  *         description: Order successfully deleted
@@ -548,26 +597,30 @@ export const putOrder = asyncHandler(async (req: Request, res: Response) => {
  *                 message:
  *                   type: string
  *                   example: Order deleted successfully
+ *       401:
+ *         description: Missing or invalid user ID
  *       404:
- *         description: Order not found
+ *         description: Order not found or does not belong to user
  *       500:
  *         description: Failed to delete order
  */
 
 export const deleteOrder = asyncHandler(async (req: Request, res: Response) => {
+  const userId = Number(req.header('x-user-id'));
+
   const id = Number(req.params.id);
 
   if (isNaN(id) || id <= 0) {
     throw new AppError('Invalid order ID', status.BAD_REQUEST);
   }
 
-  const existingOrder = await getOrderByIdService(id);
+  const existingOrder = await getOrderByIdService(id, userId);
 
   if (!existingOrder) {
     throw new AppError('Order not found', status.NOT_FOUND);
   }
 
-  const order = await deleteOrderService(id);
+  const order = await deleteOrderService(id, userId);
 
   if (!order) {
     throw new AppError('Failed to delete order', status.INTERNAL_SERVER_ERROR);

@@ -16,7 +16,14 @@ import AppError from '../utils/AppError.js';
  *   get:
  *     tags:
  *       - CupCosts
- *     summary: Get all non-deleted cupCosts
+ *     summary: Get all non-deleted cupCosts for a specific user
+ *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the user making the request
  *     responses:
  *       200:
  *         description: List of cupCosts
@@ -26,12 +33,17 @@ import AppError from '../utils/AppError.js';
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/CupCost'
+ *       401:
+ *         description: Missing or invalid user ID
  *       500:
  *         description: Internal server error
  */
+
 export const getAllCupCosts = asyncHandler(
   async (req: Request, res: Response) => {
-    const cupCosts = await getAllCupCostsService();
+    const userId = Number(req.header('x-user-id'));
+
+    const cupCosts = await getAllCupCostsService(userId);
 
     if (!cupCosts) {
       throw new AppError('CupCosts not found', status.NOT_FOUND);
@@ -48,6 +60,13 @@ export const getAllCupCosts = asyncHandler(
  *     tags:
  *       - CupCosts
  *     summary: Create a new cupCost
+  *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the user making the request
  *     requestBody:
  *       required: true
  *       content:
@@ -79,12 +98,13 @@ export const getAllCupCosts = asyncHandler(
 export const createCupCost = asyncHandler(
   async (req: Request, res: Response) => {
     const { label, value } = req.body;
+    const userId = Number(req.header('x-user-id'));
 
     if (!label || !value) {
       throw new AppError('Label and value are required', status.BAD_REQUEST);
     }
 
-    const newCupCost = await createNewCupCostService(label, value);
+    const newCupCost = await createNewCupCostService(label, value, userId);
     if (!newCupCost) {
       throw new AppError('CupCost not created', status.INTERNAL_SERVER_ERROR);
     }
@@ -101,6 +121,12 @@ export const createCupCost = asyncHandler(
  *       - CupCosts
  *     summary: Update a cupCost by ID
  *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the user making the request
  *       - in: path
  *         name: id
  *         required: true
@@ -144,6 +170,8 @@ export const putCupCost = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const cupCostId = Number(id);
 
+  const userId = Number(req.header('x-user-id'));
+
   if (isNaN(cupCostId)) {
     throw new AppError('Invalid cupCost ID', status.BAD_REQUEST);
   }
@@ -157,7 +185,12 @@ export const putCupCost = asyncHandler(async (req: Request, res: Response) => {
     );
   }
 
-  const updatedCupCost = await putCupCostService(cupCostId, label, value);
+  const updatedCupCost = await putCupCostService(
+    cupCostId,
+    label,
+    value,
+    userId
+  );
 
   if (!updatedCupCost) {
     throw new AppError('CupCost not updated', status.INTERNAL_SERVER_ERROR);
@@ -175,6 +208,7 @@ export const putCupCost = asyncHandler(async (req: Request, res: Response) => {
  *     tags:
  *       - CupCosts
  *     summary: Soft delete a cupCost by ID
+
  *     parameters:
  *       - in: path
  *         name: id
@@ -182,6 +216,12 @@ export const putCupCost = asyncHandler(async (req: Request, res: Response) => {
  *         schema:
  *           type: integer
  *         description: ID of the cupCost to delete
+  *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the user making the request
  *     responses:
  *       200:
  *         description: CupCost soft deleted successfully
@@ -206,12 +246,13 @@ export const deleteCupCost = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const cupCostId = Number(id);
+    const userId = Number(req.header('x-user-id'));
 
     if (isNaN(cupCostId)) {
       throw new AppError('Invalid cupCost ID', status.BAD_REQUEST);
     }
 
-    const deletedCupCost = deleteCupCostService(cupCostId);
+    const deletedCupCost = deleteCupCostService(cupCostId, userId);
 
     if (!deletedCupCost) {
       throw new AppError('CupCost not deleted', status.INTERNAL_SERVER_ERROR);

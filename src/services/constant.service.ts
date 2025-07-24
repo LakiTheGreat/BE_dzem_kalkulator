@@ -1,9 +1,10 @@
 import prisma from '../utils/db.js';
 
-export const getConstantByIdService = async (id: number) => {
+export const getConstantByIdService = async (id: number, userId: number) => {
   const constant = await prisma.configConstant.findUnique({
     where: {
       id: Number(id),
+      userId,
     },
   });
 
@@ -14,10 +15,11 @@ export const patchConstantService = async (
   id: number,
   value: number,
   label: string,
-  isDeleted: boolean
+  isDeleted: boolean,
+  userId: number
 ) => {
   const updated = await prisma.configConstant.update({
-    where: { id: Number(id) },
+    where: { id: Number(id), userId },
     data: {
       ...(value !== undefined && { value }),
       ...(label !== undefined && { label }),

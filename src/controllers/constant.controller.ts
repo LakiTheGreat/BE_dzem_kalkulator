@@ -16,6 +16,12 @@ import AppError from '../utils/AppError.js';
  *       - Config Constants
  *     summary: Get a Config Constant by ID
  *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The user ID associated with the request
  *       - name: id
  *         in: path
  *         description: ID of the config constant to retrieve
@@ -44,7 +50,9 @@ import AppError from '../utils/AppError.js';
 export const getConstantById = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
-    const constant = await getConstantByIdService(Number(id));
+    const userId = Number(req.header('x-user-id'));
+
+    const constant = await getConstantByIdService(Number(id), userId);
 
     if (!constant) {
       throw new AppError('Constant not found', status.NOT_FOUND);
@@ -62,6 +70,12 @@ export const getConstantById = asyncHandler(
  *       - Config Constants
  *     summary: Update a Config Constant by ID
  *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The user ID associated with the request
  *       - name: id
  *         in: path
  *         description: ID of the config constant to update
@@ -107,8 +121,9 @@ export const patchConstantById = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const { value, label, isDeleted } = req.body;
+    const userId = Number(req.header('x-user-id'));
 
-    const existing = await getConstantByIdService(Number(id));
+    const existing = await getConstantByIdService(Number(id), userId);
 
     if (!existing) {
       throw new AppError('Constant not found', status.NOT_FOUND);
@@ -118,7 +133,8 @@ export const patchConstantById = asyncHandler(
       Number(id),
       value,
       label,
-      isDeleted
+      isDeleted,
+      userId
     );
 
     if (!updated) {

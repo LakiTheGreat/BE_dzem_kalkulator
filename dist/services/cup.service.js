@@ -1,8 +1,9 @@
 import prisma from '../utils/db.js';
-export const getAllCupsWithDataService = async () => {
+export const getAllCupsWithDataService = async (userId) => {
     const cups = await prisma.cup.findMany({
         where: {
             isDeleted: false,
+            userId,
         },
         orderBy: {
             label: 'asc',
@@ -14,12 +15,13 @@ export const getAllCupsWithDataService = async () => {
     });
     return cups;
 };
-export const createNewCupService = async (label, costId, valueId) => {
+export const createNewCupService = async (label, costId, valueId, userId) => {
     const cup = await prisma.cup.create({
         data: {
             label,
             cost: { connect: { id: costId } },
             sellingPrice: { connect: { id: valueId } },
+            user: { connect: { id: userId } },
         },
         include: {
             cost: true,
@@ -28,25 +30,26 @@ export const createNewCupService = async (label, costId, valueId) => {
     });
     return cup;
 };
-export const findCostCupService = async (costId) => {
+export const findCostCupService = async (costId, userId) => {
     const costCup = await prisma.cupCost.findFirst({
-        where: { id: costId, isDeleted: false },
+        where: { id: costId, isDeleted: false, userId },
     });
     return costCup;
 };
-export const findCostValueService = async (valueId) => {
+export const findCostValueService = async (valueId, userId) => {
     const costValue = await prisma.cupValue.findFirst({
-        where: { id: valueId, isDeleted: false },
+        where: { id: valueId, isDeleted: false, userId },
     });
     return costValue;
 };
-export const putCupService = async (cupId, label, costId, valueId) => {
+export const putCupService = async (cupId, label, costId, valueId, userId) => {
     const updatedCup = await prisma.cup.update({
         where: { id: cupId },
         data: {
             label,
             cost: { connect: { id: costId } },
             sellingPrice: { connect: { id: valueId } },
+            user: { connect: { id: userId } },
         },
         include: {
             cost: true,
@@ -55,9 +58,9 @@ export const putCupService = async (cupId, label, costId, valueId) => {
     });
     return updatedCup;
 };
-export const deleteCupService = async (cupId) => {
+export const deleteCupService = async (cupId, userId) => {
     const cup = await prisma.cup.update({
-        where: { id: cupId },
+        where: { id: cupId, userId },
         data: { isDeleted: true },
     });
     return cup;

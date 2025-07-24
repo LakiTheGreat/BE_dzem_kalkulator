@@ -11,7 +11,6 @@ import {
   putCupService,
 } from '../services/cup.service.js';
 import AppError from '../utils/AppError.js';
-import prisma from '../utils/db.js';
 
 /**
  * @swagger
@@ -82,6 +81,13 @@ import prisma from '../utils/db.js';
  *     tags:
  *       - Cups
  *     summary: Get all non-deleted cups with simplified cost and selling price values
+ *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The user ID associated with the request
  *     responses:
  *       200:
  *         description: List of cups with simplified cost and selling price values
@@ -110,7 +116,9 @@ import prisma from '../utils/db.js';
  */
 
 export const getAllCups = asyncHandler(async (req: Request, res: Response) => {
-  const cups = await getAllCupsWithDataService();
+  const userId = Number(req.header('x-user-id'));
+
+  const cups = await getAllCupsWithDataService(userId);
 
   if (!cups) {
     throw new AppError('Cups not found', status.NOT_FOUND);
@@ -134,6 +142,13 @@ export const getAllCups = asyncHandler(async (req: Request, res: Response) => {
  *     tags:
  *       - Cups
  *     summary: Create a new cup
+ *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The user ID associated with the request
  *     requestBody:
  *       required: true
  *       content:
@@ -169,8 +184,9 @@ export const getAllCups = asyncHandler(async (req: Request, res: Response) => {
 export const createNewCup = asyncHandler(
   async (req: Request, res: Response) => {
     const { label, costId, valueId } = req.body;
+    const userId = Number(req.header('x-user-id'));
 
-    const cup = await createNewCupService(label, costId, valueId);
+    const cup = await createNewCupService(label, costId, valueId, userId);
 
     if (!cup) {
       throw new AppError('Cup was not created', status.INTERNAL_SERVER_ERROR);
@@ -187,6 +203,12 @@ export const createNewCup = asyncHandler(
  *     summary: Update an existing cup
  *     tags: [Cups]
  *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the user making the request
  *       - in: path
  *         name: id
  *         required: true
@@ -230,6 +252,7 @@ export const createNewCup = asyncHandler(
 export const putCup = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const cupId = Number(id);
+  const userId = Number(req.header('x-user-id'));
 
   if (isNaN(cupId)) {
     throw new AppError('Invalid cup ID', status.BAD_REQUEST);
@@ -241,7 +264,7 @@ export const putCup = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError('Missing required fields', status.BAD_REQUEST);
   }
 
-  const costCup = await findCostCupService(costId);
+  const costCup = await findCostCupService(costId, userId);
 
   if (!costCup) {
     throw new AppError(
@@ -250,7 +273,7 @@ export const putCup = asyncHandler(async (req: Request, res: Response) => {
     );
   }
 
-  const valueCup = await findCostValueService(valueId);
+  const valueCup = await findCostValueService(valueId, userId);
 
   if (!valueCup) {
     throw new AppError(
@@ -258,7 +281,7 @@ export const putCup = asyncHandler(async (req: Request, res: Response) => {
       status.NOT_FOUND
     );
   }
-  const updatedCup = await putCupService(cupId, label, costId, valueId);
+  const updatedCup = await putCupService(cupId, label, costId, valueId, userId);
 
   if (!updatedCup) {
     throw new AppError('Cup was not updated', status.INTERNAL_SERVER_ERROR);
@@ -277,6 +300,12 @@ export const putCup = asyncHandler(async (req: Request, res: Response) => {
  *       - Cups
  *     summary: Soft delete a cup by ID
  *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The user ID associated with the request
  *       - in: path
  *         name: id
  *         schema:
@@ -299,13 +328,14 @@ export const putCup = asyncHandler(async (req: Request, res: Response) => {
 export const deleteCupById = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
+    const userId = Number(req.header('x-user-id'));
 
     const cupId = Number(id);
     if (isNaN(cupId)) {
       throw new AppError('Invalid cup ID', status.BAD_REQUEST);
     }
 
-    const cup = await deleteCupService(cupId);
+    const cup = await deleteCupService(cupId, userId);
 
     if (!cup) {
       throw new AppError('Cup was not deleted', status.INTERNAL_SERVER_ERROR);

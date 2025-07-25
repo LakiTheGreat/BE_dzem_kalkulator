@@ -132,13 +132,17 @@ export const getAllOrders = asyncHandler(
     }
 
     const whereClause: any = { isDeleted: false, userId };
-    if (orderTypeId) whereClause.orderTypeId = orderTypeId;
-    if (priceStatus === 1) whereClause.baseFruitIsFree = true;
-    else if (priceStatus === 2) whereClause.baseFruitIsFree = false;
+    if (orderTypeId) {
+      whereClause.orderTypeId = orderTypeId;
+    }
+
+    if (priceStatus === 1) {
+      whereClause.baseFruitIsFree = true;
+    } else if (priceStatus === 2) {
+      whereClause.baseFruitIsFree = false;
+    }
 
     const orders = await getAllOrdersService(whereClause);
-    if (!orders || orders.length === 0)
-      throw new AppError('No orders found', status.NOT_FOUND);
 
     const allFruits = await getAllFruitsService(userId);
     const fruitLookup = allFruits.reduce((acc, fruit) => {

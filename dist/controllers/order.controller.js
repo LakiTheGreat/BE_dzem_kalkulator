@@ -108,15 +108,16 @@ export const getAllOrders = asyncHandler(async (req, res) => {
         throw new AppError('Invalid priceStatus query parameter', status.BAD_REQUEST);
     }
     const whereClause = { isDeleted: false, userId };
-    if (orderTypeId)
+    if (orderTypeId) {
         whereClause.orderTypeId = orderTypeId;
-    if (priceStatus === 1)
+    }
+    if (priceStatus === 1) {
         whereClause.baseFruitIsFree = true;
-    else if (priceStatus === 2)
+    }
+    else if (priceStatus === 2) {
         whereClause.baseFruitIsFree = false;
+    }
     const orders = await getAllOrdersService(whereClause);
-    if (!orders || orders.length === 0)
-        throw new AppError('No orders found', status.NOT_FOUND);
     const allFruits = await getAllFruitsService(userId);
     const fruitLookup = allFruits.reduce((acc, fruit) => {
         acc[fruit.id] = fruit.label;

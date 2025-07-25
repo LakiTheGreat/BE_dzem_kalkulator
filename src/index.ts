@@ -8,7 +8,6 @@ import errorHandler from './middlewares/errorHandler.js';
 import logRequests from './middlewares/logRequets.js';
 import router from './routes/index.js';
 import logger from './utils/logger.js';
-import { mockAuth } from './middlewares/auth/mockAuth.js';
 
 // import checkForToken from './middlwares/auth/protect.js';
 
@@ -57,7 +56,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // parses query parameters from string to object
 // app.use(checkForToken);
 app.use(logRequests);
-app.use(mockAuth);
 
 // ------------------------------------------
 

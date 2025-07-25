@@ -117,7 +117,7 @@ export const getAllOrders = asyncHandler(async (req, res) => {
     const orders = await getAllOrdersService(whereClause);
     if (!orders || orders.length === 0)
         throw new AppError('No orders found', status.NOT_FOUND);
-    const allFruits = await getAllFruitsService();
+    const allFruits = await getAllFruitsService(userId);
     const fruitLookup = allFruits.reduce((acc, fruit) => {
         acc[fruit.id] = fruit.label;
         return acc;

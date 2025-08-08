@@ -10,7 +10,6 @@ import {
   putOrderService,
 } from '../services/order.service.js';
 import AppError from '../utils/AppError.js';
-import { OrderReq } from '../types/orders.js';
 import { getAllFruitsService } from '../services/fruit.service.js';
 
 /**

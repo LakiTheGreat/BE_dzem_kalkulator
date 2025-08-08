@@ -11,6 +11,16 @@ export const getAllFruitsService = async (userId) => {
     });
     return fruits;
 };
+export const getFruitByIdService = async (userId, id) => {
+    const fruit = await prisma.fruit.findFirst({
+        where: {
+            id,
+            isDeleted: false,
+            userId,
+        },
+    });
+    return fruit;
+};
 export const getAlLFruitsWithSameNameService = async (baseName, userId) => {
     const existingFruits = await prisma.fruit.findMany({
         where: {

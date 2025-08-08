@@ -17,6 +17,8 @@ model User {
   CupValues CupValue[]
   ConfigConstants ConfigConstant[]
   Orders  Order[]
+
+  Inventory Inventory[]
 }
 
 model Fruit {
@@ -27,6 +29,8 @@ model Fruit {
 
   userId Int @default(1)
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  Inventory Inventory[]
 }
  
 
@@ -77,10 +81,6 @@ model ConfigConstant {
   userId Int @default(1)
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-
-
-
-
 model Order {
   id                  Int       @id @default(autoincrement())
   orderName           String    @default("")
@@ -96,6 +96,18 @@ model Order {
   userId Int @default(1)
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model Inventory {
+  orderTypeId Int   @id
+  cupData     Json  // Store cup sizes and quantities here (as a JSON object or array)
+
+  // Relations
+  orderType Fruit @relation(fields: [orderTypeId], references: [id], onDelete: Cascade)
+  userId    Int   @default(1)
+  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
 
 
 

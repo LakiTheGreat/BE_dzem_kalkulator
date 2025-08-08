@@ -87,3 +87,20 @@ export const deleteCupService = async (cupId: number, userId: number) => {
 
   return cup;
 };
+
+export const getUserCupIdsService = async (userId: number) => {
+  const cups = await prisma.cup.findMany({
+    where: { userId, isDeleted: false },
+    select: { id: true },
+  });
+
+  return cups.map((cup) => cup.id);
+};
+
+export const getAllCupsService = async (userId: number) => {
+  const cups = await prisma.cup.findMany({
+    where: { userId, isDeleted: false },
+  });
+
+  return cups;
+};

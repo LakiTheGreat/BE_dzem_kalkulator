@@ -6,6 +6,7 @@ import cupCostRouter from './cupCost.routes.js';
 import cupValuesRouter from './cupValue.routes.js';
 import constantsRouter from './constant.routes.js';
 import ordersRouter from './order.routes.js';
+import inventoryRouter from './inventory.routes.js';
 import { mockAuth } from '../middlewares/auth/mockAuth.js';
 const router = Router();
 router.use('/auth', authRouter);
@@ -15,5 +16,6 @@ router.use('/cupCosts', mockAuth, cupCostRouter);
 router.use('/cupValues', mockAuth, cupValuesRouter);
 router.use('/constants', mockAuth, constantsRouter);
 router.use('/orders', mockAuth, ordersRouter);
+router.use('/inventory', mockAuth, inventoryRouter);
 export default router;
 //# sourceMappingURL=index.js.map

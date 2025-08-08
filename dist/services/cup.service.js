@@ -65,4 +65,17 @@ export const deleteCupService = async (cupId, userId) => {
     });
     return cup;
 };
+export const getUserCupIdsService = async (userId) => {
+    const cups = await prisma.cup.findMany({
+        where: { userId, isDeleted: false },
+        select: { id: true },
+    });
+    return cups.map((cup) => cup.id);
+};
+export const getAllCupsService = async (userId) => {
+    const cups = await prisma.cup.findMany({
+        where: { userId, isDeleted: false },
+    });
+    return cups;
+};
 //# sourceMappingURL=cup.service.js.map

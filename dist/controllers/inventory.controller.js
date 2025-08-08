@@ -227,6 +227,11 @@ export const getAllInventory = asyncHandler(async (req, res) => {
         label: cup.label,
         numberOf: cupQuantityMap.get(cup.id) || 0,
     }));
-    res.status(status.OK).json(result);
+    const sorted = result.sort((a, b) => {
+        const numA = parseInt(a.label.trim().replace('ml', ''));
+        const numB = parseInt(b.label.trim().replace('ml', ''));
+        return numA - numB;
+    });
+    res.status(status.OK).json(sorted);
 });
 //# sourceMappingURL=inventory.controller.js.map

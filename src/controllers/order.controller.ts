@@ -757,7 +757,6 @@ export const putOrder = asyncHandler(async (req: Request, res: Response) => {
 
 export const deleteOrder = asyncHandler(async (req: Request, res: Response) => {
   const userId = Number(req.header('x-user-id'));
-
   const id = Number(req.params.id);
 
   if (isNaN(id) || id <= 0) {
@@ -769,7 +768,46 @@ export const deleteOrder = asyncHandler(async (req: Request, res: Response) => {
   if (!existingOrder) {
     throw new AppError('Order not found', status.NOT_FOUND);
   }
+  console.log('existingOrder', existingOrder);
+  const cupDiffs = (
+    existingOrder.cups as { id: number; numberOf: number }[]
+  ).map((cup) => ({
+    cupId: cup.id,
+    quantity: -Math.abs(cup.numberOf),
+  }));
 
+  if (!existingOrder) {
+    throw new AppError('Order not found', status.NOT_FOUND);
+  }
+
+  // --- INVENTORY UPDATE ---
+  const existingInventory = await getInventoryForFruitService(
+    existingOrder.orderTypeId,
+    userId
+  );
+
+  if (existingInventory) {
+    const updatedCupData = [
+      ...(existingInventory.cupData as { cupId: number; quantity: number }[]),
+    ];
+
+    for (const diff of cupDiffs) {
+      const existingCup = updatedCupData.find((c) => c.cupId === diff.cupId);
+
+      if (existingCup) {
+        existingCup.quantity += diff.quantity; // add negative to subtract
+        if (existingCup.quantity < 0) existingCup.quantity = 0;
+      }
+    }
+
+    const updatedInventory = await updateInventoryService(
+      existingOrder.orderTypeId,
+      updatedCupData,
+      userId
+    );
+  }
+
+  // --- DELETE ORDER ---
   const order = await deleteOrderService(id, userId);
 
   if (!order) {

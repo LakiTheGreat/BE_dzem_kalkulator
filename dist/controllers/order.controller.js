@@ -640,6 +640,31 @@ export const deleteOrder = asyncHandler(async (req, res) => {
     if (!existingOrder) {
         throw new AppError('Order not found', status.NOT_FOUND);
     }
+    console.log('existingOrder', existingOrder);
+    const cupDiffs = existingOrder.cups.map((cup) => ({
+        cupId: cup.id,
+        quantity: -Math.abs(cup.numberOf),
+    }));
+    if (!existingOrder) {
+        throw new AppError('Order not found', status.NOT_FOUND);
+    }
+    // --- INVENTORY UPDATE ---
+    const existingInventory = await getInventoryForFruitService(existingOrder.orderTypeId, userId);
+    if (existingInventory) {
+        const updatedCupData = [
+            ...existingInventory.cupData,
+        ];
+        for (const diff of cupDiffs) {
+            const existingCup = updatedCupData.find((c) => c.cupId === diff.cupId);
+            if (existingCup) {
+                existingCup.quantity += diff.quantity; // add negative to subtract
+                if (existingCup.quantity < 0)
+                    existingCup.quantity = 0;
+            }
+        }
+        const updatedInventory = await updateInventoryService(existingOrder.orderTypeId, updatedCupData, userId);
+    }
+    // --- DELETE ORDER ---
     const order = await deleteOrderService(id, userId);
     if (!order) {
         throw new AppError('Failed to delete order', status.INTERNAL_SERVER_ERROR);

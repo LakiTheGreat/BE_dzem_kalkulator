@@ -33,10 +33,10 @@ export const inventorySchema: Schema = {
     notEmpty: {
       errorMessage: 'Each cupData item must have a "quantity"',
     },
-    isInt: {
-      options: { min: 0 },
-      errorMessage: '"quantity" must be an integer >= 0',
-    },
+    // isInt: {
+    //   options: { min: 0 },
+    //   errorMessage: '"quantity" must be an integer >= 0',
+    // },
     toInt: true,
   },
 };

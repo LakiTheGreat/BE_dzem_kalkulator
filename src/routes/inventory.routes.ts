@@ -1,16 +1,19 @@
 import { Router } from 'express';
 import { checkSchema } from 'express-validator';
 
-import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
-import { inventorySchema } from '../validationSchemas/inventorySchema.js';
 import {
-  getAllInventory,
+  getInventory,
+  getInventoryOverview,
   upsertInventory,
 } from '../controllers/inventory.controller.js';
+import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
+import { inventorySchema } from '../validationSchemas/inventorySchema.js';
 
 const router = Router();
 
-router.get('/overview', getAllInventory);
+router.get('/', getInventory);
+
+router.get('/overview', getInventoryOverview);
 
 router.post(
   '/input',

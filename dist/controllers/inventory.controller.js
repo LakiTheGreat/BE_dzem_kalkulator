@@ -2,7 +2,7 @@ import status from 'http-status';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
 import { getAllCupsService, getUserCupIdsService, } from '../services/cup.service.js';
 import { getFruitByIdService } from '../services/fruit.service.js';
-import { createInventoryService, getAllInventoryService, getInventoryForFruitService, updateInventoryService, } from '../services/inventory.service.js';
+import { createInventoryService, getInventoryGroupedByFruitService, getInventoryForFruitService, updateInventoryService, getAllInventoryService, } from '../services/inventory.service.js';
 import AppError from '../utils/AppError.js';
 /**
  * @swagger
@@ -208,7 +208,7 @@ export const upsertInventory = asyncHandler(async (req, res) => {
  *                     example: 15
 
  */
-export const getAllInventory = asyncHandler(async (req, res) => {
+export const getInventoryOverview = asyncHandler(async (req, res) => {
     const userId = Number(req.header('x-user-id'));
     const inventory = await getAllInventoryService(userId);
     if (!inventory) {
@@ -233,5 +233,55 @@ export const getAllInventory = asyncHandler(async (req, res) => {
         return numA - numB;
     });
     res.status(status.OK).json(sorted);
+});
+/**
+ * @swagger
+ * /api/inventory:
+ *   get:
+ *     tags:
+ *       - Inventory
+ *     summary: Get full inventory for a specific user
+ *     description: Returns the raw inventory data for the authenticated user, including cupData and related orderType information.
+ *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The user ID associated with the request
+ *     responses:
+ *       200:
+ *         description: Inventory data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   orderTypeId:
+ *                     type: integer
+ *                     description: The ID of the fruit/order type
+ *                   cupData:
+ *                     type: array
+ *                     description: List of cup IDs and quantities in the inventory
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         cupId:
+ *                           type: integer
+ *                         quantity:
+ *                           type: integer
+ *                   userId:
+ *                     type: integer
+ *                     description: The ID of the user who owns this inventory
+ */
+export const getInventory = asyncHandler(async (req, res) => {
+    const userId = Number(req.header('x-user-id'));
+    const inventory = await getInventoryGroupedByFruitService(userId);
+    if (!inventory) {
+        throw new AppError('No inventory found for user', status.NOT_FOUND);
+    }
+    res.status(status.OK).json(inventory);
 });
 //# sourceMappingURL=inventory.controller.js.map

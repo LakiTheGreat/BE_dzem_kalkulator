@@ -1,3 +1,4 @@
+import { CupData } from '../types/inventory.js';
 import prisma from '../utils/db.js';
 
 export const getAllInventoryService = async (userId: number) => {
@@ -37,7 +38,7 @@ export const createInventoryService = async (
 
 export const updateInventoryService = async (
   orderTypeId: number,
-  mergedCupData: any,
+  mergedCupData: CupData[],
   userId: number
 ) => {
   const updated = await prisma.inventory.update({

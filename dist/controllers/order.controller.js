@@ -1,8 +1,10 @@
 import status from 'http-status';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
+import { getUserCupIdsService } from '../services/cup.service.js';
+import { getAllFruitsService, getFruitByIdService, } from '../services/fruit.service.js';
+import { createInventoryService, getInventoryForFruitService, updateInventoryService, } from '../services/inventory.service.js';
 import { createNewOrderService, deleteOrderService, getAllOrdersService, getOrderByIdService, putOrderService, } from '../services/order.service.js';
 import AppError from '../utils/AppError.js';
-import { getAllFruitsService } from '../services/fruit.service.js';
 /**
  * @swagger
  * components:
@@ -290,9 +292,12 @@ export const getOrderById = asyncHandler(async (req, res) => {
  *                 items:
  *                   type: object
  *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: "6"
  *                     label:
  *                       type: string
- *                       example: "212ml "
+ *                       example: "212ml"
  *                     numberOf:
  *                       oneOf:
  *                         - type: string
@@ -309,7 +314,7 @@ export const getOrderById = asyncHandler(async (req, res) => {
  *                       example: 140
  *               orderTypeId:
  *                 type: integer
- *                 example: 23
+ *                 example: 35
  *               baseFruitIsFree:
  *                 type: boolean
  *                 example: true
@@ -387,6 +392,25 @@ export const createNewOrder = asyncHandler(async (req, res) => {
         req.body.baseFruitIsFree,
         req.body.otherExpensesMargin,
     ];
+    const orderTypeId = req.body.orderTypeId;
+    const cupData = [
+        ...req.body.cups.map((cup) => ({
+            cupId: cup.id,
+            quantity: cup.numberOf,
+        })),
+    ];
+    // Validate fruit exists
+    const fruit = await getFruitByIdService(userId, orderTypeId);
+    if (!fruit) {
+        throw new AppError('Provided orderTypeId is invalid - not found', status.NOT_FOUND);
+    }
+    // Validate all cupIds belong to user
+    const userCupIds = await getUserCupIdsService(userId);
+    for (const item of cupData) {
+        if (!userCupIds.includes(item.cupId)) {
+            throw new AppError(`Invalid cupId ${item.cupId} for user ${userId}`, status.BAD_REQUEST);
+        }
+    }
     if (requiredFields.some((field) => field === undefined || field === null)) {
         throw new AppError('Missing required fields', status.BAD_REQUEST);
     }
@@ -396,6 +420,28 @@ export const createNewOrder = asyncHandler(async (req, res) => {
     });
     if (!newOrder) {
         throw new AppError('Order not created', status.INTERNAL_SERVER_ERROR);
+    }
+    const existingInventory = await getInventoryForFruitService(orderTypeId, userId);
+    if (!existingInventory) {
+        // No existing inventory, create new with cupData as is
+        const createdInventory = await createInventoryService(orderTypeId, cupData, userId);
+    }
+    else {
+        // Merge existing cupData (array) with new cupData (array)
+        const existingCupData = existingInventory.cupData ||
+            [];
+        // Merge quantities by cupId
+        for (const { cupId, quantity } of cupData) {
+            const existingCup = existingCupData.find((c) => c.cupId === cupId);
+            if (existingCup) {
+                existingCup.quantity += quantity;
+            }
+            else {
+                existingCupData.push({ cupId, quantity });
+            }
+        }
+        // Update inventory with merged cupData array
+        const updated = await updateInventoryService(orderTypeId, existingCupData, userId);
     }
     res.status(status.CREATED).json(newOrder);
 });
@@ -444,6 +490,8 @@ export const createNewOrder = asyncHandler(async (req, res) => {
  *                 items:
  *                   type: object
  *                   properties:
+ *                     id:
+ *                       type: number
  *                     label:
  *                       type: string
  *                     numberOf:
@@ -475,6 +523,13 @@ export const createNewOrder = asyncHandler(async (req, res) => {
 export const putOrder = asyncHandler(async (req, res) => {
     const id = Number(req.params.id);
     const userId = Number(req.header('x-user-id'));
+    const orderTypeId = req.body.orderTypeId;
+    const cupData = [
+        ...req.body.cups.map((cup) => ({
+            cupId: cup.id,
+            quantity: cup.numberOf,
+        })),
+    ];
     if (isNaN(id) || id <= 0) {
         throw new AppError('Invalid order ID', status.BAD_REQUEST);
     }
@@ -482,16 +537,55 @@ export const putOrder = asyncHandler(async (req, res) => {
     if (!existingOrder) {
         throw new AppError('Order not found', status.NOT_FOUND);
     }
-    const requiredFields = [
-        req.body.fruits,
-        req.body.cups,
-        req.body.orderTypeId,
-        req.body.baseFruitIsFree,
-        req.body.otherExpensesMargin,
-    ];
-    if (requiredFields.some((field) => field === undefined || field === null)) {
-        throw new AppError('Missing required fields', status.BAD_REQUEST);
+    // Validate fruit exists
+    const fruit = await getFruitByIdService(userId, orderTypeId);
+    if (!fruit) {
+        throw new AppError('Provided orderTypeId is invalid - not found', status.NOT_FOUND);
     }
+    // Validate all cupIds belong to user
+    const userCupIds = await getUserCupIdsService(userId);
+    for (const item of cupData) {
+        if (!userCupIds.includes(item.cupId)) {
+            throw new AppError(`Invalid cupId ${item.cupId} for user ${userId} - putOrder`, status.BAD_REQUEST);
+        }
+    }
+    // Compare old and new cups to get differences
+    const oldCups = existingOrder.cups || [];
+    const cupDiffs = [];
+    for (const newCup of cupData) {
+        const oldCup = oldCups.find((c) => c.id === newCup.cupId);
+        const oldQty = oldCup?.numberOf || 0;
+        const diff = newCup.quantity - oldQty;
+        if (diff !== 0) {
+            cupDiffs.push({ cupId: newCup.cupId, quantity: diff });
+        }
+    }
+    // Only update inventory if something changed
+    if (cupDiffs.length > 0) {
+        const existingInventory = await getInventoryForFruitService(orderTypeId, userId);
+        if (!existingInventory) {
+            // Create new inventory record with differences
+            const createdInventory = await createInventoryService(orderTypeId, cupDiffs, userId);
+        }
+        else {
+            const existingCupData = existingInventory.cupData ||
+                [];
+            for (const { cupId, quantity } of cupDiffs) {
+                const existingCup = existingCupData.find((c) => c.cupId === cupId);
+                if (existingCup) {
+                    existingCup.quantity += quantity;
+                    if (existingCup.quantity < 0)
+                        existingCup.quantity = 0; // no negative inventory
+                }
+                else {
+                    existingCupData.push({ cupId, quantity });
+                }
+            }
+            const updated = await updateInventoryService(orderTypeId, existingCupData, userId);
+            console.log('updated', updated);
+        }
+    }
+    // Update the order itself
     const updatedOrder = await putOrderService(id, req.body, userId);
     if (!updatedOrder) {
         throw new AppError('Failed to update order', status.INTERNAL_SERVER_ERROR);

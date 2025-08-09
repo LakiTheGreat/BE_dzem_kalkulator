@@ -35,6 +35,15 @@ export const createOrderSchema = {
             errorMessage: 'Field "cups" must be an array',
         },
     },
+    'cups.*.id': {
+        notEmpty: {
+            errorMessage: 'Cup id is required',
+        },
+        isInt: {
+            errorMessage: 'Cup id must be an integer',
+        },
+        toInt: true,
+    },
     'cups.*.label': {
         notEmpty: {
             errorMessage: 'Cup label is required',

@@ -582,7 +582,6 @@ export const putOrder = asyncHandler(async (req, res) => {
                 }
             }
             const updated = await updateInventoryService(orderTypeId, existingCupData, userId);
-            console.log('updated', updated);
         }
     }
     // Update the order itself
@@ -640,7 +639,6 @@ export const deleteOrder = asyncHandler(async (req, res) => {
     if (!existingOrder) {
         throw new AppError('Order not found', status.NOT_FOUND);
     }
-    console.log('existingOrder', existingOrder);
     const cupDiffs = existingOrder.cups.map((cup) => ({
         cupId: cup.id,
         quantity: -Math.abs(cup.numberOf),

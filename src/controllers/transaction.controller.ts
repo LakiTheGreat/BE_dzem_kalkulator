@@ -154,7 +154,7 @@ export const getTransactions = asyncHandler(
  *                       example: 9
  *                     quantity:
  *                       type: integer
- *                       example: 3
+ *                       example: -3
  *     responses:
  *       201:
  *         description: Transaction created successfully

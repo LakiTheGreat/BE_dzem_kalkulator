@@ -1,5 +1,13 @@
 
 
+enum TransactionStatus {
+  CONSUMED
+  SOLD
+  GIVEN_AWAY
+  OTHER
+}
+
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -19,6 +27,8 @@ model User {
   Orders  Order[]
 
   Inventory Inventory[]
+
+  Transaction Transaction[]
 }
 
 model Fruit {
@@ -31,6 +41,8 @@ model Fruit {
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   Inventory Inventory[]
+
+  Transaction Transaction[]
 }
  
 
@@ -99,12 +111,28 @@ model Order {
 
 model Inventory {
   orderTypeId Int   @id
-  cupData     Json  // Store cup sizes and quantities here (as a JSON object or array)
+  cupData     Json  
 
   // Relations
   orderType Fruit @relation(fields: [orderTypeId], references: [id], onDelete: Cascade)
   userId    Int   @default(1)
   user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+model Transaction {
+  id           Int               @id @default(autoincrement())
+  orderTypeId  Int
+  orderType    Fruit             @relation(fields: [orderTypeId], references: [id], onDelete: Cascade)
+
+  cups         Json[]            
+  status       TransactionStatus
+
+  userId       Int               @default(1)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  isDeleted           Boolean   @default(false)
+  createdAt    DateTime          @default(now())
 }
 
 

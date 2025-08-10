@@ -124,6 +124,7 @@ model Transaction {
   id           Int               @id @default(autoincrement())
   orderTypeId  Int
   orderType    Fruit             @relation(fields: [orderTypeId], references: [id], onDelete: Cascade)
+  note String @default("")
 
   cups         Json[]            
   status       TransactionStatus

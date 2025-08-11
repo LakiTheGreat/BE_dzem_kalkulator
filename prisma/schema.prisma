@@ -29,6 +29,8 @@ model User {
   Inventory Inventory[]
 
   Transaction Transaction[]
+
+  BouquetTransaction BouquetTransaction[]
 }
 
 model Fruit {
@@ -131,6 +133,21 @@ model Transaction {
 
   userId       Int               @default(1)
   user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  isDeleted           Boolean   @default(false)
+  createdAt    DateTime          @default(now())
+}
+
+model BouquetTransaction {
+  id           Int               @id @default(autoincrement())
+  note String @default("")
+  userId       Int               @default(1)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+ totalExpense Int
+ income Int
+ profit Int
+ profitMargin Int
 
   isDeleted           Boolean   @default(false)
   createdAt    DateTime          @default(now())

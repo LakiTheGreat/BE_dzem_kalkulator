@@ -115,6 +115,80 @@ export const getTransactions = asyncHandler(
 
 /**
  * @swagger
+ * /api/transactions/{id}:
+ *   get:
+ *     summary: Get a transaction by ID
+ *     description: Returns a transaction by its ID for the authenticated user.
+ *     tags:
+ *       - Transactions
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the transaction to retrieve
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the authenticated user
+ *     responses:
+ *       200:
+ *         description: Transaction found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Transaction'
+ *             example:
+ *               id: 8
+ *               orderTypeId: 32
+ *               cups:
+ *                 - cupId: 6
+ *                   quantity: -3
+ *                 - cupId: 7
+ *                   quantity: 1
+ *               status: SOLD
+ *               userId: 1
+ *               isDeleted: false
+ *               createdAt: "2025-08-10T16:34:34.971Z"
+ *               orderType:
+ *                 label: "Jagoda"
+ *               cupsDetails:
+ *                 - cupId: 6
+ *                   label: "212ml"
+ *                 - cupId: 7
+ *                   label: "500ml"
+ *       404:
+ *         description: Transaction not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Transaction not found
+ */
+
+export const getTransactionById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = Number(req.params.id);
+    const userId = Number(req.header('x-user-id'));
+
+    const transaction = await getTransactionByIdService(id, userId);
+
+    if (!transaction) {
+      throw new AppError('Transaction not found', status.NOT_FOUND);
+    }
+
+    res.status(status.OK).json(transaction);
+  }
+);
+
+/**
+ * @swagger
  * /api/transactions:
  *   post:
  *     summary: Create a new transaction

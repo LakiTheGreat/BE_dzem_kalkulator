@@ -5,11 +5,15 @@ import { CupData } from '../types/inventory.js';
 import AppError from '../utils/AppError.js';
 import prisma from '../utils/db.js';
 
-export const getTransactionsService = async (userId: number) => {
+export const getTransactionsService = async (
+  userId: number,
+  whereClause: any
+) => {
   const transactions = await prisma.transaction.findMany({
     where: {
       userId,
       isDeleted: false,
+      ...whereClause,
     },
     include: {
       orderType: {

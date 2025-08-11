@@ -109,7 +109,32 @@ export const getTransactions = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = Number(req.header('x-user-id'));
 
-    const transactions = await getTransactionsService(userId);
+    const orderTypeId = req.query.orderTypeId
+      ? Number(req.query.orderTypeId)
+      : undefined;
+
+    const transactionStatus =
+      req.query.transactionStatus !== undefined
+        ? String(req.query.transactionStatus)
+        : undefined;
+
+    if (orderTypeId !== undefined && (isNaN(orderTypeId) || orderTypeId <= 0)) {
+      throw new AppError(
+        'Invalid orderTypeId query parameter',
+        status.BAD_REQUEST
+      );
+    }
+    const whereClause: any = { isDeleted: false, userId };
+
+    if (orderTypeId !== undefined) {
+      whereClause.orderTypeId = orderTypeId;
+    }
+
+    if (transactionStatus !== undefined) {
+      whereClause.status = transactionStatus;
+    }
+
+    const transactions = await getTransactionsService(userId, whereClause);
 
     res.status(status.OK).json(transactions);
   }

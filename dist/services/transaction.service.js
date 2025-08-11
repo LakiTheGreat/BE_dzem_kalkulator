@@ -1,11 +1,12 @@
 import status from 'http-status';
 import AppError from '../utils/AppError.js';
 import prisma from '../utils/db.js';
-export const getTransactionsService = async (userId) => {
+export const getTransactionsService = async (userId, whereClause) => {
     const transactions = await prisma.transaction.findMany({
         where: {
             userId,
             isDeleted: false,
+            ...whereClause,
         },
         include: {
             orderType: {

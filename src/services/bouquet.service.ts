@@ -24,6 +24,16 @@ export async function createBouquetTransactionService(data: {
 export async function getBouquetTransactionByIdService(id: number) {
   return prisma.bouquetTransaction.findUnique({
     where: { id },
+    select: {
+      id: true,
+      note: true,
+      totalExpense: true,
+      income: true,
+      profit: true,
+      isDeleted: true,
+      createdAt: true,
+      // userId  excluded
+    },
   });
 }
 
@@ -31,5 +41,15 @@ export async function getAllBouquetTransactionsService() {
   return prisma.bouquetTransaction.findMany({
     where: { isDeleted: false },
     orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      note: true,
+      totalExpense: true,
+      income: true,
+      profit: true,
+      isDeleted: true,
+      createdAt: true,
+      // userId excluded
+    },
   });
 }

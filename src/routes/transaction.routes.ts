@@ -29,4 +29,6 @@ router.put(
   updateTransaction
 );
 
+router.delete('/:id', updateTransaction);
+
 export default router;

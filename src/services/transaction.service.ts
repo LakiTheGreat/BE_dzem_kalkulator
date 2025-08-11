@@ -91,7 +91,7 @@ export const updateTransactionService = async (
 
 export const getTransactionByIdService = async (id: number, userId: number) => {
   const order = await prisma.transaction.findUnique({
-    where: { id },
+    where: { id, userId },
   });
 
   return order;
@@ -139,4 +139,28 @@ export const adjustInventoryForTransactionUpdate = async (
   }
 
   return inventoryCupData;
+};
+
+export const softDeleteTransactionService = async (
+  transactionId: number,
+  userId: number
+) => {
+  // Find transaction with its cups
+  const transaction = await getTransactionByIdService(transactionId, userId);
+
+  if (!transaction) {
+    throw new AppError('Transaction not found', status.NOT_FOUND);
+  }
+
+  // Soft delete transaction
+  const updatedTransaction = await prisma.transaction.update({
+    where: { id: transactionId },
+    data: { isDeleted: true },
+  });
+
+  if (!updatedTransaction) {
+    throw new AppError('Failed to soft delete transaction', status.BAD_REQUEST);
+  }
+
+  return updatedTransaction;
 };

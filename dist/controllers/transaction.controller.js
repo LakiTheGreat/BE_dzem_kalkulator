@@ -5,6 +5,7 @@ import { getFruitByIdService } from '../services/fruit.service.js';
 import { createInventoryService, getInventoryForFruitService, updateInventoryService, } from '../services/inventory.service.js';
 import { adjustInventoryForTransactionUpdate, createTransactionService, getTransactionByIdService, getTransactionsService, updateTransactionService, } from '../services/transaction.service.js';
 import AppError from '../utils/AppError.js';
+import prisma from '../utils/db.js';
 /**
  * @swagger
  * components:
@@ -332,7 +333,126 @@ export const createTransaction = asyncHandler(async (req, res) => {
  *       500:
  *         description: Internal server error
  */
+/**
+ * @swagger
+ * /api/transactions/{id}:
+ *   delete:
+ *     summary: Soft delete transaction
+ *     tags:
+ *       - Transactions
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Transaction ID to update
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the user performing the update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isDeleted:
+ *                 type: boolean
+ *                 description: If true, marks the transaction as soft deleted
+ *     responses:
+ *       200:
+ *         description: Transaction updated or soft deleted successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               id: 123
+ *               orderTypeId: 32
+ *               status: SOLD
+ *               cupData:
+ *                 - cupId: 9
+ *                   quantity: -3
+ *               isDeleted: false
+ *               createdAt: "2025-08-10T16:34:34.971Z"
+ *       400:
+ *         description: Bad request (e.g., invalid cupId or inventory constraints)
+ *       404:
+ *         description: Transaction or inventory not found
+ */
 export const updateTransaction = asyncHandler(async (req, res) => {
+    const userId = Number(req.header('x-user-id'));
+    const id = Number(req.params.id);
+    const { orderTypeId, cupData, isDeleted } = req.body;
+    const transactionStatus = req.body.status;
+    // Validate fruit exists (only if not deleting)
+    if (!isDeleted) {
+        const fruit = await getFruitByIdService(userId, orderTypeId);
+        if (!fruit) {
+            throw new AppError('Provided orderTypeId is invalid - not found', status.NOT_FOUND);
+        }
+    }
+    // Validate cupIds belong to user (only if not deleting)
+    if (!isDeleted) {
+        const userCupIds = await getUserCupIdsService(userId);
+        for (const item of cupData) {
+            if (!userCupIds.includes(item.cupId)) {
+                throw new AppError(`Invalid cupId ${item.cupId} for user ${userId}`, status.BAD_REQUEST);
+            }
+        }
+    }
+    // Fetch existing transaction
+    const existingTransaction = await getTransactionByIdService(id, userId);
+    if (!existingTransaction) {
+        throw new AppError('Transaction not found', status.NOT_FOUND);
+    }
+    // Soft delete case
+    if (isDeleted === true && existingTransaction.isDeleted === false) {
+        // Soft delete transaction directly
+        await prisma.transaction.update({
+            where: { id },
+            data: { isDeleted: true },
+        });
+        // Fetch inventory for the transaction's orderTypeId
+        const inventory = await getInventoryForFruitService(existingTransaction.orderTypeId, userId);
+        if (!inventory) {
+            throw new AppError('Inventory not found for this order type', status.NOT_FOUND);
+        }
+        const cupDataInventory = inventory.cupData;
+        const transactionCups = existingTransaction.cups;
+        cupDataInventory.forEach((invCup) => {
+            const transactionCup = transactionCups.find((c) => c.cupId === invCup.cupId);
+            if (transactionCup) {
+                invCup.quantity += Math.abs(transactionCup.quantity);
+            }
+        });
+        await updateInventoryService(existingTransaction.orderTypeId, cupDataInventory, userId);
+        res.status(status.OK).json({ message: 'Transaction soft deleted' });
+    }
+    // Normal update path
+    const oldCupData = existingTransaction.cups;
+    const inventory = await getInventoryForFruitService(orderTypeId, userId);
+    if (!inventory) {
+        throw new AppError('Inventory not found for this order type', status.NOT_FOUND);
+    }
+    const cupDataInventory = inventory.cupData;
+    const updatedInventoryCupData = await adjustInventoryForTransactionUpdate(oldCupData, cupData, cupDataInventory);
+    const updatedInventor = await updateInventoryService(orderTypeId, updatedInventoryCupData, userId);
+    const updated = await updateTransactionService(id, userId, {
+        orderTypeId: Number(orderTypeId),
+        status: transactionStatus,
+        cupData,
+    });
+    if (!updated) {
+        return res
+            .status(status.BAD_REQUEST)
+            .json({ message: 'Transaction was not updated' });
+    }
+    res.status(status.OK).json(updated);
+});
+export const deleteTransaction = asyncHandler(async (req, res) => {
     const userId = Number(req.header('x-user-id'));
     const id = Number(req.params.id);
     const { orderTypeId, cupData } = req.body;

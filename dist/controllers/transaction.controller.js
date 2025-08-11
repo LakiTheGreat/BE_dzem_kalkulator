@@ -3,7 +3,7 @@ import { asyncHandler } from '../middlewares/asyncHandler.js';
 import { getUserCupIdsService } from '../services/cup.service.js';
 import { getFruitByIdService } from '../services/fruit.service.js';
 import { createInventoryService, getInventoryForFruitService, updateInventoryService, } from '../services/inventory.service.js';
-import { createTransactionService, getTransactionsService, } from '../services/transaction.service.js';
+import { adjustInventoryForTransactionUpdate, createTransactionService, getTransactionByIdService, getTransactionsService, updateTransactionService, } from '../services/transaction.service.js';
 import AppError from '../utils/AppError.js';
 /**
  * @swagger
@@ -196,5 +196,119 @@ export const createTransaction = asyncHandler(async (req, res) => {
         const updated = await updateInventoryService(orderTypeId, existingCupData, userId);
         res.status(status.CREATED).json(transaction);
     }
+});
+/**
+ * @swagger
+ * /api/transactions/{id}:
+ *   put:
+ *     summary: Update a transaction by ID
+ *     tags:
+ *       - Transactions
+ *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID of the user making the request
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Transaction ID to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - orderTypeId
+ *               - cupData
+ *               - status
+ *             properties:
+ *               orderTypeId:
+ *                 type: integer
+ *                 example: 32
+ *               status:
+ *                 type: string
+ *                 enum: [CONSUMED, SOLD, GIVEN_AWAY, OTHER]
+ *                 example: SOLD
+ *               cupData:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - cupId
+ *                     - quantity
+ *                   properties:
+ *                     cupId:
+ *                       type: integer
+ *                       example: 9
+ *                     quantity:
+ *                       type: integer
+ *                       example: -3
+ *     responses:
+ *       200:
+ *         description: Transaction updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TransactionUpdateResponse'
+ *       400:
+ *         description: Bad request (e.g. missing ID or invalid payload)
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Transaction not found or not authorized
+ *       500:
+ *         description: Internal server error
+ */
+export const updateTransaction = asyncHandler(async (req, res) => {
+    const userId = Number(req.header('x-user-id'));
+    const id = Number(req.params.id);
+    const { orderTypeId, cupData } = req.body;
+    const transactionStatus = req.body.status;
+    // Validate fruit exists
+    const fruit = await getFruitByIdService(userId, orderTypeId);
+    if (!fruit) {
+        throw new AppError('Provided orderTypeId is invalid - not found', status.NOT_FOUND);
+    }
+    // Validate all cupIds belong to user
+    const userCupIds = await getUserCupIdsService(userId);
+    for (const item of cupData) {
+        if (!userCupIds.includes(item.cupId)) {
+            throw new AppError(`Invalid cupId ${item.cupId} for user ${userId}`, status.BAD_REQUEST);
+        }
+    }
+    // Fetch existing transaction
+    const existingTransaction = await getTransactionByIdService(id, userId);
+    if (!existingTransaction) {
+        throw new AppError('Transaction not found', status.NOT_FOUND);
+    }
+    const oldCupData = existingTransaction.cups;
+    // Fetch inventory for the transaction's orderTypeId
+    const inventory = await getInventoryForFruitService(orderTypeId, userId);
+    if (!inventory) {
+        throw new AppError('Inventory not found for this order type', status.NOT_FOUND);
+    }
+    const cupDataInventory = inventory.cupData;
+    // Use the service to adjust inventory cup quantities
+    const updatedInventoryCupData = await adjustInventoryForTransactionUpdate(oldCupData, cupData, cupDataInventory);
+    // Save updated inventory
+    await updateInventoryService(orderTypeId, updatedInventoryCupData, userId);
+    // Update transaction
+    const updated = await updateTransactionService(id, userId, {
+        orderTypeId: Number(orderTypeId),
+        status: transactionStatus,
+        cupData,
+    });
+    if (!updated) {
+        return res
+            .status(status.BAD_REQUEST)
+            .json({ message: 'Transaction was not updated' });
+    }
+    res.status(status.OK).json(updated);
 });
 //# sourceMappingURL=transaction.controller.js.map

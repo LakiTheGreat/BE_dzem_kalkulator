@@ -4,6 +4,7 @@ import { checkSchema } from 'express-validator';
 import {
   createTransaction,
   getTransactions,
+  updateTransaction,
 } from '../controllers/transaction.controller.js';
 import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
 import { transactionSchema } from '../validationSchemas/transactionSchema.js';
@@ -17,6 +18,13 @@ router.post(
   checkSchema(transactionSchema),
   handleValidationErrors,
   createTransaction
+);
+
+router.put(
+  '/:id',
+  checkSchema(transactionSchema),
+  handleValidationErrors,
+  updateTransaction
 );
 
 export default router;

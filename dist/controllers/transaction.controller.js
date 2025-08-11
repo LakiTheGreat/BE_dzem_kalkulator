@@ -236,7 +236,7 @@ export const getTransactionById = asyncHandler(async (req, res) => {
  */
 export const createTransaction = asyncHandler(async (req, res) => {
     const userId = Number(req.header('x-user-id'));
-    const { orderTypeId, cupData, status: transactionStatus } = req.body;
+    const { orderTypeId, cupData, status: transactionStatus, note } = req.body;
     // Validate fruit exists
     const fruit = await getFruitByIdService(userId, orderTypeId);
     if (!fruit) {
@@ -254,6 +254,7 @@ export const createTransaction = asyncHandler(async (req, res) => {
         cupData,
         status: transactionStatus,
         userId,
+        note,
     });
     // Fetch existing inventory if any
     const existingInventory = await getInventoryForFruitService(orderTypeId, userId);
@@ -401,7 +402,7 @@ export const createTransaction = asyncHandler(async (req, res) => {
 export const updateTransaction = asyncHandler(async (req, res) => {
     const userId = Number(req.header('x-user-id'));
     const id = Number(req.params.id);
-    const { orderTypeId, cupData, isDeleted } = req.body;
+    const { orderTypeId, cupData, isDeleted, note } = req.body;
     const transactionStatus = req.body.status;
     // Validate fruit exists (only if not deleting)
     if (!isDeleted) {
@@ -460,6 +461,7 @@ export const updateTransaction = asyncHandler(async (req, res) => {
         orderTypeId: Number(orderTypeId),
         status: transactionStatus,
         cupData,
+        note,
     });
     if (!updated) {
         return res
@@ -471,7 +473,7 @@ export const updateTransaction = asyncHandler(async (req, res) => {
 export const deleteTransaction = asyncHandler(async (req, res) => {
     const userId = Number(req.header('x-user-id'));
     const id = Number(req.params.id);
-    const { orderTypeId, cupData } = req.body;
+    const { orderTypeId, cupData, note } = req.body;
     const transactionStatus = req.body.status;
     // Validate fruit exists
     const fruit = await getFruitByIdService(userId, orderTypeId);
@@ -506,6 +508,7 @@ export const deleteTransaction = asyncHandler(async (req, res) => {
         orderTypeId: Number(orderTypeId),
         status: transactionStatus,
         cupData,
+        note,
     });
     if (!updated) {
         return res

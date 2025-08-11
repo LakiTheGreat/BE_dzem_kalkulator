@@ -276,7 +276,7 @@ export const createTransaction = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = Number(req.header('x-user-id'));
 
-    const { orderTypeId, cupData, status: transactionStatus } = req.body;
+    const { orderTypeId, cupData, status: transactionStatus, note } = req.body;
 
     // Validate fruit exists
     const fruit = await getFruitByIdService(userId, orderTypeId);
@@ -303,6 +303,7 @@ export const createTransaction = asyncHandler(
       cupData,
       status: transactionStatus,
       userId,
+      note,
     });
 
     // Fetch existing inventory if any
@@ -471,7 +472,7 @@ export const updateTransaction = asyncHandler(
     const userId = Number(req.header('x-user-id'));
     const id = Number(req.params.id);
 
-    const { orderTypeId, cupData, isDeleted } = req.body;
+    const { orderTypeId, cupData, isDeleted, note } = req.body;
 
     const transactionStatus = req.body.status;
 
@@ -588,6 +589,7 @@ export const updateTransaction = asyncHandler(
       orderTypeId: Number(orderTypeId),
       status: transactionStatus,
       cupData,
+      note,
     });
 
     if (!updated) {
@@ -605,7 +607,7 @@ export const deleteTransaction = asyncHandler(
     const userId = Number(req.header('x-user-id'));
     const id = Number(req.params.id);
 
-    const { orderTypeId, cupData } = req.body;
+    const { orderTypeId, cupData, note } = req.body;
     const transactionStatus = req.body.status;
 
     // Validate fruit exists
@@ -668,6 +670,7 @@ export const deleteTransaction = asyncHandler(
       orderTypeId: Number(orderTypeId),
       status: transactionStatus,
       cupData,
+      note,
     });
 
     if (!updated) {

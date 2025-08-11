@@ -47,6 +47,7 @@ export const getTransactionsService = async (
     status: t.status,
     createdAt: t.createdAt,
     isDeleted: t.isDeleted,
+    note: t.note,
   }));
 };
 
@@ -55,6 +56,7 @@ export const createTransactionService = async (data: {
   cupData: { cupId: number; quantity: number }[];
   status: TransactionStatus;
   userId: number;
+  note: string;
 }) => {
   return prisma.transaction.create({
     data: {
@@ -62,6 +64,7 @@ export const createTransactionService = async (data: {
       cups: data.cupData,
       status: data.status,
       userId: data.userId,
+      note: data.note,
     },
     include: {
       orderType: true,
@@ -77,6 +80,7 @@ export const updateTransactionService = async (
     orderTypeId: number;
     status: TransactionStatus;
     cupData: { cupId: number; quantity: number }[];
+    note: string;
   }
 ) => {
   return prisma.transaction.update({
@@ -89,6 +93,7 @@ export const updateTransactionService = async (
       orderTypeId: data.orderTypeId,
       status: data.status,
       cups: data.cupData,
+      note: data.note,
     },
   });
 };

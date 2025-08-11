@@ -32,6 +32,7 @@ export async function getBouquetTransactionByIdService(id: number) {
       profit: true,
       isDeleted: true,
       createdAt: true,
+      profitMargin: true,
       // userId  excluded
     },
   });
@@ -49,6 +50,7 @@ export async function getAllBouquetTransactionsService() {
       profit: true,
       isDeleted: true,
       createdAt: true,
+      profitMargin: true,
       // userId excluded
     },
   });

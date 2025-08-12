@@ -1,6 +1,6 @@
 import status from 'http-status';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
-import { createBouquetTransactionService, getAllBouquetTransactionsService, getBouquetTransactionByIdService, } from '../services/bouquet.service.js';
+import { createBouquetTransactionService, getAllBouquetTransactionsService, getBouquetTransactionByIdService, updateBouquetTransactionService, } from '../services/bouquet.service.js';
 import AppError from '../utils/AppError.js';
 /**
  * @swagger
@@ -190,5 +190,99 @@ export const getBouquetTransactionById = asyncHandler(async (req, res) => {
 export const getAllBouquetTransactions = asyncHandler(async (_req, res) => {
     const bouquetTransactions = await getAllBouquetTransactionsService();
     res.status(status.OK).json(bouquetTransactions);
+});
+/**
+ * @swagger
+ * /api/bouquets/{id}:
+ *   put:
+ *     summary: Update an existing BouquetTransaction
+ *     tags:
+ *       - BouquetTransaction
+ *     parameters:
+ *       - in: header
+ *         name: x-user-id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID of the user creating the transaction
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the BouquetTransaction to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               note:
+ *                 type: string
+ *                 example: "Updated note for transaction"
+ *               totalExpense:
+ *                 type: integer
+ *                 example: 2500
+ *               income:
+ *                 type: integer
+ *                 example: 4000
+ *               profit:
+ *                 type: integer
+ *                 example: 1500
+ *               profitMargin:
+ *                 type: integer
+ *                 example: 15
+ *               isDeleted:
+ *                 type: boolean
+ *                 example: false
+ *             description: Fields to update (only include fields you want to change)
+ *     responses:
+ *       200:
+ *         description: BouquetTransaction updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BouquetTransaction'
+ *       400:
+ *         description: Invalid ID or request body
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Invalid ID
+ *       404:
+ *         description: BouquetTransaction not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: BouquetTransaction not found
+ *       500:
+ *         description: Internal server error
+ */
+export const updateBouquetTransaction = asyncHandler(async (req, res) => {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+        throw new AppError('Invalid ID', status.BAD_REQUEST);
+    }
+    const { note, totalExpense, income, profit, isDeleted } = req.body;
+    const updatedTransaction = await updateBouquetTransactionService(id, {
+        note,
+        totalExpense,
+        income,
+        profit,
+        isDeleted,
+    });
+    if (!updatedTransaction) {
+        throw new AppError('BouquetTransaction not found', status.NOT_FOUND);
+    }
+    res.status(status.OK).json(updatedTransaction);
 });
 //# sourceMappingURL=bouquet.controller.js.map

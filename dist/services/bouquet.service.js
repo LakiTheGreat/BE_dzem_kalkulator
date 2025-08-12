@@ -45,4 +45,19 @@ export async function getAllBouquetTransactionsService() {
         },
     });
 }
+export async function updateBouquetTransactionService(id, data) {
+    return prisma.bouquetTransaction.update({
+        where: { id },
+        data,
+        select: {
+            id: true,
+            note: true,
+            totalExpense: true,
+            income: true,
+            profit: true,
+            isDeleted: true,
+            createdAt: true,
+        },
+    });
+}
 //# sourceMappingURL=bouquet.service.js.map

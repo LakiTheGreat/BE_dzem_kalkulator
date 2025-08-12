@@ -5,6 +5,7 @@ import {
   createBouquetTransaction,
   getAllBouquetTransactions,
   getBouquetTransactionById,
+  updateBouquetTransaction,
 } from '../controllers/bouquet.controller.js';
 import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
 import { bouquetTransactionSchema } from '../validationSchemas/bouquetSchema.js';
@@ -21,12 +22,12 @@ router.post(
   createBouquetTransaction
 );
 
-// router.put(
-//   '/:id',
-//   checkSchema(bouquetTransactionSchema),
-//   handleValidationErrors,
-//   updateTransaction
-// );
+router.put(
+  '/:id',
+  checkSchema(bouquetTransactionSchema),
+  handleValidationErrors,
+  updateBouquetTransaction
+);
 
 // router.delete('/:id', updateTransaction);
 

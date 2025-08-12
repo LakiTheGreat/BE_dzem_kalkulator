@@ -57,6 +57,7 @@ export async function updateBouquetTransactionService(id, data) {
             profit: true,
             isDeleted: true,
             createdAt: true,
+            profitMargin: true,
         },
     });
 }

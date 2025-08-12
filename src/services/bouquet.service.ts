@@ -64,6 +64,7 @@ export async function updateBouquetTransactionService(
     income?: number;
     profit?: number;
     isDeleted?: boolean;
+    profitMargin?: number;
   }
 ) {
   return prisma.bouquetTransaction.update({
@@ -77,6 +78,7 @@ export async function updateBouquetTransactionService(
       profit: true,
       isDeleted: true,
       createdAt: true,
+      profitMargin: true,
     },
   });
 }

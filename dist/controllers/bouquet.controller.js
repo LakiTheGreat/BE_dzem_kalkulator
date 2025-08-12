@@ -272,13 +272,14 @@ export const updateBouquetTransaction = asyncHandler(async (req, res) => {
     if (isNaN(id)) {
         throw new AppError('Invalid ID', status.BAD_REQUEST);
     }
-    const { note, totalExpense, income, profit, isDeleted } = req.body;
+    const { note, totalExpense, income, profit, isDeleted, profitMargin } = req.body;
     const updatedTransaction = await updateBouquetTransactionService(id, {
         note,
         totalExpense,
         income,
         profit,
         isDeleted,
+        profitMargin,
     });
     if (!updatedTransaction) {
         throw new AppError('BouquetTransaction not found', status.NOT_FOUND);

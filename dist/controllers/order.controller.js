@@ -162,9 +162,9 @@ export const getAllOrders = asyncHandler(async (req, res) => {
         const calculatedTotalCost = Math.round(orderTotalCost + orderTotalCost * (order.otherExpensesMargin / 100));
         const calculatedTotalValue = cups.reduce((acc, f) => acc + f.sellingPrice * f.numberOf, 0);
         const profit = calculatedTotalValue - calculatedTotalCost;
-        const calculatedProfitMargin = (Number(calculatedTotalValue) > 0
-            ? (profit / Number(calculatedTotalValue)) * 100
-            : 0).toFixed(0);
+        const calculatedProfitMargin = Number(calculatedTotalCost) > 0
+            ? Math.round((profit / Number(calculatedTotalCost)) * 100)
+            : 0;
         // Accumulate totals
         totalCost += calculatedTotalCost;
         totalValue += calculatedTotalValue;

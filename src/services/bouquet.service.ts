@@ -21,9 +21,12 @@ export async function createBouquetTransactionService(data: {
   return bouquetTransaction;
 }
 
-export async function getBouquetTransactionByIdService(id: number) {
+export async function getBouquetTransactionByIdService(
+  id: number,
+  userId: number
+) {
   return prisma.bouquetTransaction.findUnique({
-    where: { id },
+    where: { id, userId },
     select: {
       id: true,
       note: true,
@@ -38,9 +41,9 @@ export async function getBouquetTransactionByIdService(id: number) {
   });
 }
 
-export async function getAllBouquetTransactionsService() {
+export async function getAllBouquetTransactionsService(userId: number) {
   return prisma.bouquetTransaction.findMany({
-    where: { isDeleted: false },
+    where: { isDeleted: false, userId },
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
@@ -65,10 +68,11 @@ export async function updateBouquetTransactionService(
     profit?: number;
     isDeleted?: boolean;
     profitMargin?: number;
-  }
+  },
+  userId: number
 ) {
   return prisma.bouquetTransaction.update({
-    where: { id },
+    where: { id, userId },
     data,
     select: {
       id: true,

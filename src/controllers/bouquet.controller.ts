@@ -172,13 +172,17 @@ export const createBouquetTransaction = asyncHandler(
 
 export const getBouquetTransactionById = asyncHandler(
   async (req: Request, res: Response) => {
+    const userId = Number(req.header('x-user-id'));
     const id = Number(req.params.id);
 
     if (isNaN(id)) {
       throw new AppError('Invalid ID', status.BAD_REQUEST);
     }
 
-    const bouquetTransaction = await getBouquetTransactionByIdService(id);
+    const bouquetTransaction = await getBouquetTransactionByIdService(
+      id,
+      userId
+    );
 
     if (!bouquetTransaction) {
       throw new AppError('BouquetTransaction not found', status.NOT_FOUND);
@@ -216,8 +220,9 @@ export const getBouquetTransactionById = asyncHandler(
  */
 
 export const getAllBouquetTransactions = asyncHandler(
-  async (_req: Request, res: Response) => {
-    const bouquetTransactions = await getAllBouquetTransactionsService();
+  async (req: Request, res: Response) => {
+    const userId = Number(req.header('x-user-id'));
+    const bouquetTransactions = await getAllBouquetTransactionsService(userId);
 
     res.status(status.OK).json(bouquetTransactions);
   }
@@ -303,6 +308,7 @@ export const getAllBouquetTransactions = asyncHandler(
 export const updateBouquetTransaction = asyncHandler(
   async (req: Request, res: Response) => {
     const id = Number(req.params.id);
+    const userId = Number(req.header('x-user-id'));
 
     if (isNaN(id)) {
       throw new AppError('Invalid ID', status.BAD_REQUEST);
@@ -311,14 +317,18 @@ export const updateBouquetTransaction = asyncHandler(
     const { note, totalExpense, income, profit, isDeleted, profitMargin } =
       req.body;
 
-    const updatedTransaction = await updateBouquetTransactionService(id, {
-      note,
-      totalExpense,
-      income,
-      profit,
-      isDeleted,
-      profitMargin,
-    });
+    const updatedTransaction = await updateBouquetTransactionService(
+      id,
+      {
+        note,
+        totalExpense,
+        income,
+        profit,
+        isDeleted,
+        profitMargin,
+      },
+      userId
+    );
 
     if (!updatedTransaction) {
       throw new AppError('BouquetTransaction not found', status.NOT_FOUND);

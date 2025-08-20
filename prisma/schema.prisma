@@ -4,6 +4,7 @@ enum TransactionStatus {
   CONSUMED
   SOLD
   GIVEN_AWAY
+  PROMOTION
   OTHER
 }
 

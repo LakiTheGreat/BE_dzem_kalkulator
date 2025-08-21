@@ -16,7 +16,7 @@ export const transactionSchema: Schema = {
       errorMessage: 'Field "status" is required',
     },
     isIn: {
-      options: [['CONSUMED', 'SOLD', 'GIVEN_AWAY', 'OTHER']],
+      options: [['CONSUMED', 'SOLD', 'GIVEN_AWAY', 'PROMOTION', 'OTHER']],
       errorMessage:
         'Field "status" must be one of: CONSUMED, SOLD, GIVEN_AWAY, OTHER',
     },

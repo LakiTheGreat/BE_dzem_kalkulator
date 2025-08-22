@@ -8,6 +8,7 @@ export async function createBouquetTransactionService(data) {
             income: data.income,
             profit: data.profit,
             profitMargin: data.profitMargin,
+            status: data.status,
         },
     });
     return bouquetTransaction;
@@ -24,6 +25,7 @@ export async function getBouquetTransactionByIdService(id, userId) {
             isDeleted: true,
             createdAt: true,
             profitMargin: true,
+            status: true,
             // userId  excluded
         },
     });
@@ -41,6 +43,7 @@ export async function getAllBouquetTransactionsService(userId) {
             isDeleted: true,
             createdAt: true,
             profitMargin: true,
+            status: true,
             // userId excluded
         },
     });

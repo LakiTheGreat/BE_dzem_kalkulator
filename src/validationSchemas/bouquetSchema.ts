@@ -8,6 +8,16 @@ export const bouquetTransactionSchema: Schema = {
     },
     trim: true,
   },
+  status: {
+    notEmpty: {
+      errorMessage: 'Field "status" is required',
+    },
+    isIn: {
+      options: [[, 'SOLD', 'GIVEN_AWAY', 'PROMOTION', 'OTHER']],
+      errorMessage:
+        'Field "status" must be one of: SOLD, GIVEN_AWAY, PROMOTION, OTHER',
+    },
+  },
   userId: {
     optional: true,
     isInt: {

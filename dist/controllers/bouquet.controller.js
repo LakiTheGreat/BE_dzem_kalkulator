@@ -109,6 +109,7 @@ import AppError from '../utils/AppError.js';
 export const createBouquetTransaction = asyncHandler(async (req, res) => {
     const { note, totalExpense, income, profit, profitMargin } = req.body;
     const userId = Number(req.header('x-user-id'));
+    const bouquetStatus = req.body.status;
     const bouquetTransaction = await createBouquetTransactionService({
         note,
         userId,
@@ -116,6 +117,7 @@ export const createBouquetTransaction = asyncHandler(async (req, res) => {
         income,
         profit,
         profitMargin,
+        status: bouquetStatus,
     });
     if (!bouquetTransaction) {
         throw new AppError('Bouquet Transaction was not created found', status.BAD_REQUEST);
@@ -276,6 +278,7 @@ export const updateBouquetTransaction = asyncHandler(async (req, res) => {
         throw new AppError('Invalid ID', status.BAD_REQUEST);
     }
     const { note, totalExpense, income, profit, isDeleted, profitMargin } = req.body;
+    const bouquetStatus = req.body.status;
     const updatedTransaction = await updateBouquetTransactionService(id, {
         note,
         totalExpense,
@@ -283,6 +286,7 @@ export const updateBouquetTransaction = asyncHandler(async (req, res) => {
         profit,
         isDeleted,
         profitMargin,
+        status: bouquetStatus,
     }, userId);
     if (!updatedTransaction) {
         throw new AppError('BouquetTransaction not found', status.NOT_FOUND);

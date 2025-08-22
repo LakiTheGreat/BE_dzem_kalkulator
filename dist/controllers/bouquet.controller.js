@@ -192,7 +192,14 @@ export const getBouquetTransactionById = asyncHandler(async (req, res) => {
  */
 export const getAllBouquetTransactions = asyncHandler(async (req, res) => {
     const userId = Number(req.header('x-user-id'));
-    const bouquetTransactions = await getAllBouquetTransactionsService(userId);
+    const transactionStatus = req.query.transactionStatus !== undefined
+        ? String(req.query.transactionStatus)
+        : undefined;
+    const whereClause = { isDeleted: false, userId };
+    if (transactionStatus !== undefined) {
+        whereClause.status = transactionStatus;
+    }
+    const bouquetTransactions = await getAllBouquetTransactionsService(userId, whereClause);
     res.status(status.OK).json(bouquetTransactions);
 });
 /**

@@ -30,9 +30,13 @@ export async function getBouquetTransactionByIdService(id, userId) {
         },
     });
 }
-export async function getAllBouquetTransactionsService(userId) {
+export async function getAllBouquetTransactionsService(userId, whereClause) {
     return prisma.bouquetTransaction.findMany({
-        where: { isDeleted: false, userId },
+        where: {
+            userId,
+            isDeleted: false,
+            ...whereClause,
+        },
         orderBy: { createdAt: 'desc' },
         select: {
             id: true,

@@ -1,3 +1,4 @@
+import { BouquetTransactionEnum } from '@prisma/client';
 import prisma from '../utils/db.js';
 
 export async function createBouquetTransactionService(data: {
@@ -7,6 +8,7 @@ export async function createBouquetTransactionService(data: {
   income: number;
   profit: number;
   profitMargin: number;
+  status: BouquetTransactionEnum;
 }) {
   const bouquetTransaction = await prisma.bouquetTransaction.create({
     data: {
@@ -16,6 +18,7 @@ export async function createBouquetTransactionService(data: {
       income: data.income,
       profit: data.profit,
       profitMargin: data.profitMargin,
+      status: data.status,
     },
   });
   return bouquetTransaction;
@@ -36,6 +39,7 @@ export async function getBouquetTransactionByIdService(
       isDeleted: true,
       createdAt: true,
       profitMargin: true,
+      status: true,
       // userId  excluded
     },
   });
@@ -54,6 +58,7 @@ export async function getAllBouquetTransactionsService(userId: number) {
       isDeleted: true,
       createdAt: true,
       profitMargin: true,
+      status: true,
       // userId excluded
     },
   });
@@ -68,6 +73,7 @@ export async function updateBouquetTransactionService(
     profit?: number;
     isDeleted?: boolean;
     profitMargin?: number;
+    status: BouquetTransactionEnum;
   },
   userId: number
 ) {

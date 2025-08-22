@@ -119,7 +119,8 @@ import AppError from '../utils/AppError.js';
 
 export const createBouquetTransaction = asyncHandler(
   async (req: Request, res: Response) => {
-    const { note, totalExpense, income, profit, profitMargin } = req.body;
+    const { note, totalExpense, income, profit, profitMargin, status } =
+      req.body;
     const userId = Number(req.header('x-user-id'));
 
     const bouquetTransaction = await createBouquetTransactionService({
@@ -129,6 +130,7 @@ export const createBouquetTransaction = asyncHandler(
       income,
       profit,
       profitMargin,
+      status,
     });
 
     if (!bouquetTransaction) {
@@ -317,6 +319,7 @@ export const updateBouquetTransaction = asyncHandler(
 
     const { note, totalExpense, income, profit, isDeleted, profitMargin } =
       req.body;
+    const bouquetStatus = req.body.status;
 
     const updatedTransaction = await updateBouquetTransactionService(
       id,
@@ -327,6 +330,7 @@ export const updateBouquetTransaction = asyncHandler(
         profit,
         isDeleted,
         profitMargin,
+        status: bouquetStatus,
       },
       userId
     );

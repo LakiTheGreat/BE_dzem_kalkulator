@@ -118,12 +118,24 @@ export const getTransactions = asyncHandler(
         ? String(req.query.transactionStatus)
         : undefined;
 
+    const year = req.query.year ? Number(req.query.year) : undefined;
+    const month = req.query.month ? Number(req.query.month) : undefined;
+
     if (orderTypeId !== undefined && (isNaN(orderTypeId) || orderTypeId <= 0)) {
       throw new AppError(
         'Invalid orderTypeId query parameter',
         status.BAD_REQUEST
       );
     }
+
+    if (year !== undefined && (isNaN(year) || year < 2000 || year > 2100)) {
+      throw new AppError('Invalid year query parameter', status.BAD_REQUEST);
+    }
+
+    if (month !== undefined && (isNaN(month) || month < 1 || month > 12)) {
+      throw new AppError('Invalid month query parameter', status.BAD_REQUEST);
+    }
+
     const whereClause: any = { isDeleted: false, userId };
 
     if (orderTypeId !== undefined) {
@@ -132,6 +144,28 @@ export const getTransactions = asyncHandler(
 
     if (transactionStatus !== undefined) {
       whereClause.status = transactionStatus;
+    }
+
+    if (year || month) {
+      const startDate = new Date(
+        year ?? new Date().getFullYear(),
+        month ? month - 1 : 0,
+        1
+      );
+
+      const endDate = new Date(
+        year ?? new Date().getFullYear(),
+        month ? month : 12,
+        0,
+        23,
+        59,
+        59
+      );
+
+      whereClause.createdAt = {
+        gte: startDate,
+        lte: endDate,
+      };
     }
 
     const transactions = await getTransactionsService(userId, whereClause);

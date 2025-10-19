@@ -125,6 +125,9 @@ export const getAllOrders = asyncHandler(
         ? Number(req.query.priceStatus)
         : undefined;
 
+    const year = req.query.year ? Number(req.query.year) : undefined;
+    const month = req.query.month ? Number(req.query.month) : undefined;
+
     if (orderTypeId !== undefined && (isNaN(orderTypeId) || orderTypeId <= 0)) {
       throw new AppError(
         'Invalid orderTypeId query parameter',
@@ -139,6 +142,14 @@ export const getAllOrders = asyncHandler(
       );
     }
 
+    if (year !== undefined && (isNaN(year) || year < 2000 || year > 2100)) {
+      throw new AppError('Invalid year query parameter', status.BAD_REQUEST);
+    }
+
+    if (month !== undefined && (isNaN(month) || month < 1 || month > 12)) {
+      throw new AppError('Invalid month query parameter', status.BAD_REQUEST);
+    }
+
     const whereClause: any = { isDeleted: false, userId };
     if (orderTypeId) {
       whereClause.orderTypeId = orderTypeId;
@@ -148,6 +159,27 @@ export const getAllOrders = asyncHandler(
       whereClause.baseFruitIsFree = true;
     } else if (priceStatus === 2) {
       whereClause.baseFruitIsFree = false;
+    }
+
+    if (year || month) {
+      const startDate = new Date(
+        year ?? new Date().getFullYear(),
+        month ? month - 1 : 0,
+        1
+      );
+      const endDate = new Date(
+        year ?? new Date().getFullYear(),
+        month ? month : 12,
+        0,
+        23,
+        59,
+        59
+      );
+
+      whereClause.createdAt = {
+        gte: startDate,
+        lte: endDate,
+      };
     }
 
     const orders = await getAllOrdersService(whereClause);

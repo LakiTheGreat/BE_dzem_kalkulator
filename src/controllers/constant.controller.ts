@@ -120,7 +120,7 @@ export const getConstantById = asyncHandler(
 export const patchConstantById = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { value, label, isDeleted, status } = req.body;
+    const { value, label, isDeleted } = req.body;
     const userId = Number(req.header('x-user-id'));
 
     const existing = await getConstantByIdService(Number(id), userId);

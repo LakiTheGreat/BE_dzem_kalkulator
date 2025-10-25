@@ -6,6 +6,7 @@ import {
   deleteTomatoOrder,
   getAllTomatoCups,
   getAllTomatoOrders,
+  getTomatoCupTotals,
   getTomatoOrderById,
   updateTomatoOrder,
 } from '../controllers/tomato.controller.js';
@@ -15,6 +16,7 @@ import { handleValidationErrors } from '../middlewares/handleValidationErrors.js
 const router = Router();
 
 router.get('/cups', getAllTomatoCups);
+router.get('/totals', getTomatoCupTotals);
 router.get('/', getAllTomatoOrders);
 router.get('/:id', getTomatoOrderById);
 

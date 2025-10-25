@@ -7,6 +7,7 @@ import {
   deleteTomatoOrderService,
   getAllTomatoCupsService,
   getAllTomatoOrdersService,
+  getTomatoCupTotalsService,
   getTomatoOrderByIdService,
   updateTomatoOrderService,
 } from '../services/tomato.service.js';
@@ -122,5 +123,49 @@ export const deleteTomatoOrder = asyncHandler(
     }
 
     res.status(status.OK).json(deletedOrder);
+  }
+);
+
+export const getTomatoCupTotals = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = Number(req.header('x-user-id'));
+
+    if (!userId || isNaN(userId)) {
+      return res
+        .status(status.BAD_REQUEST)
+        .json({ message: 'Invalid or missing user ID' });
+    }
+
+    const year = req.query.year ? Number(req.query.year) : undefined;
+    const month = req.query.month ? Number(req.query.month) : undefined;
+
+    const whereClause: any = { isDeleted: false, userId };
+
+    // Optional date filtering (if you want to include it)
+    if (year || month) {
+      const startDate = new Date(
+        year ?? new Date().getFullYear(),
+        month ? month - 1 : 0,
+        1
+      );
+
+      const endDate = new Date(
+        year ?? new Date().getFullYear(),
+        month ? month : 12,
+        0,
+        23,
+        59,
+        59
+      );
+
+      whereClause.createdAt = {
+        gte: startDate,
+        lte: endDate,
+      };
+    }
+
+    const totals = await getTomatoCupTotalsService(userId, whereClause);
+
+    res.status(status.OK).json(totals);
   }
 );

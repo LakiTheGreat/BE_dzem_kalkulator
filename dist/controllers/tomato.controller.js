@@ -1,6 +1,6 @@
 import status from 'http-status';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
-import { createTomatoOrderService, deleteTomatoOrderService, getAllTomatoCupsService, getAllTomatoOrdersService, getTomatoOrderByIdService, updateTomatoOrderService, } from '../services/tomato.service.js';
+import { createTomatoOrderService, deleteTomatoOrderService, getAllTomatoCupsService, getAllTomatoOrdersService, getTomatoCupTotalsService, getTomatoOrderByIdService, updateTomatoOrderService, } from '../services/tomato.service.js';
 import AppError from '../utils/AppError.js';
 export const getTomatoOrderById = asyncHandler(async (req, res) => {
     const userId = Number(req.header('x-user-id'));
@@ -67,5 +67,27 @@ export const deleteTomatoOrder = asyncHandler(async (req, res) => {
         throw new AppError('TomatoOrder not found', status.NOT_FOUND);
     }
     res.status(status.OK).json(deletedOrder);
+});
+export const getTomatoCupTotals = asyncHandler(async (req, res) => {
+    const userId = Number(req.header('x-user-id'));
+    if (!userId || isNaN(userId)) {
+        return res
+            .status(status.BAD_REQUEST)
+            .json({ message: 'Invalid or missing user ID' });
+    }
+    const year = req.query.year ? Number(req.query.year) : undefined;
+    const month = req.query.month ? Number(req.query.month) : undefined;
+    const whereClause = { isDeleted: false, userId };
+    // Optional date filtering (if you want to include it)
+    if (year || month) {
+        const startDate = new Date(year ?? new Date().getFullYear(), month ? month - 1 : 0, 1);
+        const endDate = new Date(year ?? new Date().getFullYear(), month ? month : 12, 0, 23, 59, 59);
+        whereClause.createdAt = {
+            gte: startDate,
+            lte: endDate,
+        };
+    }
+    const totals = await getTomatoCupTotalsService(userId, whereClause);
+    res.status(status.OK).json(totals);
 });
 //# sourceMappingURL=tomato.controller.js.map

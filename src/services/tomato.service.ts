@@ -1,6 +1,12 @@
 import { TransactionStatus } from '@prisma/client';
 import prisma from '../utils/db.js';
 
+export async function getTomatoOrderByIdService(id: number, userId: number) {
+  return prisma.tomatoOrder.findUnique({
+    where: { id, userId },
+  });
+}
+
 export async function getAllTomatoCupsService(whereClause: any) {
   return prisma.tomatoCup.findMany({
     where: {
@@ -53,3 +59,26 @@ export async function getAllTomatoOrdersService(whereClause: any) {
     label: cupType?.label ?? null, // move label to top level
   }));
 }
+
+export async function updateTomatoOrderService(
+  id: number,
+  data: {
+    numOfCups: number;
+    totalExpense: number;
+  },
+  userId: number
+) {
+  return prisma.tomatoOrder.update({
+    where: { id, userId },
+    data,
+  });
+}
+
+export const deleteTomatoOrderService = async (id: number, userId: number) => {
+  const order = await prisma.tomatoOrder.update({
+    where: { id, userId },
+    data: { isDeleted: true },
+  });
+
+  return order;
+};

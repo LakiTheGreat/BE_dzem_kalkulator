@@ -1,4 +1,9 @@
 import prisma from '../utils/db.js';
+export async function getTomatoOrderByIdService(id, userId) {
+    return prisma.tomatoOrder.findUnique({
+        where: { id, userId },
+    });
+}
 export async function getAllTomatoCupsService(whereClause) {
     return prisma.tomatoCup.findMany({
         where: {
@@ -42,4 +47,17 @@ export async function getAllTomatoOrdersService(whereClause) {
         label: cupType?.label ?? null, // move label to top level
     }));
 }
+export async function updateTomatoOrderService(id, data, userId) {
+    return prisma.tomatoOrder.update({
+        where: { id, userId },
+        data,
+    });
+}
+export const deleteTomatoOrderService = async (id, userId) => {
+    const order = await prisma.tomatoOrder.update({
+        where: { id, userId },
+        data: { isDeleted: true },
+    });
+    return order;
+};
 //# sourceMappingURL=tomato.service.js.map

@@ -61,7 +61,8 @@ export const deleteTomatoOrderService = async (id, userId) => {
     return order;
 };
 export async function getTomatoCupTotalsService(userId, whereClause = {}) {
-    const results = await prisma.tomatoOrder.groupBy({
+    // 1️⃣ Get total cups grouped by cupTypeId from TomatoOrder
+    const orderResults = await prisma.tomatoOrder.groupBy({
         by: ['cupTypeId'],
         _sum: {
             numOfCups: true,
@@ -69,13 +70,29 @@ export async function getTomatoCupTotalsService(userId, whereClause = {}) {
         where: {
             ...whereClause,
             userId,
+            isDeleted: false,
         },
     });
-    // const calculatedResults = results - transakcije
-    //TODO: od ovoga treba oduzeti broj teglica u transakcijama i onda tto novo mapirati
+    // 2️⃣ Get total cups used in transactions grouped by cupTypeId
+    const transactionResults = await prisma.tomatoOrderTransaction.groupBy({
+        by: ['cupTypeId'],
+        _sum: {
+            numOfCups: true,
+        },
+        where: {
+            userId,
+            isDeleted: false,
+        },
+    });
+    // 3️⃣ Build lookup for transaction totals
+    const transactionLookup = transactionResults.reduce((acc, t) => {
+        acc[t.cupTypeId] = t._sum.numOfCups || 0;
+        return acc;
+    }, {});
+    // 4️⃣ Get cup type labels
     const cupTypes = await prisma.tomatoCup.findMany({
         where: {
-            id: { in: results.map((r) => r.cupTypeId) },
+            id: { in: orderResults.map((r) => r.cupTypeId) },
         },
         select: {
             id: true,
@@ -86,10 +103,57 @@ export async function getTomatoCupTotalsService(userId, whereClause = {}) {
         acc[cup.id] = cup.label;
         return acc;
     }, {});
-    return results.map((r) => ({
-        cupTypeId: r.cupTypeId,
-        label: labelLookup[r.cupTypeId] || 'Unknown',
-        totalCups: r._sum.numOfCups || 0,
-    }));
+    // 5️⃣ Calculate remaining cups = orders - transactions
+    const result = orderResults.map((order) => {
+        const totalFromOrders = order._sum.numOfCups || 0;
+        const totalFromTransactions = transactionLookup[order.cupTypeId] || 0;
+        const remaining = totalFromOrders - totalFromTransactions;
+        return {
+            cupTypeId: order.cupTypeId,
+            label: labelLookup[order.cupTypeId] || 'Unknown',
+            totalOrdered: totalFromOrders,
+            totalUsedInTransactions: totalFromTransactions,
+            totalCups: remaining < 0 ? 0 : remaining,
+        };
+    });
+    return result;
+}
+export async function createTomatoTransactionService(data) {
+    const createdTransaction = await prisma.tomatoOrderTransaction.create({
+        data: {
+            note: data.note || '',
+            status: data.transactionStatus || 'SOLD',
+            cupTypeId: data.cupTypeId,
+            numOfCups: data.numOfCups,
+            pricePerCup: data.pricePerCup,
+            userId: data.userId,
+        },
+        include: {
+            user: true,
+            cupType: {
+                select: { label: true },
+            },
+        },
+    });
+    return {
+        id: createdTransaction.id,
+        note: createdTransaction.note,
+        status: createdTransaction.status,
+        cupTypeId: createdTransaction.cupTypeId,
+        cupTypeLabel: createdTransaction.cupType.label,
+        numOfCups: createdTransaction.numOfCups,
+        pricePerCup: createdTransaction.pricePerCup,
+        userId: createdTransaction.userId,
+        createdAt: createdTransaction.createdAt,
+        isDeleted: createdTransaction.isDeleted,
+    };
+}
+export async function getAllTomatoTransactionsService(whereClause) {
+    return prisma.tomatoOrderTransaction.findMany({
+        where: {
+            ...whereClause,
+        },
+        orderBy: { createdAt: 'desc' },
+    });
 }
 //# sourceMappingURL=tomato.service.js.map

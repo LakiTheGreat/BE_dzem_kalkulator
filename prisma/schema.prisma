@@ -43,6 +43,8 @@ model User {
   TomatoCup TomatoCup[]
 
   TomatoTransaction TomatoOrder[]
+
+  TomatoOrderTransaction TomatoOrderTransaction[]
 }
 
 model Fruit {
@@ -176,6 +178,8 @@ model TomatoCup {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   TomatoTransaction TomatoOrder[]
+
+  TomatoOrderTransaction TomatoOrderTransaction[]
 }
 
 model TomatoOrder {
@@ -194,6 +198,22 @@ model TomatoOrder {
   createdAt     DateTime  @default(now())
 }
 
+model TomatoOrderTransaction {
+  id               Int       @id @default(autoincrement())
+  note             String   
+  status           TransactionStatus
+  cupTypeId        Int
+  numOfCups        Int
+  pricePerCup      Int
+
+  isDeleted        Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+
+  userId           Int @default(1)
+  user             User      @relation(fields: [userId], references: [id])
+
+  cupType          TomatoCup   @relation(fields: [cupTypeId], references: [id])
+}
 
 
 

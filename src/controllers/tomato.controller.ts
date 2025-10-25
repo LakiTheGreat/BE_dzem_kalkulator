@@ -4,9 +4,11 @@ import status from 'http-status';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
 import {
   createTomatoOrderService,
+  createTomatoTransactionService,
   deleteTomatoOrderService,
   getAllTomatoCupsService,
   getAllTomatoOrdersService,
+  getAllTomatoTransactionsService,
   getTomatoCupTotalsService,
   getTomatoOrderByIdService,
   updateTomatoOrderService,
@@ -131,9 +133,7 @@ export const getTomatoCupTotals = asyncHandler(
     const userId = Number(req.header('x-user-id'));
 
     if (!userId || isNaN(userId)) {
-      return res
-        .status(status.BAD_REQUEST)
-        .json({ message: 'Invalid or missing user ID' });
+      throw new AppError('Invalid ID', status.BAD_REQUEST);
     }
 
     const year = req.query.year ? Number(req.query.year) : undefined;
@@ -167,5 +167,79 @@ export const getTomatoCupTotals = asyncHandler(
     const totals = await getTomatoCupTotalsService(userId, whereClause);
 
     res.status(status.OK).json(totals);
+  }
+);
+
+export const createTomatoTransaction = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = Number(req.header('x-user-id'));
+
+    if (!userId || isNaN(userId)) {
+      throw new AppError('Invalid ID', status.BAD_REQUEST);
+    }
+
+    const {
+      note,
+      status: transactionStatus,
+      cupTypeId,
+      numOfCups,
+      pricePerCup,
+    } = req.body;
+
+    const transaction = await createTomatoTransactionService({
+      userId,
+      note,
+      transactionStatus,
+      cupTypeId,
+      numOfCups,
+      pricePerCup,
+    });
+
+    res.status(status.CREATED).json(transaction);
+  }
+);
+
+export const getAllTomatoTransactions = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = Number(req.header('x-user-id'));
+    const year = req.query.year ? Number(req.query.year) : undefined;
+    const month = req.query.month ? Number(req.query.month) : undefined;
+
+    const whereClause: any = { isDeleted: false, userId };
+
+    const transactionStatus =
+      req.query.transactionStatus !== undefined
+        ? String(req.query.transactionStatus)
+        : undefined;
+
+    if (transactionStatus !== undefined) {
+      whereClause.status = transactionStatus;
+    }
+
+    if (year || month) {
+      const startDate = new Date(
+        year ?? new Date().getFullYear(),
+        month ? month - 1 : 0,
+        1
+      );
+
+      const endDate = new Date(
+        year ?? new Date().getFullYear(),
+        month ? month : 12,
+        0,
+        23,
+        59,
+        59
+      );
+
+      whereClause.createdAt = {
+        gte: startDate,
+        lte: endDate,
+      };
+    }
+
+    const tomatoCups = await getAllTomatoTransactionsService(whereClause);
+
+    res.status(status.OK).json(tomatoCups);
   }
 );

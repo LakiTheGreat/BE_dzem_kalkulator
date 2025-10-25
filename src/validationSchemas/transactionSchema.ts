@@ -18,7 +18,7 @@ export const transactionSchema: Schema = {
     isIn: {
       options: [['CONSUMED', 'SOLD', 'GIVEN_AWAY', 'PROMOTION', 'OTHER']],
       errorMessage:
-        'Field "status" must be one of: CONSUMED, SOLD, GIVEN_AWAY, OTHER',
+        'Field "status" must be one of: CONSUMED, SOLD, GIVEN_AWAY, OTHER, PROMOTION',
     },
   },
   cupData: {

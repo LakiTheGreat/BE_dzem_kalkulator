@@ -162,6 +162,13 @@ model BouquetTransaction {
   createdAt    DateTime          @default(now())
 }
 
+model TomatoCup {
+  id         Int      @id @default(autoincrement())
+  label      String
+  isDeleted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
 
 
 

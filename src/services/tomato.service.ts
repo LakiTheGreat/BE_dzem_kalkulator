@@ -191,11 +191,27 @@ export async function createTomatoTransactionService(data: {
   };
 }
 
-export async function getAllTomatoTransactionsService(whereClause: any) {
-  return prisma.tomatoOrderTransaction.findMany({
+export async function getAllTomatoTransactionsService(whereClause: {
+  [key: string]: any;
+}) {
+  const transactions = await prisma.tomatoOrderTransaction.findMany({
     where: {
       ...whereClause,
     },
     orderBy: { createdAt: 'desc' },
+    include: {
+      cupType: {
+        select: {
+          label: true,
+        },
+      },
+    },
   });
+
+  // Map results so cupType label is returned as "label"
+  return transactions.map((tx) => ({
+    ...tx,
+    label: tx.cupType?.label ?? 'Unknown',
+    cupType: undefined, // remove original cupType object if needed
+  }));
 }

@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "TomatoCup" ADD COLUMN     "userId" INTEGER NOT NULL DEFAULT 1;
+
+-- AddForeignKey
+ALTER TABLE "TomatoCup" ADD CONSTRAINT "TomatoCup_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

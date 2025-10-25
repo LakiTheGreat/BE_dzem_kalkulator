@@ -10,6 +10,7 @@ import inventoryRouter from './inventory.routes.js';
 import ordersRouter from './order.routes.js';
 import transactionRouter from './transaction.routes.js';
 import bouquetsRouter from './bouquet.routes.js';
+import tomatoesRouter from './tomatoes.routes.js';
 const router = Router();
 router.use('/auth', authRouter);
 router.use('/fruits', mockAuth, fruitsRouter);
@@ -21,5 +22,6 @@ router.use('/orders', mockAuth, ordersRouter);
 router.use('/inventory', mockAuth, inventoryRouter);
 router.use('/transactions', mockAuth, transactionRouter);
 router.use('/bouquets', mockAuth, bouquetsRouter);
+router.use('/tomatoes', mockAuth, tomatoesRouter);
 export default router;
 //# sourceMappingURL=index.js.map

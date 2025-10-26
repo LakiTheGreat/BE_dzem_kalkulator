@@ -113,7 +113,7 @@ export async function getTomatoCupTotalsService(userId, whereClause = {}) {
             label: labelLookup[order.cupTypeId] || 'Unknown',
             totalOrdered: totalFromOrders,
             totalUsedInTransactions: totalFromTransactions,
-            totalCups: remaining < 0 ? 0 : remaining,
+            totalCups: remaining,
         };
     });
     return result;

@@ -94,7 +94,7 @@ export async function updateTomatoTransactionService(
   },
   userId: number
 ) {
-  return prisma.tomatoOrder.update({
+  return prisma.tomatoOrderTransaction.update({
     where: { id, userId },
     data,
   });

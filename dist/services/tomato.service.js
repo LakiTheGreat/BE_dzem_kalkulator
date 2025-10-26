@@ -59,7 +59,7 @@ export async function updateTomatoOrderService(id, data, userId) {
     });
 }
 export async function updateTomatoTransactionService(id, data, userId) {
-    return prisma.tomatoOrder.update({
+    return prisma.tomatoOrderTransaction.update({
         where: { id, userId },
         data,
     });

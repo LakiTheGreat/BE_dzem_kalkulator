@@ -11,6 +11,7 @@ import {
   getAllTomatoTransactions,
   getTomatoCupTotals,
   getTomatoOrderById,
+  getTomatoTransactionById,
   updateTomatoOrder,
   updateTomatoTransaction,
 } from '../controllers/tomato.controller.js';
@@ -32,6 +33,7 @@ router.post(
   createTomatoTransaction
 );
 router.get('/transactions', getAllTomatoTransactions);
+router.get('/transactions/:id', getTomatoTransactionById);
 router.delete('/transactions/:id', deleteTomatoTransaction);
 router.put(
   '/transactions/:id',

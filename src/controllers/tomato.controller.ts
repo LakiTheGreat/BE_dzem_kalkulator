@@ -12,11 +12,30 @@ import {
   getAllTomatoTransactionsService,
   getTomatoCupTotalsService,
   getTomatoOrderByIdService,
+  getTomatoTransactionByIdService,
   updateTomatoOrderService,
   updateTomatoTransactionService,
 } from '../services/tomato.service.js';
 import AppError from '../utils/AppError.js';
 
+export const getTomatoTransactionById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = Number(req.header('x-user-id'));
+    const id = Number(req.params.id);
+
+    if (isNaN(id)) {
+      throw new AppError('Invalid ID', status.BAD_REQUEST);
+    }
+
+    const tomatoTransaction = await getTomatoTransactionByIdService(id, userId);
+
+    if (!tomatoTransaction) {
+      throw new AppError('TomatoTransaction not found', status.NOT_FOUND);
+    }
+
+    res.status(status.OK).json(tomatoTransaction);
+  }
+);
 export const getTomatoOrderById = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = Number(req.header('x-user-id'));
@@ -26,13 +45,13 @@ export const getTomatoOrderById = asyncHandler(
       throw new AppError('Invalid ID', status.BAD_REQUEST);
     }
 
-    const tomatoTransaction = await getTomatoOrderByIdService(id, userId);
+    const tomatoOrder = await getTomatoOrderByIdService(id, userId);
 
-    if (!tomatoTransaction) {
-      throw new AppError('TomatoTransaction not found', status.NOT_FOUND);
+    if (!tomatoOrder) {
+      throw new AppError('TomatoOrder not found', status.NOT_FOUND);
     }
 
-    res.status(status.OK).json(tomatoTransaction);
+    res.status(status.OK).json(tomatoOrder);
   }
 );
 

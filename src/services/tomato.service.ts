@@ -7,6 +7,15 @@ export async function getTomatoOrderByIdService(id: number, userId: number) {
   });
 }
 
+export async function getTomatoTransactionByIdService(
+  id: number,
+  userId: number
+) {
+  return prisma.tomatoOrderTransaction.findUnique({
+    where: { id, userId },
+  });
+}
+
 export async function getAllTomatoCupsService(whereClause: any) {
   return prisma.tomatoCup.findMany({
     where: {

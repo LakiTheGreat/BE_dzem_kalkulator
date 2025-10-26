@@ -1,18 +1,30 @@
 import status from 'http-status';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
-import { createTomatoOrderService, createTomatoTransactionService, deleteTomatoOrderService, deleteTomatoTransactionService, getAllTomatoCupsService, getAllTomatoOrdersService, getAllTomatoTransactionsService, getTomatoCupTotalsService, getTomatoOrderByIdService, updateTomatoOrderService, updateTomatoTransactionService, } from '../services/tomato.service.js';
+import { createTomatoOrderService, createTomatoTransactionService, deleteTomatoOrderService, deleteTomatoTransactionService, getAllTomatoCupsService, getAllTomatoOrdersService, getAllTomatoTransactionsService, getTomatoCupTotalsService, getTomatoOrderByIdService, getTomatoTransactionByIdService, updateTomatoOrderService, updateTomatoTransactionService, } from '../services/tomato.service.js';
 import AppError from '../utils/AppError.js';
+export const getTomatoTransactionById = asyncHandler(async (req, res) => {
+    const userId = Number(req.header('x-user-id'));
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+        throw new AppError('Invalid ID', status.BAD_REQUEST);
+    }
+    const tomatoTransaction = await getTomatoTransactionByIdService(id, userId);
+    if (!tomatoTransaction) {
+        throw new AppError('TomatoTransaction not found', status.NOT_FOUND);
+    }
+    res.status(status.OK).json(tomatoTransaction);
+});
 export const getTomatoOrderById = asyncHandler(async (req, res) => {
     const userId = Number(req.header('x-user-id'));
     const id = Number(req.params.id);
     if (isNaN(id)) {
         throw new AppError('Invalid ID', status.BAD_REQUEST);
     }
-    const tomatoTransaction = await getTomatoOrderByIdService(id, userId);
-    if (!tomatoTransaction) {
-        throw new AppError('TomatoTransaction not found', status.NOT_FOUND);
+    const tomatoOrder = await getTomatoOrderByIdService(id, userId);
+    if (!tomatoOrder) {
+        throw new AppError('TomatoOrder not found', status.NOT_FOUND);
     }
-    res.status(status.OK).json(tomatoTransaction);
+    res.status(status.OK).json(tomatoOrder);
 });
 export const getAllTomatoCups = asyncHandler(async (req, res) => {
     const userId = Number(req.header('x-user-id'));

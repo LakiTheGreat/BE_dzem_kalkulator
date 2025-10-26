@@ -1,6 +1,6 @@
 import status from 'http-status';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
-import { createTomatoOrderService, createTomatoTransactionService, deleteTomatoOrderService, deleteTomatoTransactionService, getAllTomatoCupsService, getAllTomatoOrdersService, getAllTomatoTransactionsService, getTomatoCupTotalsService, getTomatoOrderByIdService, updateTomatoOrderService, } from '../services/tomato.service.js';
+import { createTomatoOrderService, createTomatoTransactionService, deleteTomatoOrderService, deleteTomatoTransactionService, getAllTomatoCupsService, getAllTomatoOrdersService, getAllTomatoTransactionsService, getTomatoCupTotalsService, getTomatoOrderByIdService, updateTomatoOrderService, updateTomatoTransactionService, } from '../services/tomato.service.js';
 import AppError from '../utils/AppError.js';
 export const getTomatoOrderById = asyncHandler(async (req, res) => {
     const userId = Number(req.header('x-user-id'));
@@ -65,6 +65,25 @@ export const updateTomatoOrder = asyncHandler(async (req, res) => {
         throw new AppError('TomatoOrder not found', status.NOT_FOUND);
     }
     res.status(status.OK).json(updatedOrder);
+});
+export const updateTomatoTransaction = asyncHandler(async (req, res) => {
+    const id = Number(req.params.id);
+    const userId = Number(req.header('x-user-id'));
+    if (isNaN(id)) {
+        throw new AppError('Invalid ID', status.BAD_REQUEST);
+    }
+    const { numOfCups, note, cupTypeId, pricePerCup, status: transactionStatus, } = req.body;
+    const updatedTransaction = await updateTomatoTransactionService(id, {
+        numOfCups,
+        note,
+        cupTypeId,
+        pricePerCup,
+        status: transactionStatus,
+    }, userId);
+    if (!updatedTransaction) {
+        throw new AppError('TomatoTransaction not found', status.NOT_FOUND);
+    }
+    res.status(status.OK).json(updatedTransaction);
 });
 export const deleteTomatoTransaction = asyncHandler(async (req, res) => {
     const id = Number(req.params.id);

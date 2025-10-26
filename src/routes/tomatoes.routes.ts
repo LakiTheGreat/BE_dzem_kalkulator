@@ -12,6 +12,7 @@ import {
   getTomatoCupTotals,
   getTomatoOrderById,
   updateTomatoOrder,
+  updateTomatoTransaction,
 } from '../controllers/tomato.controller.js';
 import {
   tomatoOrderSchema,
@@ -32,6 +33,12 @@ router.post(
 );
 router.get('/transactions', getAllTomatoTransactions);
 router.delete('/transactions/:id', deleteTomatoTransaction);
+router.put(
+  '/transactions/:id',
+  checkSchema(tomatoTransactionSchema),
+  handleValidationErrors,
+  updateTomatoTransaction
+);
 
 router.get('/', getAllTomatoOrders);
 router.get('/:id', getTomatoOrderById);

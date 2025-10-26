@@ -74,6 +74,23 @@ export async function updateTomatoOrderService(
   });
 }
 
+export async function updateTomatoTransactionService(
+  id: number,
+  data: {
+    note: string;
+    cupTypeId: number;
+    numOfCups: number;
+    pricePerCup: number;
+    status: TransactionStatus;
+  },
+  userId: number
+) {
+  return prisma.tomatoOrder.update({
+    where: { id, userId },
+    data,
+  });
+}
+
 export const deleteTomatoOrderService = async (id: number, userId: number) => {
   const order = await prisma.tomatoOrder.update({
     where: { id, userId },

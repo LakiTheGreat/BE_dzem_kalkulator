@@ -17,16 +17,6 @@ export const getTomatoOrderById = asyncHandler(async (req, res) => {
 export const getAllTomatoCups = asyncHandler(async (req, res) => {
     const userId = Number(req.header('x-user-id'));
     const whereClause = { isDeleted: false, userId };
-    const year = req.query.year ? Number(req.query.year) : undefined;
-    const month = req.query.month ? Number(req.query.month) : undefined;
-    if (year || month) {
-        const startDate = new Date(year ?? new Date().getFullYear(), month ? month - 1 : 0, 1);
-        const endDate = new Date(year ?? new Date().getFullYear(), month ? month : 12, 0, 23, 59, 59);
-        whereClause.createdAt = {
-            gte: startDate,
-            lte: endDate,
-        };
-    }
     const tomatoCups = await getAllTomatoCupsService(whereClause);
     res.status(status.OK).json(tomatoCups);
 });
@@ -46,7 +36,17 @@ export const createTomatoOrder = asyncHandler(async (req, res) => {
 });
 export const getAllTomatoOrders = asyncHandler(async (req, res) => {
     const userId = Number(req.header('x-user-id'));
+    const year = req.query.year ? Number(req.query.year) : undefined;
+    const month = req.query.month ? Number(req.query.month) : undefined;
     const whereClause = { isDeleted: false, userId };
+    if (year || month) {
+        const startDate = new Date(year ?? new Date().getFullYear(), month ? month - 1 : 0, 1);
+        const endDate = new Date(year ?? new Date().getFullYear(), month ? month : 12, 0, 23, 59, 59);
+        whereClause.createdAt = {
+            gte: startDate,
+            lte: endDate,
+        };
+    }
     const tomatoOrders = await getAllTomatoOrdersService(whereClause);
     res.status(status.OK).json(tomatoOrders);
 });

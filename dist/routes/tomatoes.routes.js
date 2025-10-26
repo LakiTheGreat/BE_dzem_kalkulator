@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { checkSchema } from 'express-validator';
-import { createTomatoOrder, createTomatoTransaction, deleteTomatoOrder, getAllTomatoCups, getAllTomatoOrders, getAllTomatoTransactions, getTomatoCupTotals, getTomatoOrderById, updateTomatoOrder, } from '../controllers/tomato.controller.js';
+import { createTomatoOrder, createTomatoTransaction, deleteTomatoOrder, deleteTomatoTransaction, getAllTomatoCups, getAllTomatoOrders, getAllTomatoTransactions, getTomatoCupTotals, getTomatoOrderById, updateTomatoOrder, } from '../controllers/tomato.controller.js';
 import { tomatoOrderSchema, tomatoTransactionSchema, } from '../validationSchemas/tomatoSchema.js';
 import { handleValidationErrors } from '../middlewares/handleValidationErrors.js';
 const router = Router();
@@ -8,6 +8,7 @@ router.get('/cups', getAllTomatoCups);
 router.get('/totals', getTomatoCupTotals);
 router.post('/transactions', checkSchema(tomatoTransactionSchema), handleValidationErrors, createTomatoTransaction);
 router.get('/transactions', getAllTomatoTransactions);
+router.delete('/transactions/:id', deleteTomatoTransaction);
 router.get('/', getAllTomatoOrders);
 router.get('/:id', getTomatoOrderById);
 router.post('/', checkSchema(tomatoOrderSchema), handleValidationErrors, createTomatoOrder);

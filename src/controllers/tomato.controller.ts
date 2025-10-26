@@ -6,6 +6,7 @@ import {
   createTomatoOrderService,
   createTomatoTransactionService,
   deleteTomatoOrderService,
+  deleteTomatoTransactionService,
   getAllTomatoCupsService,
   getAllTomatoOrdersService,
   getAllTomatoTransactionsService,
@@ -133,6 +134,24 @@ export const updateTomatoOrder = asyncHandler(
   }
 );
 
+export const deleteTomatoTransaction = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = Number(req.params.id);
+    const userId = Number(req.header('x-user-id'));
+
+    if (isNaN(id)) {
+      throw new AppError('Invalid ID', status.BAD_REQUEST);
+    }
+
+    const deletedTransaction = await deleteTomatoTransactionService(id, userId);
+
+    if (!deletedTransaction) {
+      throw new AppError('TomatoTransaction found', status.NOT_FOUND);
+    }
+
+    res.status(status.OK).json(deletedTransaction);
+  }
+);
 export const deleteTomatoOrder = asyncHandler(
   async (req: Request, res: Response) => {
     const id = Number(req.params.id);

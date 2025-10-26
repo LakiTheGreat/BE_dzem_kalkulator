@@ -5,6 +5,7 @@ import {
   createTomatoOrder,
   createTomatoTransaction,
   deleteTomatoOrder,
+  deleteTomatoTransaction,
   getAllTomatoCups,
   getAllTomatoOrders,
   getAllTomatoTransactions,
@@ -30,6 +31,7 @@ router.post(
   createTomatoTransaction
 );
 router.get('/transactions', getAllTomatoTransactions);
+router.delete('/transactions/:id', deleteTomatoTransaction);
 
 router.get('/', getAllTomatoOrders);
 router.get('/:id', getTomatoOrderById);

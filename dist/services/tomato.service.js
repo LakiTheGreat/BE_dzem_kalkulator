@@ -60,6 +60,13 @@ export const deleteTomatoOrderService = async (id, userId) => {
     });
     return order;
 };
+export const deleteTomatoTransactionService = async (id, userId) => {
+    const order = await prisma.tomatoOrderTransaction.update({
+        where: { id, userId },
+        data: { isDeleted: true },
+    });
+    return order;
+};
 export async function getTomatoCupTotalsService(userId, whereClause = {}) {
     // 1️⃣ Get total cups grouped by cupTypeId from TomatoOrder
     const orderResults = await prisma.tomatoOrder.groupBy({

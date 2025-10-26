@@ -83,6 +83,18 @@ export const deleteTomatoOrderService = async (id: number, userId: number) => {
   return order;
 };
 
+export const deleteTomatoTransactionService = async (
+  id: number,
+  userId: number
+) => {
+  const order = await prisma.tomatoOrderTransaction.update({
+    where: { id, userId },
+    data: { isDeleted: true },
+  });
+
+  return order;
+};
+
 export async function getTomatoCupTotalsService(
   userId: number,
   whereClause: any = {}

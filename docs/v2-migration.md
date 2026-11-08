@@ -30,6 +30,6 @@ Goal: refactor the backend gradually without breaking the running app. v1 (curre
 
 ## Open items
 
-- Test runner choice (not decided; none is installed yet).
+- Test runner: Vitest + supertest (`npm test`). Suites in `tests/` are parametrized by API base path; add `'/api/v2'` to `describe.each` when a v2 resource exists.
 - How the UI flag is stored (UI repo concern).
 - Whether Render builds `dist/` itself (see `known-issues.md`).

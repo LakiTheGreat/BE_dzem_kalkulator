@@ -13,10 +13,10 @@ Node 22, TypeScript (strict, ESM), Express 5, Prisma 6 + PostgreSQL (Supabase), 
 | Dev (tsc watch + nodemon on `dist/`) | `npm run dev` |
 | Build | `npm run build` |
 | Start | `npm start` |
-| Prisma client | `npx prisma generate` |
+| Test | `npm test` (Vitest + supertest, tests in `tests/`) |
 | New migration | `npx prisma migrate dev --name <NAME>` |
 
-There are **no tests and no linter** yet. Validate changes with `npm run build` (must pass with zero errors).
+There is **no linter** yet. Tests run against the real database as test user `userId = 1` only (see `tests/helpers.ts`) and clean up after themselves. Validate changes with `npm run build` (zero errors) and `npm test`. `src/app.ts` builds the Express app (importable by tests); `src/index.ts` only calls `listen`.
 
 ## Layout
 
@@ -36,6 +36,7 @@ Details: [docs/architecture.md](docs/architecture.md), [docs/domain.md](docs/dom
 
 ## Hard rules
 
+- **Never commit without the owner's explicit approval, and never push without explicit approval.** Show the changes first, then wait. Approval does not carry over between commits/pushes.
 - **`dist/` is committed** and Render runs `node dist/index.js` on push to `main` (whether Render also builds is unverified). Never edit `dist/` by hand; run `npm run build` and commit the regenerated output together with the `src/` change.
 - Never commit secrets. `.env` is git-ignored; `DATABASE_URL` and `JWT_SECRET` come from the environment. Do not paste connection strings or passwords into code, docs or commits.
 - Imports use the `.js` extension (ESM), e.g. `import x from '../utils/db.js'`.

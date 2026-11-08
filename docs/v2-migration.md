@@ -45,3 +45,22 @@ Render builds the app itself on every deploy (`npm install && npx prisma generat
 ## Open items
 
 None right now. New ones are recorded in `v2-endpoints.md` per endpoint, or in `known-issues.md` for general problems.
+
+## Status and decisions
+
+Per-endpoint status, analysis, decisions and open questions live in [v2-endpoints.md](v2-endpoints.md). Update it before (analysis), during (decisions) and after (status) every endpoint.
+
+## Cross-cutting decisions
+
+### Auth (v2 `mockAuth`)
+- Same responses as v1 (401 no header, 404 unknown user); stops after the 401 (v1 sent a second response and logged "Cannot set headers after they are sent").
+
+## Not decided / known limitations
+
+- Two simultaneous `POST`s with the same label can still produce duplicates (no unique constraint on `Fruit(userId, label)`; adding one is a schema change and v1 may already have duplicates). Negligible for a single user; decide before scaling.
+- UI error handling for the new 404s (v1 gave 400 for missing fruit) was not checked; the UI shows a generic error notification.
+- Removing the v1 endpoints: not before v2 has run in production for a while.
+
+## Process (see skill `api-v2-migration`)
+
+Analysis first -> record it in `v2-endpoints.md` -> ask the owner about anything disputed, one question at a time -> record decisions -> implement -> tests for v1+v2 and for every fix -> update status. Branches start from `main`, PRs target `main`, no commit/push without approval.

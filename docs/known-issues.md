@@ -23,5 +23,5 @@ Documented state as of AI setup; none are fixed yet. Do not fix them opportunist
 
 ## Tooling
 - No linter/formatter config and no CI. Tests exist only for `fruits` (`tests/`).
-- `dist/` is committed (124 files); unclear whether Render builds on its own.
+- `dist/` was committed (124 files) although Render builds it itself; it is now git-ignored and removed from the repo.
 - `package.json` has a real `test` script (`vitest run`).

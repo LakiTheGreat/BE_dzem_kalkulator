@@ -14,7 +14,7 @@ Read `AGENTS.md` and `docs/architecture.md` first. Follow existing code in the n
 3. **Validation** `src/<v>/validationSchemas/<resource>Schema.ts`: export an express-validator `Schema`.
 4. **Controller** `src/<v>/controllers/<resource>.controller.ts`: `export const x = asyncHandler(async (req, res) => {...})`. Read `Number(req.header('x-user-id'))`, call services, `throw new AppError(msg, status.X)` for errors, respond with `res.status(status.X).json(...)`. Put a `@swagger` JSDoc block above it (swagger scans `src/v1/controllers/*.ts` and `src/v2/controllers/*.ts`).
 5. **Route** `src/<v>/routes/<resource>.routes.ts`: `router.post('/', checkSchema(schema), handleValidationErrors, controller)`; register new routers in `src/routes/index.ts` behind `mockAuth` (v2 under `/v2/<resource>`).
-6. **Build**: `npm run build` must succeed. `dist/` is committed; include the regenerated output, never hand-edit it.
+6. **Build**: `npm run build` must succeed (Render runs it on deploy). `dist/` is git-ignored; never commit or hand-edit it.
 
 ## Rules
 

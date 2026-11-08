@@ -43,7 +43,7 @@ Prisma, PostgreSQL. Every model has `userId` (default 1, cascade delete) and mos
 
 ## Build & deploy
 
-`tsc` compiles `src/` to `dist/` (committed). Push to `main` triggers a Render deploy that runs `dist/index.js`. Local dev: `npm run dev`. Swagger is generated from JSDoc in `src/v1/controllers/*.ts` and `src/v2/controllers/*.ts`.
+`tsc` compiles `src/` to `dist/` (git-ignored). Push to `main` triggers a Render deploy; Render runs `npm install && npx prisma generate && npm run build` itself, then `node dist/index.js`. Local dev: `npm run dev`. Swagger is generated from JSDoc in `src/v1/controllers/*.ts` and `src/v2/controllers/*.ts`.
 
 ## Conventions observed in code
 

@@ -32,7 +32,7 @@ src/types/              shared TS types, express.d.ts (req.user)
 prisma/schema.prisma    data model; prisma/migrations/ is history
 ```
 
-Details: [docs/architecture.md](docs/architecture.md), [docs/domain.md](docs/domain.md), [docs/known-issues.md](docs/known-issues.md), [docs/v2-migration.md](docs/v2-migration.md). Step-by-step conventions: skill `repo-conventions` in `.github/skills/repo-conventions/SKILL.md`.
+Details: [docs/architecture.md](docs/architecture.md), [docs/domain.md](docs/domain.md), [docs/known-issues.md](docs/known-issues.md), [docs/v2-migration.md](docs/v2-migration.md). Step-by-step conventions: skill `repo-conventions` in `.github/skills/repo-conventions/SKILL.md`. Migrating an endpoint to v2: skill `api-v2-migration` in `.github/skills/api-v2-migration/SKILL.md`.
 
 ## Hard rules
 

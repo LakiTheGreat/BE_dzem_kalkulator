@@ -2,6 +2,8 @@
 
 Goal: refactor the backend gradually without breaking the running app. v1 (current code) and v2 (refactored) run side by side; the UI picks which one each resource calls, so rollback is a flag flip in the UI.
 
+Why: make the code better, faster and more modern, and above all safe to change, so features can be changed or added without everything breaking (v1 is tightly entangled). How to migrate an endpoint: skill `api-v2-migration`.
+
 ## Decisions
 
 | Topic | Decision |

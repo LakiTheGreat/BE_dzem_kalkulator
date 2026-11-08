@@ -10,10 +10,10 @@ Read `AGENTS.md` and `docs/architecture.md` first. Follow existing code in the n
 ## Adding or changing an endpoint
 
 1. **Model** (if needed): edit `prisma/schema.prisma`, add `userId` relation (`onDelete: Cascade`), `isDeleted Boolean @default(false)` and `createdAt` when the data is user-owned. Run `npx prisma migrate dev --name <NAME>` and commit the generated migration. Never edit old migrations.
-2. **Service** `src/services/<resource>.service.ts`: Prisma queries only, named `<verb><Thing>Service`, always take `userId` and filter `userId` + `isDeleted: false`. Deletes are soft updates.
-3. **Validation** `src/validationSchemas/<resource>Schema.ts`: export an express-validator `Schema`.
-4. **Controller** `src/controllers/<resource>.controller.ts`: `export const x = asyncHandler(async (req, res) => {...})`. Read `Number(req.header('x-user-id'))`, call services, `throw new AppError(msg, status.X)` for errors, respond with `res.status(status.X).json(...)`. Put a `@swagger` JSDoc block above it (swagger only scans `src/controllers/*.ts`).
-5. **Route** `src/routes/<resource>.routes.ts`: `router.post('/', checkSchema(schema), handleValidationErrors, controller)`; register new routers in `src/routes/index.ts` behind `mockAuth`.
+2. **Service** `src/<v>/services/<resource>.service.ts` (`<v>` = `v2` for new work; `v1` is legacy and frozen): Prisma queries only, named `<verb><Thing>Service`, always take `userId` and filter `userId` + `isDeleted: false`. Deletes are soft updates.
+3. **Validation** `src/<v>/validationSchemas/<resource>Schema.ts`: export an express-validator `Schema`.
+4. **Controller** `src/<v>/controllers/<resource>.controller.ts`: `export const x = asyncHandler(async (req, res) => {...})`. Read `Number(req.header('x-user-id'))`, call services, `throw new AppError(msg, status.X)` for errors, respond with `res.status(status.X).json(...)`. Put a `@swagger` JSDoc block above it (swagger scans `src/v1/controllers/*.ts` and `src/v2/controllers/*.ts`).
+5. **Route** `src/<v>/routes/<resource>.routes.ts`: `router.post('/', checkSchema(schema), handleValidationErrors, controller)`; register new routers in `src/routes/index.ts` behind `mockAuth` (v2 under `/v2/<resource>`).
 6. **Build**: `npm run build` must succeed. `dist/` is committed; include the regenerated output, never hand-edit it.
 
 ## Rules

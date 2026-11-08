@@ -11,7 +11,7 @@ request -> CORS -> express.json -> logRequests -> /api router
 ```
 
 - `src/index.ts` — CORS allow-list is hard-coded (local, Render, Vercel UI). Add new origins there.
-- `src/routes/index.ts` — mounts `/api/<resource>`; every router except `/auth` is behind `mockAuth`.
+- `src/routes/index.ts` — root router; mounts v1 routers (`src/v1/routes/`) at `/api/<resource>` and v2 at `/api/v2/<resource>`; every router except `/auth` is behind `mockAuth`. Paths below `src/` in this document refer to `src/v1/` for the legacy layers (controllers, services, routes, validationSchemas).
 - Resources: `auth, fruits, cups, cupCosts, cupValues, constants, orders, inventory, transactions, bouquets, tomatoes`.
 
 ## Layers (intended)
@@ -43,7 +43,7 @@ Prisma, PostgreSQL. Every model has `userId` (default 1, cascade delete) and mos
 
 ## Build & deploy
 
-`tsc` compiles `src/` to `dist/` (committed). Push to `main` triggers a Render deploy that runs `dist/index.js`. Local dev: `npm run dev`. Swagger is generated from JSDoc in `src/controllers/*.ts`.
+`tsc` compiles `src/` to `dist/` (committed). Push to `main` triggers a Render deploy that runs `dist/index.js`. Local dev: `npm run dev`. Swagger is generated from JSDoc in `src/v1/controllers/*.ts` and `src/v2/controllers/*.ts`.
 
 ## Conventions observed in code
 

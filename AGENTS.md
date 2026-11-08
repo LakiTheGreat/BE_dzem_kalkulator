@@ -22,10 +22,10 @@ There is **no linter** yet. Tests run against the real database as test user `us
 
 ```
 src/index.ts            app bootstrap, CORS allow-list, swagger, error handler
-src/routes/             one router per resource, mounted in routes/index.ts
-src/controllers/        request handling + swagger JSDoc
-src/services/           Prisma queries
-src/validationSchemas/  express-validator `Schema` objects
+src/routes/index.ts     root router: mounts v1 at /api/<resource> and v2 at /api/v2/<resource>
+src/v1/                 current (legacy) code, do not change behaviour
+  routes/ controllers/ services/ validationSchemas/
+src/v2/                 refactored code, same structure (routes/ controllers/ services/)
 src/middlewares/        asyncHandler, errorHandler, handleValidationErrors, auth/
 src/utils/              AppError, prisma client (db.ts), winston logger
 src/types/              shared TS types, express.d.ts (req.user)

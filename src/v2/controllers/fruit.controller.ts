@@ -2,7 +2,12 @@ import { Request, Response } from 'express';
 import status from 'http-status';
 
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
-import { getAllFruitsService, createFruitService } from '../services/fruit.service.js';
+import AppError from '../../utils/AppError.js';
+import {
+  createFruitService,
+  getAllFruitsService,
+  patchFruitService,
+} from '../services/fruit.service.js';
 
 /**
  * @swagger
@@ -70,3 +75,57 @@ export const getAllFruits = asyncHandler(
     res.status(status.OK).json(fruits);
   }
 );
+
+/**
+ * @swagger
+ * /api/v2/fruits/{id}:
+ *   patch:
+ *     tags:
+ *       - Fruits v2
+ *     summary: Rename a fruit; a duplicate label gets a " (n)" suffix
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - label
+ *             properties:
+ *               label:
+ *                 type: string
+ *                 description: Trimmed, 3-50 characters
+ *     responses:
+ *       200:
+ *         description: The updated fruit
+ *       400:
+ *         description: Invalid id or label
+ *       404:
+ *         description: Fruit not found (or deleted), or user not found
+ */
+export const patchFruit = asyncHandler(async (req: Request, res: Response) => {
+  const fruitId = Number(req.params.id);
+
+  if (!Number.isInteger(fruitId) || fruitId < 1) {
+    throw new AppError('Invalid fruit ID', status.BAD_REQUEST);
+  }
+
+  const fruit = await patchFruitService(fruitId, req.body.label, req.user.id);
+
+  if (!fruit) {
+    throw new AppError('Fruit not found', status.NOT_FOUND);
+  }
+
+  res.status(status.OK).json(fruit);
+});

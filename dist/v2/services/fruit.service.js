@@ -6,10 +6,15 @@ export const getAllFruitsService = (userId) => prisma.fruit.findMany({
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // Returns label if it is free, otherwise "label (n)" with n = highest used
 // suffix + 1 (the plain label counts as 1). Only non-deleted fruits of this
-// user are considered.
-const findFreeLabel = async (label, userId) => {
+// user are considered; excludeId skips the fruit being renamed.
+const findFreeLabel = async (label, userId, excludeId) => {
     const sameBase = await prisma.fruit.findMany({
-        where: { userId, isDeleted: false, label: { startsWith: label } },
+        where: {
+            userId,
+            isDeleted: false,
+            label: { startsWith: label },
+            ...(excludeId !== undefined && { id: { not: excludeId } }),
+        },
         select: { label: true },
     });
     const labels = new Set(sameBase.map((fruit) => fruit.label));
@@ -28,4 +33,17 @@ const findFreeLabel = async (label, userId) => {
 export const createFruitService = async (label, userId) => prisma.fruit.create({
     data: { label: await findFreeLabel(label, userId), userId },
 });
+// Returns null when the fruit does not exist, is deleted or belongs to another user.
+export const patchFruitService = async (id, label, userId) => {
+    const fruit = await prisma.fruit.findFirst({
+        where: { id, userId, isDeleted: false },
+        select: { id: true },
+    });
+    if (!fruit)
+        return null;
+    return prisma.fruit.update({
+        where: { id },
+        data: { label: await findFreeLabel(label, userId, id) },
+    });
+};
 //# sourceMappingURL=fruit.service.js.map

@@ -30,8 +30,18 @@ Why: make the code better, faster and more modern, and above all safe to change,
 4. Flip the flag; watch; flip back if anything is wrong.
 5. After a stable period, retire v1 for that resource.
 
+## Testing
+
+Vitest + supertest (`npm test`). Suites in `tests/` are parametrized by API base path (`describe.each(['/api', '/api/v2'])`) for behaviour that must be identical in v1 and v2; v2-only fixes get their own `describe`.
+
+## UI flag
+
+Decided in the UI repo: per-endpoint constant in code (`src/constants/apiVersions.ts`), default v1, rollback = flip the constant and redeploy.
+
+## Deploy
+
+Render builds the app itself on every deploy (`npm install && npx prisma generate && npm run build`, then `node dist/index.js`; verified in the deploy log), so `dist/` is not committed.
+
 ## Open items
 
-- Test runner: Vitest + supertest (`npm test`). Suites in `tests/` are parametrized by API base path; add `'/api/v2'` to `describe.each` when a v2 resource exists.
-- How the UI flag is stored (UI repo concern).
-- Whether Render builds `dist/` itself (see `known-issues.md`).
+None right now. New ones are recorded in `v2-endpoints.md` per endpoint, or in `known-issues.md` for general problems.

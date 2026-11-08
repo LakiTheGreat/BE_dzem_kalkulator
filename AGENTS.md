@@ -40,7 +40,7 @@ Details: [docs/architecture.md](docs/architecture.md), [docs/domain.md](docs/dom
 - **Every pull request targets `main`, always** (`gh pr create --base main`). Never target another feature branch, even if the work depends on an unmerged PR.
 - **New branches are always created from an up-to-date `main`** (`git fetch origin`, then `git switch -c <name> origin/main`), never from another feature branch.
 - **Never commit without the owner's explicit approval, and never push without explicit approval.** Show the changes first, then wait. Approval does not carry over between commits/pushes.
-- **`dist/` is committed** and Render runs `node dist/index.js` on push to `main` (whether Render also builds is unverified). Never edit `dist/` by hand; run `npm run build` and commit the regenerated output together with the `src/` change.
+- **`dist/` is not committed** (git-ignored). Render builds it on every deploy (`npm install && npx prisma generate && npm run build`, then `node dist/index.js`; verified in the deploy log). Locally `npm run build` / `npm run dev` generate it. Never rely on or edit `dist/` by hand.
 - Never commit secrets. `.env` is git-ignored; `DATABASE_URL` and `JWT_SECRET` come from the environment. Do not paste connection strings or passwords into code, docs or commits.
 - Imports use the `.js` extension (ESM), e.g. `import x from '../utils/db.js'`.
 - Every query is scoped by `userId` (from the `x-user-id` header). Never return or modify another user's rows.

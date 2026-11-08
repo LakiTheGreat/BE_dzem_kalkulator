@@ -23,7 +23,7 @@ const swaggerOptions = {
             version: '1.0.0',
         },
     },
-    apis: ['./src/controllers/*.ts'], // path to files with JSDoc comments
+    apis: ['./src/v1/controllers/*.ts', './src/v2/controllers/*.ts'], // path to files with JSDoc comments
 };
 const app = express();
 const swaggerSpec = swaggerJSDoc(swaggerOptions);

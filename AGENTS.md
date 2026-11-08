@@ -22,10 +22,10 @@ There is **no linter** yet. Tests run against the real database as test user `us
 
 ```
 src/index.ts            app bootstrap, CORS allow-list, swagger, error handler
-src/routes/             one router per resource, mounted in routes/index.ts
-src/controllers/        request handling + swagger JSDoc
-src/services/           Prisma queries
-src/validationSchemas/  express-validator `Schema` objects
+src/routes/index.ts     root router: mounts v1 at /api/<resource> and v2 at /api/v2/<resource>
+src/v1/                 current (legacy) code, do not change behaviour
+  routes/ controllers/ services/ validationSchemas/
+src/v2/                 refactored code, same structure (routes/ controllers/ services/)
 src/middlewares/        asyncHandler, errorHandler, handleValidationErrors, auth/
 src/utils/              AppError, prisma client (db.ts), winston logger
 src/types/              shared TS types, express.d.ts (req.user)
@@ -36,6 +36,7 @@ Details: [docs/architecture.md](docs/architecture.md), [docs/domain.md](docs/dom
 
 ## Hard rules
 
+- **Never commit or push directly to `main`.** Check `git branch --show-current` before every commit; if it is `main`, switch to a feature branch first.
 - **Never commit without the owner's explicit approval, and never push without explicit approval.** Show the changes first, then wait. Approval does not carry over between commits/pushes.
 - **`dist/` is committed** and Render runs `node dist/index.js` on push to `main` (whether Render also builds is unverified). Never edit `dist/` by hand; run `npm run build` and commit the regenerated output together with the `src/` change.
 - Never commit secrets. `.env` is git-ignored; `DATABASE_URL` and `JWT_SECRET` come from the environment. Do not paste connection strings or passwords into code, docs or commits.

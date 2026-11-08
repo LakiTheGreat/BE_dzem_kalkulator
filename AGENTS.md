@@ -32,7 +32,7 @@ src/types/              shared TS types, express.d.ts (req.user)
 prisma/schema.prisma    data model; prisma/migrations/ is history
 ```
 
-Details: [docs/architecture.md](docs/architecture.md), [docs/domain.md](docs/domain.md), [docs/known-issues.md](docs/known-issues.md). Step-by-step conventions: skill `repo-conventions` in `.github/skills/repo-conventions/SKILL.md`.
+Details: [docs/architecture.md](docs/architecture.md), [docs/domain.md](docs/domain.md), [docs/known-issues.md](docs/known-issues.md), [docs/v2-migration.md](docs/v2-migration.md). Step-by-step conventions: skill `repo-conventions` in `.github/skills/repo-conventions/SKILL.md`.
 
 ## Hard rules
 
@@ -43,4 +43,5 @@ Details: [docs/architecture.md](docs/architecture.md), [docs/domain.md](docs/dom
 - Deletes are soft (`isDeleted: true`); list/get queries filter `isDeleted: false`.
 - Errors: `throw new AppError(message, status.X)` inside `asyncHandler`; do not send error responses by hand in controllers.
 - Schema changes require a Prisma migration; never edit existing migrations.
+- Refactoring happens in a parallel v2 (`/api/v2/...`); do not change v1 behaviour. See [docs/v2-migration.md](docs/v2-migration.md). Real data belongs to `userId = 12397`; tests and manual experiments may use only test user `userId = 1`.
 - Keep changes surgical. This codebase is going to be refactored incrementally, so do not do drive-by restructuring.

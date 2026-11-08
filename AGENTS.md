@@ -37,6 +37,8 @@ Details: [docs/architecture.md](docs/architecture.md), [docs/domain.md](docs/dom
 ## Hard rules
 
 - **Never commit or push directly to `main`.** Check `git branch --show-current` before every commit; if it is `main`, switch to a feature branch first.
+- **Every pull request targets `main`, always** (`gh pr create --base main`). Never target another feature branch, even if the work depends on an unmerged PR.
+- **New branches are always created from an up-to-date `main`** (`git fetch origin`, then `git switch -c <name> origin/main`), never from another feature branch.
 - **Never commit without the owner's explicit approval, and never push without explicit approval.** Show the changes first, then wait. Approval does not carry over between commits/pushes.
 - **`dist/` is committed** and Render runs `node dist/index.js` on push to `main` (whether Render also builds is unverified). Never edit `dist/` by hand; run `npm run build` and commit the regenerated output together with the `src/` change.
 - Never commit secrets. `.env` is git-ignored; `DATABASE_URL` and `JWT_SECRET` come from the environment. Do not paste connection strings or passwords into code, docs or commits.

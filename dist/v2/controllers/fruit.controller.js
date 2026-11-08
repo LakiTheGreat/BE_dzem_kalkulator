@@ -1,7 +1,7 @@
 import status from 'http-status';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import AppError from '../../utils/AppError.js';
-import { createFruitService, getAllFruitsService, patchFruitService, } from '../services/fruit.service.js';
+import { createFruitService, deleteFruitService, getAllFruitsService, patchFruitService, } from '../services/fruit.service.js';
 /**
  * @swagger
  * /api/v2/fruits:
@@ -111,5 +111,42 @@ export const patchFruit = asyncHandler(async (req, res) => {
         throw new AppError('Fruit not found', status.NOT_FOUND);
     }
     res.status(status.OK).json(fruit);
+});
+/**
+ * @swagger
+ * /api/v2/fruits/{id}:
+ *   delete:
+ *     tags:
+ *       - Fruits v2
+ *     summary: Soft-delete a fruit
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: header
+ *         name: x-user-id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Object with message and the deleted fruit
+ *       400:
+ *         description: Invalid id
+ *       404:
+ *         description: Fruit not found (or already deleted), or user not found
+ */
+export const deleteFruit = asyncHandler(async (req, res) => {
+    const fruitId = Number(req.params.id);
+    if (!Number.isInteger(fruitId) || fruitId < 1) {
+        throw new AppError('Invalid fruit ID', status.BAD_REQUEST);
+    }
+    const fruit = await deleteFruitService(fruitId, req.user.id);
+    if (!fruit) {
+        throw new AppError('Fruit not found', status.NOT_FOUND);
+    }
+    res.status(status.OK).json({ message: 'Fruit marked as soft-deleted', fruit });
 });
 //# sourceMappingURL=fruit.controller.js.map

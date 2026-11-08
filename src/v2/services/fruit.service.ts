@@ -64,3 +64,15 @@ export const patchFruitService = async (
     data: { label: await findFreeLabel(label, userId, id) },
   });
 };
+
+// Soft delete. Returns null when the fruit does not exist, is already deleted
+// or belongs to another user.
+export const deleteFruitService = async (id: number, userId: number) => {
+  const { count } = await prisma.fruit.updateMany({
+    where: { id, userId, isDeleted: false },
+    data: { isDeleted: true },
+  });
+  if (count === 0) return null;
+
+  return prisma.fruit.findUniqueOrThrow({ where: { id } });
+};

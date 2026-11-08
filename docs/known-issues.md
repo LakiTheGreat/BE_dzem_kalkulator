@@ -22,6 +22,6 @@ Documented state as of AI setup; none are fixed yet. Do not fix them opportunist
 - `Inventory` primary key is `orderTypeId` only, while it also carries `userId`.
 
 ## Tooling
-- No tests, no linter/formatter config, no CI.
+- No linter/formatter config and no CI. Tests exist only for `fruits` (`tests/`).
 - `dist/` is committed (124 files); unclear whether Render builds on its own.
-- `package.json` `test` script is a placeholder.
+- `package.json` has a real `test` script (`vitest run`).

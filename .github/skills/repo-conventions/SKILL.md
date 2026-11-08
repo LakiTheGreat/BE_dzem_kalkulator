@@ -18,6 +18,7 @@ Read `AGENTS.md` and `docs/architecture.md` first. Follow existing code in the n
 
 ## Rules
 
+- **Never commit without the owner's explicit approval, and never push without explicit approval.** Make changes, show what changed (summary/diff), then wait. Approval for one commit or push does not carry over to the next one.
 - ESM: relative imports end with `.js`.
 - Use `http-status` constants, not numeric literals.
 - Never touch another user's data: every query includes `userId`.

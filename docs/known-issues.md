@@ -10,7 +10,7 @@ Documented state as of AI setup; none are fixed yet. Do not fix them opportunist
 
 ## Structure
 - `transaction.controller.ts` calls Prisma directly and has business logic in the controller; other controllers are cleaner.
-- Tomato module duplicates the order/transaction pattern.
+- Tomato module duplicates the order/transaction pattern (v1; v2 tomatoes is refactored with a shared stock service).
 - Controller files are very large because of inline swagger JSDoc (`order.controller.ts` ~25 KB).
 - Typing: widespread `any` (`whereClause: any`, `cupData: any`), `Json[]` columns cast with `as`.
 - File typo `logRequets.ts`; `routes/tomatoes.routes.ts` is plural while the others are singular.
@@ -18,10 +18,10 @@ Documented state as of AI setup; none are fixed yet. Do not fix them opportunist
 
 ## Data integrity
 - Creating a transaction writes the transaction and then updates inventory in two separate Prisma calls (no `prisma.$transaction`), so they can diverge.
-- Inventory stock can be driven negative; no explicit check.
+- Inventory stock can be driven negative; no explicit check (v2 tomatoes blocks this, jams still do not).
 - `Inventory` primary key is `orderTypeId` only, while it also carries `userId`.
 
 ## Tooling
-- No linter/formatter config and no CI. Tests exist only for `fruits` (`tests/`).
+- No linter/formatter config and no CI. Tests exist only for `fruits` and `tomatoes` (`tests/`).
 - `dist/` was committed (124 files) although Render builds it itself; it is now git-ignored and removed from the repo.
 - `package.json` has a real `test` script (`vitest run`).

@@ -24,7 +24,7 @@ export const assertTomatoCupExists = async (
   });
 
   if (!cup) {
-    throw new AppError('Tomato cup not found', status.NOT_FOUND);
+    throw new AppError('Tegla nije pronađena', status.NOT_FOUND);
   }
 };
 
@@ -104,7 +104,7 @@ export const withStockGuard = async <T>(
     const beforeTotal = was ? was.ordered - was.used : 0;
 
     if (afterTotal < 0 && afterTotal < beforeTotal) {
-      throw new AppError('Not enough cups in stock', status.BAD_REQUEST);
+      throw new AppError('Nema dovoljno tegli na stanju', status.BAD_REQUEST);
     }
   }
 

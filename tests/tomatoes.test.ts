@@ -210,7 +210,7 @@ describe('tomatoes v2 fixes', () => {
     const tx = await createTx(base, { cupTypeId: cupB, numOfCups: before + 1 });
 
     expect(tx.status).toBe(400);
-    expect(tx.body.message).toBe('Not enough cups in stock');
+    expect(tx.body.message).toBe('Nema dovoljno tegli na stanju');
     expect((await stockOf(base, cupB))?.totalCups).toBe(before);
 
     await request(app).delete(`${api(base)}/${order.body.id}`).set(userHeader);
@@ -279,7 +279,7 @@ describe('tomatoes v2 fixes', () => {
     for (const path of ['abc', '0', '-1', '1.5']) {
       const res = await request(app).get(`${api(base)}/${path}`).set(userHeader);
       expect(res.status).toBe(400);
-      expect(res.body.message).toBe('Invalid ID');
+      expect(res.body.message).toBe('Neispravan ID');
     }
   });
 

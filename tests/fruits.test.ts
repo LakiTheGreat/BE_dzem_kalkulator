@@ -104,7 +104,7 @@ describe.each(['/api'])('fruits characterization (%s)', (base) => {
       .set(userHeader)
       .send({ label: 'valid label' });
     expect(res.status).toBe(400);
-    expect(res.body.message).toBe('Invalid fruit ID');
+    expect(res.body.message).toBe('Neispravan ID voća');
   });
 
   it('soft-deletes a fruit and hides it from the list', async () => {
@@ -118,7 +118,7 @@ describe.each(['/api'])('fruits characterization (%s)', (base) => {
       .delete(`${url}/${created.body.id}`)
       .set(userHeader);
     expect(res.status).toBe(200);
-    expect(res.body.message).toBe('Fruit marked as soft-deleted');
+    expect(res.body.message).toBe('Voće je obrisano');
     expect(res.body.fruit).toMatchObject({
       id: created.body.id,
       isDeleted: true,

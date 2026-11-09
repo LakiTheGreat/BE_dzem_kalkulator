@@ -41,7 +41,7 @@ describe.each(['/api', '/api/v2'])('DELETE fruits shared (%s)', (base) => {
       .set(userHeader);
 
     expect(res.status).toBe(200);
-    expect(res.body.message).toBe('Fruit marked as soft-deleted');
+    expect(res.body.message).toBe('Voće je obrisano');
     expect(res.body.fruit).toMatchObject({ id: fruit.id, isDeleted: true });
 
     const list = await request(app).get(`${base}/fruits`).set(userHeader);
@@ -52,7 +52,7 @@ describe.each(['/api', '/api/v2'])('DELETE fruits shared (%s)', (base) => {
     const res = await request(app).delete(`${base}/fruits/abc`).set(userHeader);
 
     expect(res.status).toBe(400);
-    expect(res.body.message).toBe('Invalid fruit ID');
+    expect(res.body.message).toBe('Neispravan ID voća');
   });
 });
 
@@ -86,7 +86,7 @@ describe('DELETE /api/v2/fruits fixes', () => {
   it.each(['0', '-1', '1.5'])('returns 400 for invalid id %s', async (id) => {
     const res = await del(id);
     expect(res.status).toBe(400);
-    expect(res.body.message).toBe('Invalid fruit ID');
+    expect(res.body.message).toBe('Neispravan ID voća');
   });
 
   it('rejects an unknown user', async () => {

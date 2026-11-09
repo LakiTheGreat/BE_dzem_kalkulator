@@ -67,7 +67,7 @@ describe.each(['/api', '/api/v2'])('PATCH fruits shared (%s)', (base) => {
       .send({ label: 'valid label' });
 
     expect(res.status).toBe(400);
-    expect(res.body.message).toBe('Invalid fruit ID');
+    expect(res.body.message).toBe('Neispravan ID voća');
   });
 
   it('returns 400 for a too short label', async () => {
@@ -138,7 +138,7 @@ describe('PATCH /api/v2/fruits fixes', () => {
   it.each(['0', '-1', '1.5'])('returns 400 for invalid id %s', async (id) => {
     const res = await patch(id, 'valid label');
     expect(res.status).toBe(400);
-    expect(res.body.message).toBe('Invalid fruit ID');
+    expect(res.body.message).toBe('Neispravan ID voća');
   });
 
   it('rejects an unknown user', async () => {

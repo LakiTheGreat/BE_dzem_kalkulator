@@ -49,18 +49,18 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 | bouquets | `GET /bouquets/:id` | not started | |
 | bouquets | `POST /bouquets` | not started | |
 | bouquets | `PUT /bouquets/:id` | not started | |
-| tomatoes | `GET /tomatoes/cups` | implemented | see resource-wide analysis |
-| tomatoes | `GET /tomatoes/totals` | implemented | |
-| tomatoes | `GET /tomatoes/transactions` | implemented | |
-| tomatoes | `GET /tomatoes/transactions/:id` | implemented | |
-| tomatoes | `POST /tomatoes/transactions` | implemented | |
-| tomatoes | `PUT /tomatoes/transactions/:id` | implemented | |
-| tomatoes | `DELETE /tomatoes/transactions/:id` | implemented | |
-| tomatoes | `GET /tomatoes` | implemented | |
-| tomatoes | `GET /tomatoes/:id` | implemented | |
-| tomatoes | `POST /tomatoes` | implemented | |
-| tomatoes | `PUT /tomatoes/:id` | implemented | |
-| tomatoes | `DELETE /tomatoes/:id` | implemented | |
+| tomatoes | `GET /tomatoes/cups` | implemented (PR #9) | UI flag `v2`: UI PR #44, merges after BE deploy |
+| tomatoes | `GET /tomatoes/totals` | implemented (PR #9) | same |
+| tomatoes | `GET /tomatoes/transactions` | implemented (PR #9) | same |
+| tomatoes | `GET /tomatoes/transactions/:id` | implemented (PR #9) | same |
+| tomatoes | `POST /tomatoes/transactions` | implemented (PR #9) | same |
+| tomatoes | `PUT /tomatoes/transactions/:id` | implemented (PR #9) | same |
+| tomatoes | `DELETE /tomatoes/transactions/:id` | implemented (PR #9) | same |
+| tomatoes | `GET /tomatoes` | implemented (PR #9) | same |
+| tomatoes | `GET /tomatoes/:id` | implemented (PR #9) | same |
+| tomatoes | `POST /tomatoes` | implemented (PR #9) | same |
+| tomatoes | `PUT /tomatoes/:id` | implemented (PR #9) | same |
+| tomatoes | `DELETE /tomatoes/:id` | implemented (PR #9) | same |
 
 ## Cross-cutting
 

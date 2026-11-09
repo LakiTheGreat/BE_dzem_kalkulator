@@ -49,18 +49,18 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 | bouquets | `GET /bouquets/:id` | not started | |
 | bouquets | `POST /bouquets` | not started | |
 | bouquets | `PUT /bouquets/:id` | not started | |
-| tomatoes | `GET /tomatoes/cups` | not started | |
-| tomatoes | `GET /tomatoes/totals` | not started | |
-| tomatoes | `GET /tomatoes/transactions` | not started | |
-| tomatoes | `GET /tomatoes/transactions/:id` | not started | |
-| tomatoes | `POST /tomatoes/transactions` | not started | |
-| tomatoes | `PUT /tomatoes/transactions/:id` | not started | |
-| tomatoes | `DELETE /tomatoes/transactions/:id` | not started | |
-| tomatoes | `GET /tomatoes` | not started | |
-| tomatoes | `GET /tomatoes/:id` | not started | |
-| tomatoes | `POST /tomatoes` | not started | |
-| tomatoes | `PUT /tomatoes/:id` | not started | |
-| tomatoes | `DELETE /tomatoes/:id` | not started | |
+| tomatoes | `GET /tomatoes/cups` | implemented | see resource-wide analysis |
+| tomatoes | `GET /tomatoes/totals` | implemented | |
+| tomatoes | `GET /tomatoes/transactions` | implemented | |
+| tomatoes | `GET /tomatoes/transactions/:id` | implemented | |
+| tomatoes | `POST /tomatoes/transactions` | implemented | |
+| tomatoes | `PUT /tomatoes/transactions/:id` | implemented | |
+| tomatoes | `DELETE /tomatoes/transactions/:id` | implemented | |
+| tomatoes | `GET /tomatoes` | implemented | |
+| tomatoes | `GET /tomatoes/:id` | implemented | |
+| tomatoes | `POST /tomatoes` | implemented | |
+| tomatoes | `PUT /tomatoes/:id` | implemented | |
+| tomatoes | `DELETE /tomatoes/:id` | implemented | |
 
 ## Cross-cutting
 
@@ -279,6 +279,30 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 - **Open questions:** -
 
 ## tomatoes
+
+**Resource-wide analysis (v1 audit).** Stock is derived, not stored: `totals` = SUM(orders.numOfCups) - SUM(transactions.numOfCups), non-deleted rows only. No counter table, so no drift; this design is kept.
+- `PUT /tomatoes/:id`: validation requires `totalExpenses`, but the controller reads `totalExpense` and the service takes `totalExpense`, which is not a column. The expense is never updated (probably a Prisma error, to be confirmed by a test).
+- `POST /tomatoes` returns 200 (every other create returns 201); has an unreachable `!tomatoOrder` check. Validation messages say `numOf` instead of `numOfCups`; `numOfCups` message says "non-negative" but min is 1; schema accepts `userId`/`isDeleted` from the body (ignored by the controller).
+- `cupTypeId` is not checked on create/update (order or transaction): a cup of another user, a deleted cup or a missing cup (FK error) is accepted. Breaks the per-user scoping rule.
+- `update`/`delete` use `update({ where: { id, userId } })`, which throws P2025 instead of returning `null`, so the 404 branches never run; updates and deletes also touch already-deleted rows. `DELETE /transactions/:id` has the message `'TomatoTransaction found'` on its 404.
+- `GET /:id` and `GET /transactions/:id` return soft-deleted rows.
+- Stock can go negative: transaction create/update and order update/delete never check the remaining stock.
+- `GET /totals`: the date filter (`year`/`month`) applies to orders but not to transactions, so "remaining" is wrong whenever a filter is set; cup types that have transactions but no orders are missing from the result; cup labels are not scoped by user/`isDeleted`.
+- Date filter (`year`/`month`) is copy-pasted in 3 controllers; no validation of `year`/`month`/`transactionStatus` (an invalid status gives a Prisma error -> 500/400 by accident); end date is `23:59:59` (misses the last second) and uses server timezone.
+- `GET /transactions` maps with `cupType: undefined` (leftover); `include: { user: true }` in transaction create loads the whole user row for nothing.
+- Everything reads `x-user-id` from the raw header instead of `req.user.id`.
+- Not touched in v1: `TomatoCup` has no routes besides `GET /cups`.
+
+**Decisions (owner, all endpoints; contract kept unless noted).**
+- Negative stock is blocked: creating/updating a transaction, shrinking or deleting an order, or moving it to another cup type that would push stock below 0 gives 400 `Not enough cups in stock` and nothing is changed (checked inside a DB transaction; stock that was already negative may still recover).
+- `GET /totals`: the `year`/`month` filter is dropped (the UI never sends it); stock is always the total. Cup types with only transactions are now included; labels scoped by user.
+- Unknown / foreign `cupTypeId` on create/update -> 404 `Tomato cup not found`. Missing or deleted order/transaction -> 404 (`TomatoOrder not found`, `TomatoTransaction not found`); invalid id (not an integer >= 1) -> 400 `Invalid ID`; `GET /:id` no longer returns deleted rows.
+- `PUT /tomatoes/:id` now really updates `totalExpenses` and `cupTypeId` (v1 ignored both because of the `totalExpense` typo / missing field); needed because the UI edit form lets the user change them.
+- `POST /tomatoes` keeps status 200 (not 201) so the contract does not change; `POST /tomatoes/transactions` stays 201 with the same response shape.
+- Query validation (400): `year` >= 0, `month` 0-12 (0 or empty = no filter, as the UI sends), `transactionStatus` one of the enum. Month filter uses an exclusive upper bound (v1 missed the last second) and treats `year=0` as the current year.
+- Validation messages fixed (`numOf` -> `numOfCups`); `userId`/`isDeleted` in the body are no longer accepted by the schema (v1 ignored them).
+- Internal: user from `req.user.id`, writes in one DB transaction, soft delete of transactions via a single atomic `updateMany`, no `include: { user: true }`.
+- **Open questions:** none. Concurrent requests can in theory still both pass the stock check (default isolation level); negligible for a single user.
 
 ### GET /tomatoes/cups
 - **Analysis:** not done

@@ -13,6 +13,7 @@ import transactionRouter from '../v1/routes/transaction.routes.js';
 import bouquetsRouter from '../v1/routes/bouquet.routes.js';
 import tomatoesRouter from '../v1/routes/tomatoes.routes.js';
 import fruitsV2Router from '../v2/routes/fruit.routes.js';
+import tomatoesV2Router from '../v2/routes/tomato.routes.js';
 import { mockAuth as mockAuthV2 } from '../v2/middlewares/mockAuth.js';
 
 const router = Router();
@@ -31,5 +32,5 @@ router.use('/tomatoes', mockAuth, tomatoesRouter);
 
 // v2 (refactored, runs next to v1)
 router.use('/v2/fruits', mockAuthV2, fruitsV2Router);
-
+router.use('/v2/tomatoes', mockAuthV2, tomatoesV2Router);
 export default router;

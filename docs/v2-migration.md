@@ -60,6 +60,7 @@ Per-endpoint status, analysis, decisions and open questions live in [v2-endpoint
 - Two simultaneous `POST`s with the same label can still produce duplicates (no unique constraint on `Fruit(userId, label)`; adding one is a schema change and v1 may already have duplicates). Negligible for a single user; decide before scaling.
 - UI error handling for the new 404s (v1 gave 400 for missing fruit) was not checked; the UI shows a generic error notification.
 - Removing the v1 endpoints: not before v2 has run in production for a while.
+- Tomatoes v2: stock is not stored, only derived (SUM orders - SUM transactions); concurrent writes can still race past the stock check. Jam inventory (`Inventory` JSON counter, see v1) should move to the same derived model later; not part of this change.
 
 ## Process (see skill `api-v2-migration`)
 

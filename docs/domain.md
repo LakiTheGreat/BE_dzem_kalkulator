@@ -24,7 +24,9 @@ Flow: Order (what was produced) is tracked separately from Inventory (stock). Tr
 
 ## Tomato module
 
-Separate, simpler copy of the same ideas: `TomatoCup` (jar type), `TomatoOrder` (production: `numOfCups`, `totalExpenses`), `TomatoOrderTransaction` (sale/movement: `status`, `numOfCups`, `pricePerCup`, `note`). Exposed under `/api/tomatoes` (`/`, `/cups`, `/totals`, `/transactions`).
+Separate, simpler copy of the same ideas: `TomatoCup` (jar type), `TomatoOrder` (production: `numOfCups`, `totalExpenses`), `TomatoOrderTransaction` (sale/movement: `status`, `numOfCups`, `pricePerCup`, `note`). Exposed under `/api/tomatoes` (`/`, `/cups`, `/totals`, `/transactions`) and, refactored, under `/api/v2/tomatoes` (same contract).
+
+Stock is **derived, never stored**: per cup type `SUM(non-deleted orders.numOfCups) - SUM(non-deleted transactions.numOfCups)` (`GET /totals`). In v2 a change that would push stock below 0 is rejected with 400 `Not enough cups in stock`; v1 does not check. Jam stock (`Inventory`) is still a JSON counter, see [known-issues.md](known-issues.md).
 
 ## Glossary (UI/DB names are Serbian/English mixed)
 

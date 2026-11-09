@@ -28,5 +28,6 @@ Every v2 endpoint should be judged against these goals, within the constraint of
 5. **Implement** in `src/v2/{controllers,services,routes,validationSchemas}`: thin controller, logic in the service, `req.user.id` for the user, own validation schema, swagger block tagged `<Resource> v2`. Never import from `src/v1`.
 6. **Test**: extend the characterization tests with `/api/v2` (`describe.each`) plus a test for every fixed bug. Real DB, test user `userId = 1` only. Run `npm run build` and `npm test`.
 7. **Record** the result in `docs/v2-endpoints.md` (Decisions, Stage) and deviations from v1 or deferred ideas in `docs/v2-migration.md`. Flip the UI flag only in a separate, approved change.
+8. **Update all docs BEFORE opening the PR**, so code, tests and documentation land in one PR (no follow-up docs PR): `docs/v2-endpoints.md` (overview Stage with the PR number, Decisions), `docs/v2-migration.md`, and any other doc the change touches (`docs/domain.md`, `docs/known-issues.md`, `docs/architecture.md`, `AGENTS.md`). Check with `Select-String`/grep for stale mentions of the migrated resource. Only then commit, push and open the PR.
 
 Git rules from `AGENTS.md` apply (branch from `main`, PR to `main`, no commit/push without approval).

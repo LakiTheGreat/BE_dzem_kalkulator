@@ -74,7 +74,7 @@ export const getAllFruits = asyncHandler(
     const fruits = await getAllFruitsService(userId);
 
     if (!fruits) {
-      throw new AppError('Fruits not found', status.NOT_FOUND);
+      throw new AppError('Voće nije pronađeno', status.NOT_FOUND);
     }
 
     res.status(status.OK).json(fruits);
@@ -128,7 +128,7 @@ export const createNewFruit = asyncHandler(
     const baseName = req.body.label?.trim();
 
     if (!baseName) {
-      throw new AppError('Missing required field - label', status.BAD_REQUEST);
+      throw new AppError('Naziv je obavezan', status.BAD_REQUEST);
     }
 
     // Find all fruits with the same base name or with (n) suffix
@@ -152,7 +152,7 @@ export const createNewFruit = asyncHandler(
 
     if (!fruit) {
       throw new AppError(
-        'Something went wrong - fruit was not created!',
+        'Voće nije kreirano!',
         status.INTERNAL_SERVER_ERROR
       );
     }
@@ -218,11 +218,11 @@ export const patchFruitLabel = asyncHandler(
     const fruitId = Number(id);
 
     if (isNaN(fruitId)) {
-      throw new AppError('Invalid fruit ID', status.BAD_REQUEST);
+      throw new AppError('Neispravan ID voća', status.BAD_REQUEST);
     }
 
     if (!label) {
-      throw new AppError('Missing required field - label', status.BAD_REQUEST);
+      throw new AppError('Naziv je obavezan', status.BAD_REQUEST);
     }
 
     const baseName = req.body.label.trim();
@@ -253,7 +253,7 @@ export const patchFruitLabel = asyncHandler(
     );
     if (!updatedFruit) {
       throw new AppError(
-        'Something went wrong - fruit was not updated!',
+        'Voće nije izmenjeno!',
         status.INTERNAL_SERVER_ERROR
       );
     }
@@ -313,19 +313,19 @@ export const deleteFruitById = asyncHandler(
     const fruitId = Number(id);
 
     if (isNaN(fruitId)) {
-      throw new AppError('Invalid fruit ID', status.BAD_REQUEST);
+      throw new AppError('Neispravan ID voća', status.BAD_REQUEST);
     }
 
     const fruit = await deleteFruitService(fruitId, userId);
     if (!fruit) {
       throw new AppError(
-        'Something went wrong - fruit was not deleted!',
+        'Voće nije obrisano!',
         status.INTERNAL_SERVER_ERROR
       );
     }
 
     res
       .status(status.OK)
-      .json({ message: 'Fruit marked as soft-deleted', fruit });
+      .json({ message: 'Voće je obrisano', fruit });
   }
 );

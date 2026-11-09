@@ -94,8 +94,8 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 - **Analysis:** same suffix bugs as POST; renaming to the fruit's own name could collide with `"A (2)"`; works on deleted fruits; missing fruit gives 400 `PRISMA_P2025` by accident; id check lets `0`, `-1`, `1.5` through.
 - **Decisions:**
   - Same label rules as POST; the fruit itself is excluded when looking for a free label.
-  - Deleted or missing fruit -> 404 `Fruit not found`.
-  - Id must be an integer >= 1, otherwise 400 `Invalid fruit ID`.
+  - Deleted or missing fruit -> 404 `Voće nije pronađeno` (invalid id -> 400 `Neispravan ID voća`; Serbian per the error-message standard).
+  - Id must be an integer >= 1, otherwise 400 `Neispravan ID voća`.
   - Response unchanged: 200 + fruit.
 - **Open questions:** none.
 
@@ -104,7 +104,7 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 - **Decisions:**
   - Deleted or missing fruit -> 404.
   - Same id validation as PATCH.
-  - One atomic `updateMany`; response unchanged: 200 `{ message: 'Fruit marked as soft-deleted', fruit }`.
+  - One atomic `updateMany`; response unchanged: 200 `{ message: 'Voće je obrisano', fruit }`.
 - **Open questions:** none.
 
 ## cups
@@ -294,9 +294,9 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 - Not touched in v1: `TomatoCup` has no routes besides `GET /cups`.
 
 **Decisions (owner, all endpoints; contract kept unless noted).**
-- Negative stock is blocked: creating/updating a transaction, shrinking or deleting an order, or moving it to another cup type that would push stock below 0 gives 400 `Not enough cups in stock` and nothing is changed (checked inside a DB transaction; stock that was already negative may still recover).
+- Negative stock is blocked: creating/updating a transaction, shrinking or deleting an order, or moving it to another cup type that would push stock below 0 gives 400 `Nema dovoljno tegli na stanju` and nothing is changed (checked inside a DB transaction; stock that was already negative may still recover).
 - `GET /totals`: the `year`/`month` filter is dropped (the UI never sends it); stock is always the total. Cup types with only transactions are now included; labels scoped by user.
-- Unknown / foreign `cupTypeId` on create/update -> 404 `Tomato cup not found`. Missing or deleted order/transaction -> 404 (`TomatoOrder not found`, `TomatoTransaction not found`); invalid id (not an integer >= 1) -> 400 `Invalid ID`; `GET /:id` no longer returns deleted rows.
+- Unknown / foreign `cupTypeId` on create/update -> 404 `Tegla nije pronađena`. Missing or deleted order/transaction -> 404 (`Serija nije pronađena`, `Transakcija nije pronađena`); invalid id (not an integer >= 1) -> 400 `Neispravan ID`; `GET /:id` no longer returns deleted rows. Messages are in Serbian (see Cross-cutting decisions in v2-migration.md); the UI shows them.
 - `PUT /tomatoes/:id` now really updates `totalExpenses` and `cupTypeId` (v1 ignored both because of the `totalExpense` typo / missing field); needed because the UI edit form lets the user change them.
 - `POST /tomatoes` keeps status 200 (not 201) so the contract does not change; `POST /tomatoes/transactions` stays 201 with the same response shape.
 - Query validation (400): `year` >= 0, `month` 0-12 (0 or empty = no filter, as the UI sends), `transactionStatus` one of the enum. Month filter uses an exclusive upper bound (v1 missed the last second) and treats `year=0` as the current year.

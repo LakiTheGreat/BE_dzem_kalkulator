@@ -55,6 +55,12 @@ Per-endpoint status, analysis, decisions and open questions live in [v2-endpoint
 ### Auth (v2 `mockAuth`)
 - Same responses as v1 (401 no header, 404 unknown user); stops after the 401 (v1 sent a second response and logged "Cannot set headers after they are sent").
 
+### Error messages (standard for all v2 endpoints)
+- Every `AppError` message a user can see (not found, stock, business rules, invalid id) is written in **Serbian** and is short and user-readable.
+- Validation messages from express-validator (JSON array of field errors) stay in English; they are for developers, not shown to the user.
+- The UI shows the server `message` for 4xx errors and falls back to its generic "Nešto ne valja" when there is none (`useApiErrorNotification`).
+- Introduced with tomatoes v2 and applied to fruits. By the owner's decision the Fruits **v1** messages (errors and the delete success message) were translated too, so v1 and v2 return identical text and shared tests have no per-version branches. This is the one exception to "do not change v1 behaviour" (text only, no status/shape change).
+
 ## Not decided / known limitations
 
 - Two simultaneous `POST`s with the same label can still produce duplicates (no unique constraint on `Fruit(userId, label)`; adding one is a schema change and v1 may already have duplicates). Negligible for a single user; decide before scaling.

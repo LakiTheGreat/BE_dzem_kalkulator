@@ -27,7 +27,7 @@ const parseId = (req: Request) => {
   const id = Number(req.params.id);
 
   if (!Number.isInteger(id) || id < 1) {
-    throw new AppError('Invalid ID', status.BAD_REQUEST);
+    throw new AppError('Neispravan ID', status.BAD_REQUEST);
   }
 
   return id;
@@ -155,7 +155,7 @@ export const getTomatoOrderById = asyncHandler(
     const order = await getTomatoOrderByIdService(parseId(req), req.user.id);
 
     if (!order) {
-      throw new AppError('TomatoOrder not found', status.NOT_FOUND);
+      throw new AppError('Serija nije pronađena', status.NOT_FOUND);
     }
 
     res.status(status.OK).json(order);
@@ -243,7 +243,7 @@ export const updateTomatoOrder = asyncHandler(
     );
 
     if (!order) {
-      throw new AppError('TomatoOrder not found', status.NOT_FOUND);
+      throw new AppError('Serija nije pronađena', status.NOT_FOUND);
     }
 
     res.status(status.OK).json(order);
@@ -278,7 +278,7 @@ export const deleteTomatoOrder = asyncHandler(
     const order = await deleteTomatoOrderService(parseId(req), req.user.id);
 
     if (!order) {
-      throw new AppError('TomatoOrder not found', status.NOT_FOUND);
+      throw new AppError('Serija nije pronađena', status.NOT_FOUND);
     }
 
     res.status(status.OK).json(order);
@@ -361,7 +361,7 @@ export const getTomatoTransactionById = asyncHandler(
     );
 
     if (!transaction) {
-      throw new AppError('TomatoTransaction not found', status.NOT_FOUND);
+      throw new AppError('Transakcija nije pronađena', status.NOT_FOUND);
     }
 
     res.status(status.OK).json(transaction);
@@ -452,7 +452,7 @@ export const updateTomatoTransaction = asyncHandler(
     );
 
     if (!transaction) {
-      throw new AppError('TomatoTransaction not found', status.NOT_FOUND);
+      throw new AppError('Transakcija nije pronađena', status.NOT_FOUND);
     }
 
     res.status(status.OK).json(transaction);
@@ -490,7 +490,7 @@ export const deleteTomatoTransaction = asyncHandler(
     );
 
     if (!transaction) {
-      throw new AppError('TomatoTransaction not found', status.NOT_FOUND);
+      throw new AppError('Transakcija nije pronađena', status.NOT_FOUND);
     }
 
     res.status(status.OK).json(transaction);

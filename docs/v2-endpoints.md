@@ -30,8 +30,8 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 | cupValues | `POST /cupValues` | implemented | no UI screen |
 | cupValues | `PUT /cupValues/:id` | UI on v2 | |
 | cupValues | `DELETE /cupValues/:id` | implemented | no UI screen |
-| constants | `GET /constants/:id` | not started | no list route; UI uses hard-coded ids |
-| constants | `PATCH /constants/:id` | not started | |
+| constants | `GET /constants/:id` | implemented | no list route; UI uses hard-coded ids |
+| constants | `PATCH /constants/:id` | implemented | `isDeleted` no longer accepted |
 | orders | `GET /orders` | not started | |
 | orders | `GET /orders/:id` | not started | |
 | orders | `POST /orders` | not started | |
@@ -161,15 +161,20 @@ Both resources are identical in shape (`label` + `value`), so they share one ana
 
 ## constants
 
+No list route; the UI reads constants by hard-coded ids (user 1: 3, 4, 6, 8; real user: 1, 2, 5, 7) and only edits `value` + `label` (`"<value>%"`). Tests: `tests/constants.test.ts`.
+
 ### GET /constants/:id
-- **Analysis:** not done (note: there is no list route, the UI reads constants by hard-coded ids)
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis (v1 bugs):** returned soft-deleted constants; English message `Constant not found`; id not validated (`abc` -> NaN -> Prisma 500).
+- **Decisions:** same contract (200 + the row); missing/deleted/foreign -> 404 `Konstanta nije pronađena`; id must be an integer >= 1, otherwise 400 `Neispravan ID konstante`. Note: UI URLs have a trailing space (`/constants/2 `), `Number()` trims it, so this keeps working.
+- **Open questions:** none.
 
 ### PATCH /constants/:id
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis (v1 bugs):** validator allowed floats (`1.5`) and numeric strings while the column is `Int` -> Prisma error 500; id not validated; updated deleted rows; check-then-update (two queries); `isDeleted` in the body could soft-delete a constant (UI never sends it); label not trimmed; dead `!updated` 500 branch.
+- **Decisions:**
+  - `value` must be an integer >= 1, `label` a non-empty trimmed string (both required, as in v1).
+  - **Owner decision:** `isDeleted` is removed from PATCH (ignored); soft-deleted constants give 404.
+  - One atomic `updateMany` scoped by `userId` and `isDeleted: false`; response unchanged (200 + updated row).
+- **Open questions:** none.
 
 ## orders
 

@@ -6,6 +6,7 @@ Documented state as of AI setup; none are fixed yet. Do not fix them opportunist
 - Login uses one hard-coded password in `auth.controller.ts`; auth is a mock keyed on a client-supplied `x-user-id` header (anyone knowing a userId can act as that user). `protectRoute`/`createJWT` are unused; `JWT_SECRET` falls back to `'no secret'`.
 - `mockAuth` does not `return` after the 401 for a missing header (execution continues into the DB lookup and can attempt a second response).
 - v1 `PUT /cups/:id` updates without a `userId` filter and re-assigns the cup to the caller (cross-user write); fixed in v2 (`/api/v2/cups`). Likely similar in v1 `cupCosts`/`cupValues` PUT; check when those are migrated.
+- v1 `PATCH /constants/:id` accepts floats/strings for an `Int` column (500), returns and updates soft-deleted constants and allows `isDeleted` in the body; fixed in v2 (`/api/v2/constants`).
 - CORS allow-list is hard-coded in `index.ts`.
 - `README.md` includes part of a database connection string; keep real credentials out of the repo.
 

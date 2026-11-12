@@ -26,7 +26,7 @@ Flow: Order (what was produced) is tracked separately from Inventory (stock). Tr
 
 Separate, simpler copy of the same ideas: `TomatoCup` (jar type), `TomatoOrder` (production: `numOfCups`, `totalExpenses`), `TomatoOrderTransaction` (sale/movement: `status`, `numOfCups`, `pricePerCup`, `note`). Exposed under `/api/tomatoes` (`/`, `/cups`, `/totals`, `/transactions`) and, refactored, under `/api/v2/tomatoes` (same contract).
 
-Stock is **derived, never stored**: per cup type `SUM(non-deleted orders.numOfCups) - SUM(non-deleted transactions.numOfCups)` (`GET /totals`). In v2 a change that would push stock below 0 is rejected with 400 `Nema dovoljno tegli na stanju`; v1 does not check. Jam stock (`Inventory`) is still a JSON counter, see [known-issues.md](known-issues.md).
+Stock is **derived, never stored**: per cup type `SUM(non-deleted orders.numOfCups) - SUM(non-deleted transactions.numOfCups)` (`GET /totals`). In v2 a change that would push stock below 0 is rejected with 400 `Nema dovoljno tegli na stanju`; v1 does not check. Jam stock in v2 is derived the same way per fruit and cup: `SUM(orders) - SUM(abs(transactions)) + SUM(InventoryCorrection)` (manual corrections from `POST /inventory/input` are rows in `InventoryCorrection`). v1 still uses the `Inventory` JSON counter, which goes stale while v2 is used; see [v2-orders-plan.md](v2-orders-plan.md) and [known-issues.md](known-issues.md).
 
 ## Glossary (UI/DB names are Serbian/English mixed)
 

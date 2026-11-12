@@ -21,6 +21,7 @@ Documented state as of AI setup; none are fixed yet. Do not fix them opportunist
 ## Data integrity
 - Creating a transaction writes the transaction and then updates inventory in two separate Prisma calls (no `prisma.$transaction`), so they can diverge.
 - Inventory stock can be driven negative; no explicit check in v1 (v2 tomatoes, orders, transactions and inventory block this).
+- Express 5: `toInt()` does not change `req.query`; convert numeric query params in the controller (`queryInt` in `jam.controller.ts`).
 - v1 inventory counter and v2 derived stock are independent. Before switching back to v1, recompute `Inventory` from orders - transactions + `InventoryCorrection` (see [v2-orders-plan.md](v2-orders-plan.md)).
 - `Inventory` primary key is `orderTypeId` only, while it also carries `userId`.
 

@@ -34,6 +34,10 @@ const parseId = (req: Request) => {
   return id;
 };
 
+// Express 5 exposes req.query as a getter, so the validator's toInt() does not change it.
+const queryInt = (value: unknown) =>
+  value === undefined || value === '' ? undefined : Number(value);
+
 const ORDER_NOT_FOUND = 'Serija nije pronađena';
 const TRANSACTION_NOT_FOUND = 'Transakcija nije pronađena';
 
@@ -48,21 +52,14 @@ const TRANSACTION_NOT_FOUND = 'Transakcija nije pronađena';
  *         description: "{ orders, totalValue, totalExpense, totalProfit, totalCups }"
  */
 export const getAllOrders = asyncHandler(async (req: Request, res: Response) => {
-  const { orderTypeId, priceStatus, year, month } = req.query as Record<
-    string,
-    number | undefined
-  >;
-
-  res
-    .status(status.OK)
-    .json(
-      await getAllOrdersService(req.user.id, {
-        orderTypeId,
-        priceStatus,
-        year,
-        month,
-      })
-    );
+  res.status(status.OK).json(
+    await getAllOrdersService(req.user.id, {
+      orderTypeId: queryInt(req.query.orderTypeId),
+      priceStatus: queryInt(req.query.priceStatus),
+      year: queryInt(req.query.year),
+      month: queryInt(req.query.month),
+    })
+  );
 });
 
 /**
@@ -159,19 +156,12 @@ export const deleteOrder = asyncHandler(async (req: Request, res: Response) => {
  */
 export const getAllTransactions = asyncHandler(
   async (req: Request, res: Response) => {
-    const { orderTypeId, transactionStatus, year, month } = req.query as {
-      orderTypeId?: number;
-      transactionStatus?: TransactionStatus;
-      year?: number;
-      month?: number;
-    };
-
     res.status(status.OK).json(
       await getAllTransactionsService(req.user.id, {
-        orderTypeId,
-        status: transactionStatus,
-        year,
-        month,
+        orderTypeId: queryInt(req.query.orderTypeId),
+        status: req.query.transactionStatus as TransactionStatus | undefined,
+        year: queryInt(req.query.year),
+        month: queryInt(req.query.month),
       })
     );
   }

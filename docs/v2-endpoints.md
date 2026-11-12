@@ -45,10 +45,10 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 | transactions | `POST /transactions` | not started | |
 | transactions | `PUT /transactions/:id` | not started | |
 | transactions | `DELETE /transactions/:id` | not started | route is wired to a handler named `updateTransaction` (v1 `transaction.routes.ts`); verify in analysis |
-| bouquets | `GET /bouquets` | implemented | |
-| bouquets | `GET /bouquets/:id` | implemented | |
-| bouquets | `POST /bouquets` | implemented | |
-| bouquets | `PUT /bouquets/:id` | implemented | |
+| bouquets | `GET /bouquets` | UI on v2 | UI PR #53 |
+| bouquets | `GET /bouquets/:id` | UI on v2 | UI PR #53 |
+| bouquets | `POST /bouquets` | UI on v2 | UI PR #53 |
+| bouquets | `PUT /bouquets/:id` | UI on v2 | UI PR #53 |
 | tomatoes | `GET /tomatoes/cups` | UI on v2 | UI PR #44 |
 | tomatoes | `GET /tomatoes/totals` | UI on v2 | same |
 | tomatoes | `GET /tomatoes/transactions` | UI on v2 | same |

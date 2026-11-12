@@ -22,14 +22,14 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 | cups | `POST /cups` | implemented | no UI screen |
 | cups | `PUT /cups/:id` | implemented | no UI screen; fixes cross-user update |
 | cups | `DELETE /cups/:id` | implemented | no UI screen |
-| cupCosts | `GET /cupCosts` | not started | |
-| cupCosts | `POST /cupCosts` | not started | |
-| cupCosts | `PUT /cupCosts/:id` | not started | |
-| cupCosts | `DELETE /cupCosts/:id` | not started | |
-| cupValues | `GET /cupValues` | not started | |
-| cupValues | `POST /cupValues` | not started | |
-| cupValues | `PUT /cupValues/:id` | not started | |
-| cupValues | `DELETE /cupValues/:id` | not started | |
+| cupCosts | `GET /cupCosts` | implemented | |
+| cupCosts | `POST /cupCosts` | implemented | |
+| cupCosts | `PUT /cupCosts/:id` | implemented | |
+| cupCosts | `DELETE /cupCosts/:id` | implemented | |
+| cupValues | `GET /cupValues` | implemented | |
+| cupValues | `POST /cupValues` | implemented | |
+| cupValues | `PUT /cupValues/:id` | implemented | |
+| cupValues | `DELETE /cupValues/:id` | implemented | |
 | constants | `GET /constants/:id` | not started | no list route; UI uses hard-coded ids |
 | constants | `PATCH /constants/:id` | not started | |
 | orders | `GET /orders` | not started | |
@@ -138,49 +138,26 @@ UI uses only `GET /cups` (no screens for create/update/delete of cups).
 - **Decisions:** missing, deleted or foreign cup -> 404; id validation as PUT; one atomic `updateMany`; response unchanged: 200 `{ message: 'Tegla je obrisana', cup }`.
 - **Open questions:** deleting a cup that is still used by orders/transactions is allowed (soft delete, history keeps the reference), as in v1.
 
-## cupCosts
+## cupCosts and cupValues
 
-### GET /cupCosts
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+Both resources are identical in shape (`label` + `value`), so they share one analysis and one validation schema (`cupPriceSchema`). Tests: `tests/cupPrices.test.ts`.
 
-### POST /cupCosts
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
-
-### PUT /cupCosts/:id
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
-
-### DELETE /cupCosts/:id
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
-
-## cupValues
-
-### GET /cupValues
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
-
-### POST /cupValues
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
-
-### PUT /cupValues/:id
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
-
-### DELETE /cupValues/:id
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+### GET / POST / PUT / DELETE (`/cupCosts`, `/cupValues`)
+- **Analysis (v1 bugs):**
+  - DELETE controller called the service without `await` (response body `{}`, a Prisma P2025 became an unhandled rejection that can crash Node 22).
+  - cupValue POST did not `await` the service (201 with empty `{}`).
+  - cupValue PUT sent a 400 for a NaN id without `return`/throw (possible double response); PUT guard used `!value && !label` instead of OR.
+  - Not-found surfaced as 400 `PRISMA_P2025`; update/delete also worked on already deleted rows.
+  - `isNaN` id check let `0`, `-1`, `1.5` through; dead `!x` 404/500 branches.
+  - Deleting a cost/price used by active cups was allowed (cups kept pointing at a deleted row).
+  - v1 PUT/DELETE were already scoped by `userId` (unlike cups PUT).
+- **Decisions:**
+  - Contract kept: GET returns an array, POST 201, PUT `{message, updatedCupCost|updatedCupValue}`, DELETE `{message, deletedCupCost|deletedCupValue}`.
+  - POST returns the created row (v1 cupValue returned `{}`).
+  - Missing/deleted/foreign row on PUT/DELETE: 404 (`Trošak tegle nije pronađen` / `Cena tegle nije pronađena`); invalid id: 400 (`Neispravan ID troška` / `Neispravan ID cene`); label is trimmed before length validation.
+  - **Owner decision:** deleting a cost/price used by active (non-deleted) cups is blocked with 400 (`Trošak se koristi u aktivnim teglama` / `Cena se koristi u aktivnim teglama`). v1 allowed it.
+  - Messages in Serbian (v2 standard).
+- **Open questions:** none.
 
 ## constants
 

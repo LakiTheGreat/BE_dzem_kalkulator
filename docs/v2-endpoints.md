@@ -30,8 +30,8 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 | cupValues | `POST /cupValues` | implemented | no UI screen |
 | cupValues | `PUT /cupValues/:id` | UI on v2 | |
 | cupValues | `DELETE /cupValues/:id` | implemented | no UI screen |
-| constants | `GET /constants/:id` | implemented | no list route; UI uses hard-coded ids |
-| constants | `PATCH /constants/:id` | implemented | `isDeleted` no longer accepted |
+| constants | `GET /constants/:id` | UI on v2 | no list route; UI uses hard-coded ids; UI PR #48 |
+| constants | `PATCH /constants/:id` | UI on v2 | `isDeleted` no longer accepted; UI PR #48 |
 | orders | `GET /orders` | not started | |
 | orders | `GET /orders/:id` | not started | |
 | orders | `POST /orders` | not started | |

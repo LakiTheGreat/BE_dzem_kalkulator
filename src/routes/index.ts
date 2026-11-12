@@ -19,6 +19,9 @@ import cupValuesV2Router from '../v2/routes/cupValue.routes.js';
 import constantsV2Router from '../v2/routes/constant.routes.js';
 import bouquetsV2Router from '../v2/routes/bouquet.routes.js';
 import tomatoesV2Router from '../v2/routes/tomato.routes.js';
+import ordersV2Router from '../v2/routes/order.routes.js';
+import transactionsV2Router from '../v2/routes/transaction.routes.js';
+import inventoryV2Router from '../v2/routes/inventory.routes.js';
 import { mockAuth as mockAuthV2 } from '../v2/middlewares/mockAuth.js';
 
 const router = Router();
@@ -43,4 +46,7 @@ router.use('/v2/cupValues', mockAuthV2, cupValuesV2Router);
 router.use('/v2/constants', mockAuthV2, constantsV2Router);
 router.use('/v2/bouquets', mockAuthV2, bouquetsV2Router);
 router.use('/v2/tomatoes', mockAuthV2, tomatoesV2Router);
+router.use('/v2/orders', mockAuthV2, ordersV2Router);
+router.use('/v2/transactions', mockAuthV2, transactionsV2Router);
+router.use('/v2/inventory', mockAuthV2, inventoryV2Router);
 export default router;

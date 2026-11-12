@@ -38,6 +38,8 @@ model User {
 
   Transaction Transaction[]
 
+  InventoryCorrection InventoryCorrection[]
+
   BouquetTransaction BouquetTransaction[]
 
   TomatoCup TomatoCup[]
@@ -59,6 +61,8 @@ model Fruit {
   Inventory Inventory[]
 
   Transaction Transaction[]
+
+  InventoryCorrection InventoryCorrection[]
 }
  
 
@@ -73,6 +77,8 @@ model Cup {
 
   userId Int @default(1)
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  InventoryCorrection InventoryCorrection[]
 }
 
 model CupCost {
@@ -133,6 +139,24 @@ model Inventory {
   orderType Fruit @relation(fields: [orderTypeId], references: [id], onDelete: Cascade)
   userId    Int   @default(1)
   user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Manual stock corrections (initial stock, fixes). Stock in v2 is derived:
+// SUM(order cups) - SUM(transaction cups) + SUM(corrections).
+model InventoryCorrection {
+  id          Int      @id @default(autoincrement())
+  orderTypeId Int
+  orderType   Fruit    @relation(fields: [orderTypeId], references: [id], onDelete: Restrict)
+  cupId       Int
+  cup         Cup      @relation(fields: [cupId], references: [id], onDelete: Restrict)
+  quantity    Int
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  userId Int  @default(1)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, orderTypeId])
 }
 
 

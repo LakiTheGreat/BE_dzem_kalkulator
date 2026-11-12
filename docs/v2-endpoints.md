@@ -32,19 +32,19 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 | cupValues | `DELETE /cupValues/:id` | implemented | no UI screen |
 | constants | `GET /constants/:id` | UI on v2 | no list route; UI uses hard-coded ids; UI PR #48 |
 | constants | `PATCH /constants/:id` | UI on v2 | `isDeleted` no longer accepted; UI PR #48 |
-| orders | `GET /orders` | not started | |
-| orders | `GET /orders/:id` | not started | |
-| orders | `POST /orders` | not started | |
-| orders | `PUT /orders/:id` | not started | |
-| orders | `DELETE /orders/:id` | not started | |
-| inventory | `GET /inventory` | not started | |
-| inventory | `GET /inventory/overview` | not started | |
-| inventory | `POST /inventory/input` | not started | |
-| transactions | `GET /transactions` | not started | |
-| transactions | `GET /transactions/:id` | not started | |
-| transactions | `POST /transactions` | not started | |
-| transactions | `PUT /transactions/:id` | not started | |
-| transactions | `DELETE /transactions/:id` | not started | route is wired to a handler named `updateTransaction` (v1 `transaction.routes.ts`); verify in analysis |
+| orders | `GET /orders` | implemented | one block with inventory + transactions, see [v2-orders-plan.md](v2-orders-plan.md) |
+| orders | `GET /orders/:id` | implemented | same |
+| orders | `POST /orders` | implemented | same |
+| orders | `PUT /orders/:id` | implemented | same |
+| orders | `DELETE /orders/:id` | implemented | same |
+| inventory | `GET /inventory` | implemented | derived stock |
+| inventory | `GET /inventory/overview` | implemented | derived stock |
+| inventory | `POST /inventory/input` | implemented | writes a correction row (new table) |
+| transactions | `GET /transactions` | implemented | |
+| transactions | `GET /transactions/:id` | implemented | |
+| transactions | `POST /transactions` | implemented | |
+| transactions | `PUT /transactions/:id` | implemented | |
+| transactions | `DELETE /transactions/:id` | implemented | v1 route is wired to `updateTransaction` (soft delete only when body has `isDeleted: true`) |
 | bouquets | `GET /bouquets` | UI on v2 | UI PR #53 |
 | bouquets | `GET /bouquets/:id` | UI on v2 | UI PR #53 |
 | bouquets | `POST /bouquets` | UI on v2 | UI PR #53 |
@@ -178,74 +178,80 @@ No list route; the UI reads constants by hard-coded ids (user 1: 3, 4, 6, 8; rea
 
 ## orders
 
+Orders are coupled to the `Inventory` stock counter, so they have a separate plan: [v2-orders-plan.md](v2-orders-plan.md). Per-endpoint analysis below follows from it.
+
 ### GET /orders
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** v1 audit in the plan (items 12, 14). Filters `orderTypeId`, `priceStatus` (1/2), `year`, `month` are validated; totals and per-order value/expense/profit/margin are computed on the server. Findings: `fruitName` is `'Unknown'` for deleted fruits; date range uses server-local time; totals logic sits in the controller; English messages.
+- **Decisions:** same query params and response shape (`orders[]`, `totalValue`, `totalExpense`, `totalProfit`, `totalCups`, `profitMargin` as `"N%"`); calculation moves to the service; fruit names come from all of the user's fruits including deleted ones so history keeps its names (to confirm in review if unwanted); Serbian messages for invalid query params.
+- **Open questions:** none.
 
 ### GET /orders/:id
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** raw row + `orderType`, different shape from list items (UI edit form depends on it). `findUnique` with `isDeleted: false` and `userId` is already correct; 404 `Order not found`.
+- **Decisions:** shape unchanged; invalid id 400 `Neispravan ID`; missing or deleted 404 `Serija nije pronađena`.
+- **Open questions:** none.
 
 ### POST /orders
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** plan items 1, 2, 6, 8, 9: order and counter written separately; required-field check after lookups; client-sent amounts stored as is; no check of `fruitId`; 0/negative/duplicate cups accepted.
+- **Decisions:** validation per plan Decisions (`numberOf` integer >= 1, `cups` non-empty with unique ids, `fruits` non-empty, `baseFruitIsFree` boolean required, margin 1..100, amounts numbers >= 0 and required, unknown/foreign `orderTypeId`, `fruitId` or cup id rejected). Only the order row is written (stock is derived); response 201 + row. `userId`, `isDeleted`, `id` from the body are ignored.
+- **Open questions:** none.
 
 ### PUT /orders/:id
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** plan items 3, 4, 5, 11 and the margin overwrite from the UI.
+- **Decisions:** one `updateMany` scoped by `userId` and `isDeleted: false` inside a DB transaction, then `findUniqueOrThrow`; `otherExpensesMargin` is **not** changed (owner decision); same validation as POST; reducing cups, removing a cup or changing the fruit that would push stock below 0 gives 400 `Nema dovoljno tegli na stanju` and changes nothing. Response 200 + updated row.
+- **Open questions:** none.
 
 ### DELETE /orders/:id
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** v1 subtracts from the counter with clamping at 0 and skips when no counter row exists; duplicate `!existingOrder` check; update without `isDeleted` filter.
+- **Decisions:** atomic soft delete (`updateMany` with `isDeleted: false`); rejected with 400 `Nema dovoljno tegli na stanju` if stock would go below 0; response 200 `{ message }` kept (Serbian text); missing/deleted 404.
+- **Open questions:** none.
 
 ## inventory
 
+**Resource-wide analysis.** v1 stock is the `Inventory` JSON counter (one row per fruit, `cupData: [{ cupId, quantity }]`), changed by orders, transactions and `POST /inventory/input`. v2 derives stock instead: per fruit and cup `SUM(order cups.numberOf) - SUM(abs(transaction cups.quantity)) + SUM(corrections)`, non-deleted rows only, computed in one shared stock service used by orders, transactions and inventory. The `Inventory` table is kept untouched for v1 (rollback); it goes stale while v2 is used. New table for corrections (additive Prisma migration): `InventoryCorrection` (`id`, `userId`, `orderTypeId`, `cupId`, `quantity`, `createdAt`, `isDeleted`).
+
 ### GET /inventory
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** v1 groups the counter by fruit with cup labels sorted by the number in the label, fruits sorted by label; 404 `No inventory found for user` when empty; labels `null` for deleted fruits/cups.
+- **Decisions:** same response (`[{ orderTypeId, label, cups: [{ cupId, label, numberOf }] }]`) built from derived stock; empty result stays 404 with a Serbian message (UI contract; to verify with the UI when implementing).
+- **Open questions:** none.
 
 ### GET /inventory/overview
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** v1 sums the counter over all fruits per cup and lists every non-deleted cup (0 if none), sorted by the number in the label (`NaN` if a label has no number).
+- **Decisions:** same response (`[{ label, numberOf }]`) from derived stock; sorting made NaN-safe.
+- **Open questions:** none.
 
 ### POST /inventory/input
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** v1 upsert of the counter (creates or adds, negative allowed, no stock check, not atomic, `cupData` items for several cups in one call). UI sends one item with a possibly negative `quantity` after a client-side password check (the server does not check it).
+- **Decisions:** same route and request (`orderTypeId`, `cupData[{ cupId, quantity }]`, `quantity` integer and not 0); writes one correction row per item in a DB transaction; a correction that would push stock below 0 gives 400 `Nema dovoljno tegli na stanju`; unknown/foreign fruit or cup rejected; 201 with the created corrections. The password stays an auth/security topic, not changed here.
+- **Open questions:** none.
 
 ## transactions
 
+**Resource-wide analysis.** Findings are in the plan (banana -> pineapple bug, missing `return` after soft delete, non-atomic writes, sign trusted from the client, first transaction of a fruit returns the inventory row). Also: `DELETE /:id` is wired to `updateTransaction`, so deleting works only because the UI sends `{ isDeleted: true }`; without it the call is treated as an update with a missing body. `deleteTransaction` in the controller is an unused copy of update. `getTransactionByIdService` returns deleted rows; list loads cup labels without scoping by user.
+
 ### GET /transactions
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** filters `orderTypeId`, `transactionStatus` (not validated: bad value -> Prisma error 500), `year`, `month`.
+- **Decisions:** same response; `transactionStatus` validated against the enum (`ALL` treated as no filter is a UI concern, UI does not send it); cup labels scoped by user; Serbian messages.
+- **Open questions:** none.
 
 ### GET /transactions/:id
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** raw row, deleted rows are returned.
+- **Decisions:** shape unchanged (stored negative `quantity`, UI uses `Math.abs`); deleted/missing 404 `Transakcija nije pronađena`; invalid id 400.
+- **Open questions:** none.
 
 ### POST /transactions
-- **Analysis:** not done (known: transaction + inventory update are not atomic, see known-issues.md)
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** see plan; also `note` is not validated as a string (defaults to `""` in the DB).
+- **Decisions:** quantity normalised to negative, `0` rejected, unique cup ids, non-empty `cupData`, fruit and cups must belong to the user; transaction row written inside a DB transaction together with the stock check (400 `Nema dovoljno tegli na stanju`); always 201 + transaction row.
+- **Open questions:** none.
 
 ### PUT /transactions/:id
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** banana -> pineapple bug; the soft delete via PUT body `isDeleted` is a v1 quirk used only by DELETE.
+- **Decisions:** only updates `orderTypeId`, `status`, `cupData`, `note`; `isDeleted` is ignored; atomic `updateMany` with `isDeleted: false`; stock check on both the old and new fruit (old stock is given back automatically because stock is derived); 200 + updated row.
+- **Open questions:** none.
 
 ### DELETE /transactions/:id
-- **Analysis:** not done (the route uses a handler named `updateTransaction`; verify what it really does)
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** see resource-wide analysis.
+- **Decisions:** plain atomic soft delete in v2 (body ignored); response 200 `{ message }` (v1 message was `Transaction soft deleted`, Serbian text in v2); 404 for missing/deleted. Deleting a transaction only adds stock back, so no stock check.
+- **Open questions:** none.
 
 ## bouquets
 

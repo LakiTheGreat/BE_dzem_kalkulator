@@ -18,10 +18,10 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 | fruits | `POST /fruits` | implemented (PR #6) | UI flag `v2` merges after BE deploy |
 | fruits | `PATCH /fruits/:id` | implemented (PR #6) | same |
 | fruits | `DELETE /fruits/:id` | implemented (PR #6) | same |
-| cups | `GET /cups` | not started | |
-| cups | `POST /cups` | not started | |
-| cups | `PUT /cups/:id` | not started | |
-| cups | `DELETE /cups/:id` | not started | |
+| cups | `GET /cups` | implemented | UI flag not added yet |
+| cups | `POST /cups` | implemented | no UI screen |
+| cups | `PUT /cups/:id` | implemented | no UI screen; fixes cross-user update |
+| cups | `DELETE /cups/:id` | implemented | no UI screen |
 | cupCosts | `GET /cupCosts` | not started | |
 | cupCosts | `POST /cupCosts` | not started | |
 | cupCosts | `PUT /cupCosts/:id` | not started | |
@@ -109,25 +109,34 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 
 ## cups
 
+UI uses only `GET /cups` (no screens for create/update/delete of cups).
+
 ### GET /cups
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** v1 had a dead `!cups` check, a `?.`/`?? null` on required relations, user from the raw header; swagger shows nested cost/price objects but the response is flat numbers.
+- **Decisions:** same contract (non-deleted cups of the user sorted by label, `{ id, label, isDeleted, cost, sellingPrice }` with numbers); mapping moved to the service.
+- **Open questions:** none.
 
 ### POST /cups
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** v1 connected any `costId`/`valueId` (another user's, deleted, or missing -> 400 `PRISMA_P2025`), validated the label before trimming, unreachable `!cup` 500.
+- **Decisions:**
+  - Cost and price must exist, be non-deleted and belong to the user, otherwise 404 (`Trošak tegle nije pronađen` / `Cena tegle nije pronađena`), same as v1 PUT.
+  - Trim first, then validate.
+  - Response unchanged: 201 + cup with nested `cost` and `sellingPrice` (differs from the flat GET shape, as in v1).
+- **Open questions:** duplicate labels are still allowed (as in v1).
 
 ### PUT /cups/:id
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** v1 `update` had `where: { id }` without `userId` and re-assigned `user` -> **any user could change another user's cup and take it over**; deleted cups could be updated; missing cup -> 400 `PRISMA_P2025`; id check let `0`, `-1`, `1.5` through; redundant `!label || !costId || !valueId` check.
+- **Decisions:**
+  - Cup must exist, be non-deleted and belong to the user, otherwise 404 `Tegla nije pronađena`; ownership is never changed.
+  - Id must be an integer >= 1, otherwise 400 `Neispravan ID tegle`.
+  - Same cost/price checks as POST. All three fields stay required.
+  - Response unchanged: 200 `{ message: 'Tegla je izmenjena', updatedCup }`.
+- **Open questions:** none.
 
 ### DELETE /cups/:id
-- **Analysis:** not done
-- **Decisions:** -
-- **Open questions:** -
+- **Analysis:** soft delete; already deleted cup returned 200 again; missing cup gave 400 `PRISMA_P2025` (swagger said 404).
+- **Decisions:** missing, deleted or foreign cup -> 404; id validation as PUT; one atomic `updateMany`; response unchanged: 200 `{ message: 'Tegla je obrisana', cup }`.
+- **Open questions:** deleting a cup that is still used by orders/transactions is allowed (soft delete, history keeps the reference), as in v1.
 
 ## cupCosts
 

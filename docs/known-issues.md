@@ -5,6 +5,7 @@ Documented state as of AI setup; none are fixed yet. Do not fix them opportunist
 ## Security
 - Login uses one hard-coded password in `auth.controller.ts`; auth is a mock keyed on a client-supplied `x-user-id` header (anyone knowing a userId can act as that user). `protectRoute`/`createJWT` are unused; `JWT_SECRET` falls back to `'no secret'`.
 - `mockAuth` does not `return` after the 401 for a missing header (execution continues into the DB lookup and can attempt a second response).
+- v1 `PUT /cups/:id` updates without a `userId` filter and re-assigns the cup to the caller (cross-user write); fixed in v2 (`/api/v2/cups`). Likely similar in v1 `cupCosts`/`cupValues` PUT; check when those are migrated.
 - CORS allow-list is hard-coded in `index.ts`.
 - `README.md` includes part of a database connection string; keep real credentials out of the repo.
 
@@ -22,6 +23,6 @@ Documented state as of AI setup; none are fixed yet. Do not fix them opportunist
 - `Inventory` primary key is `orderTypeId` only, while it also carries `userId`.
 
 ## Tooling
-- No linter/formatter config and no CI. Tests exist only for `fruits` and `tomatoes` (`tests/`).
+- No linter/formatter config and no CI. Tests exist only for `fruits`, `cups` and `tomatoes` (`tests/`).
 - `dist/` was committed (124 files) although Render builds it itself; it is now git-ignored and removed from the repo.
 - `package.json` has a real `test` script (`vitest run`).

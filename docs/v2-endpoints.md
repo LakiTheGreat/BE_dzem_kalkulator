@@ -15,21 +15,21 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 |---|---|---|---|
 | auth | `POST /auth/login` | not started | |
 | fruits | `GET /fruits` | UI on v2 | |
-| fruits | `POST /fruits` | implemented (PR #6) | UI flag `v2` merges after BE deploy |
-| fruits | `PATCH /fruits/:id` | implemented (PR #6) | same |
-| fruits | `DELETE /fruits/:id` | implemented (PR #6) | same |
-| cups | `GET /cups` | implemented | UI flag not added yet |
+| fruits | `POST /fruits` | UI on v2 | |
+| fruits | `PATCH /fruits/:id` | UI on v2 | |
+| fruits | `DELETE /fruits/:id` | UI on v2 | |
+| cups | `GET /cups` | UI on v2 | |
 | cups | `POST /cups` | implemented | no UI screen |
 | cups | `PUT /cups/:id` | implemented | no UI screen; fixes cross-user update |
 | cups | `DELETE /cups/:id` | implemented | no UI screen |
-| cupCosts | `GET /cupCosts` | implemented | |
-| cupCosts | `POST /cupCosts` | implemented | |
-| cupCosts | `PUT /cupCosts/:id` | implemented | |
-| cupCosts | `DELETE /cupCosts/:id` | implemented | |
-| cupValues | `GET /cupValues` | implemented | |
-| cupValues | `POST /cupValues` | implemented | |
-| cupValues | `PUT /cupValues/:id` | implemented | |
-| cupValues | `DELETE /cupValues/:id` | implemented | |
+| cupCosts | `GET /cupCosts` | UI on v2 | |
+| cupCosts | `POST /cupCosts` | implemented | no UI screen |
+| cupCosts | `PUT /cupCosts/:id` | UI on v2 | |
+| cupCosts | `DELETE /cupCosts/:id` | implemented | no UI screen |
+| cupValues | `GET /cupValues` | UI on v2 | |
+| cupValues | `POST /cupValues` | implemented | no UI screen |
+| cupValues | `PUT /cupValues/:id` | UI on v2 | |
+| cupValues | `DELETE /cupValues/:id` | implemented | no UI screen |
 | constants | `GET /constants/:id` | not started | no list route; UI uses hard-coded ids |
 | constants | `PATCH /constants/:id` | not started | |
 | orders | `GET /orders` | not started | |
@@ -49,18 +49,18 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 | bouquets | `GET /bouquets/:id` | not started | |
 | bouquets | `POST /bouquets` | not started | |
 | bouquets | `PUT /bouquets/:id` | not started | |
-| tomatoes | `GET /tomatoes/cups` | implemented (PR #9) | UI flag `v2`: UI PR #44, merges after BE deploy |
-| tomatoes | `GET /tomatoes/totals` | implemented (PR #9) | same |
-| tomatoes | `GET /tomatoes/transactions` | implemented (PR #9) | same |
-| tomatoes | `GET /tomatoes/transactions/:id` | implemented (PR #9) | same |
-| tomatoes | `POST /tomatoes/transactions` | implemented (PR #9) | same |
-| tomatoes | `PUT /tomatoes/transactions/:id` | implemented (PR #9) | same |
-| tomatoes | `DELETE /tomatoes/transactions/:id` | implemented (PR #9) | same |
-| tomatoes | `GET /tomatoes` | implemented (PR #9) | same |
-| tomatoes | `GET /tomatoes/:id` | implemented (PR #9) | same |
-| tomatoes | `POST /tomatoes` | implemented (PR #9) | same |
-| tomatoes | `PUT /tomatoes/:id` | implemented (PR #9) | same |
-| tomatoes | `DELETE /tomatoes/:id` | implemented (PR #9) | same |
+| tomatoes | `GET /tomatoes/cups` | UI on v2 | UI PR #44 |
+| tomatoes | `GET /tomatoes/totals` | UI on v2 | same |
+| tomatoes | `GET /tomatoes/transactions` | UI on v2 | same |
+| tomatoes | `GET /tomatoes/transactions/:id` | UI on v2 | same |
+| tomatoes | `POST /tomatoes/transactions` | UI on v2 | same |
+| tomatoes | `PUT /tomatoes/transactions/:id` | UI on v2 | same |
+| tomatoes | `DELETE /tomatoes/transactions/:id` | UI on v2 | same |
+| tomatoes | `GET /tomatoes` | UI on v2 | same |
+| tomatoes | `GET /tomatoes/:id` | UI on v2 | same |
+| tomatoes | `POST /tomatoes` | UI on v2 | same |
+| tomatoes | `PUT /tomatoes/:id` | UI on v2 | same |
+| tomatoes | `DELETE /tomatoes/:id` | UI on v2 | same |
 
 ## Cross-cutting
 

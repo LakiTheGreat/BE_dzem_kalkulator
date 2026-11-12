@@ -45,10 +45,10 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 | transactions | `POST /transactions` | not started | |
 | transactions | `PUT /transactions/:id` | not started | |
 | transactions | `DELETE /transactions/:id` | not started | route is wired to a handler named `updateTransaction` (v1 `transaction.routes.ts`); verify in analysis |
-| bouquets | `GET /bouquets` | not started | |
-| bouquets | `GET /bouquets/:id` | not started | |
-| bouquets | `POST /bouquets` | not started | |
-| bouquets | `PUT /bouquets/:id` | not started | |
+| bouquets | `GET /bouquets` | implemented | |
+| bouquets | `GET /bouquets/:id` | implemented | |
+| bouquets | `POST /bouquets` | implemented | |
+| bouquets | `PUT /bouquets/:id` | implemented | |
 | tomatoes | `GET /tomatoes/cups` | UI on v2 | UI PR #44 |
 | tomatoes | `GET /tomatoes/totals` | UI on v2 | same |
 | tomatoes | `GET /tomatoes/transactions` | UI on v2 | same |
@@ -249,26 +249,34 @@ No list route; the UI reads constants by hard-coded ids (user 1: 3, 4, 6, 8; rea
 
 ## bouquets
 
+**Resource-wide analysis (v1 audit).** Model `BouquetTransaction` (`status` SOLD/GIVEN_AWAY/PROMOTION/OTHER, `totalExpense`, `income`, `profit`, `profitMargin`, `note`, soft delete). Client sends `profit` and `profitMargin`; the server stores them without checking. There is no DELETE route: the UI deletes via `PUT` with `isDeleted: true` (UI `BouquetPage/index.tsx`), so that must stay.
+Findings in v1:
+- user read from raw `x-user-id` header; `userId || 1` fallback in create (a missing user silently becomes user 1);
+- `GET /:id` uses `findUnique({ id, userId })` without `isDeleted: false`, so deleted rows are returned;
+- `PUT` also ignores `isDeleted`: deleted rows can be edited and restored; not found gives Prisma P2025 -> 400 via the error handler, the `!updatedTransaction` 404 is dead code; the response lacks `status` (GET/POST include it);
+- `POST` has a dead `!bouquetTransaction` check and returns the whole row including `userId` (GET/PUT hide it);
+- list: `transactionStatus` query is not validated (a bad value hits Prisma -> 500); `whereClause: any`, `userId`/`isDeleted` duplicated in controller and service;
+- validation: `isIn` options contain a sparse array (`[[, 'SOLD', ...]]`); schema accepts an unused `userId` body field; swagger says partial update but all fields are required; messages in English.
+
 ### GET /bouquets
-- **Analysis:** not done
-- **Decisions:** -
+- **Analysis:** see resource-wide analysis (unvalidated `transactionStatus`, duplicated where).
+- **Decisions:** same contract; unknown `transactionStatus` -> 400 (v1: 500); response shape shared with all bouquet endpoints (no `userId`).
 - **Open questions:** -
 
 ### GET /bouquets/:id
-- **Analysis:** not done
-- **Decisions:** -
+- **Analysis:** returns deleted rows; English messages.
+- **Decisions:** deleted rows -> 404 (owner decision); invalid id -> 400; Serbian messages.
 - **Open questions:** -
 
 ### POST /bouquets
-- **Analysis:** not done
-- **Decisions:** -
+- **Analysis:** `userId || 1` fallback, dead check, `userId` in response.
+- **Decisions:** 200 + row as in v1 but without `userId` (owner decision); user from `req.user.id`, no `|| 1` fallback; dead check removed. `profit`/`profitMargin` are still taken from the client (not recomputed).
 - **Open questions:** -
 
 ### PUT /bouquets/:id
-- **Analysis:** not done (a DELETE route exists only as a commented-out line)
-- **Decisions:** -
+- **Analysis:** edits deleted rows, dead 404, no `status` in response; a DELETE route exists only as a commented-out line.
+- **Decisions:** deleted rows cannot be edited or restored -> 404; missing id -> 404 (v1: 400 via P2025); `PUT` with `isDeleted: true` still soft-deletes (UI); response now includes `status` and has the shared shape; single atomic `updateMany`.
 - **Open questions:** -
-
 ## tomatoes
 
 **Resource-wide analysis (v1 audit).** Stock is derived, not stored: `totals` = SUM(orders.numOfCups) - SUM(transactions.numOfCups), non-deleted rows only. No counter table, so no drift; this design is kept.

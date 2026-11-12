@@ -32,19 +32,19 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 | cupValues | `DELETE /cupValues/:id` | implemented | no UI screen |
 | constants | `GET /constants/:id` | UI on v2 | no list route; UI uses hard-coded ids; UI PR #48 |
 | constants | `PATCH /constants/:id` | UI on v2 | `isDeleted` no longer accepted; UI PR #48 |
-| orders | `GET /orders` | implemented | one block with inventory + transactions, see [v2-orders-plan.md](v2-orders-plan.md) |
-| orders | `GET /orders/:id` | implemented | same |
-| orders | `POST /orders` | implemented | same |
-| orders | `PUT /orders/:id` | implemented | same |
-| orders | `DELETE /orders/:id` | implemented | same |
-| inventory | `GET /inventory` | implemented | derived stock |
-| inventory | `GET /inventory/overview` | implemented | derived stock |
-| inventory | `POST /inventory/input` | implemented | writes a correction row (new table) |
-| transactions | `GET /transactions` | implemented | |
-| transactions | `GET /transactions/:id` | implemented | |
-| transactions | `POST /transactions` | implemented | |
-| transactions | `PUT /transactions/:id` | implemented | |
-| transactions | `DELETE /transactions/:id` | implemented | v1 route is wired to `updateTransaction` (soft delete only when body has `isDeleted: true`) |
+| orders | `GET /orders` | UI on v2 | one block with inventory + transactions, see [v2-orders-plan.md](v2-orders-plan.md) |
+| orders | `GET /orders/:id` | UI on v2 | same |
+| orders | `POST /orders` | UI on v2 | same |
+| orders | `PUT /orders/:id` | UI on v2 | same |
+| orders | `DELETE /orders/:id` | UI on v2 | same |
+| inventory | `GET /inventory` | UI on v2 | derived stock |
+| inventory | `GET /inventory/overview` | UI on v2 | derived stock |
+| inventory | `POST /inventory/input` | UI on v2 | writes a correction row (new table) |
+| transactions | `GET /transactions` | UI on v2 | |
+| transactions | `GET /transactions/:id` | UI on v2 | |
+| transactions | `POST /transactions` | UI on v2 | |
+| transactions | `PUT /transactions/:id` | UI on v2 | |
+| transactions | `DELETE /transactions/:id` | UI on v2 | v1 route is wired to `updateTransaction` (soft delete only when body has `isDeleted: true`) |
 | bouquets | `GET /bouquets` | UI on v2 | UI PR #53 |
 | bouquets | `GET /bouquets/:id` | UI on v2 | UI PR #53 |
 | bouquets | `POST /bouquets` | UI on v2 | UI PR #53 |

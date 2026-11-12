@@ -292,4 +292,48 @@ describe('orders, transactions and inventory v2', () => {
       .expect(400);
     await request(app).get(`${base}/orders/abc`).set(userHeader).expect(400);
   });
+
+  it('list filters by fruit and by free/paid base fruit', async () => {
+    const free = await createOrder({ baseFruitIsFree: true });
+    const paid = await createOrder({ orderTypeId: fruitB });
+    const tx = await createTx();
+    expect(free.status).toBe(201);
+    expect(paid.status).toBe(201);
+    expect(tx.status).toBe(201);
+
+    const byFruit = await request(app)
+      .get(`${base}/orders?orderTypeId=${fruitB}`)
+      .set(userHeader)
+      .expect(200);
+    expect(byFruit.body.orders.map((o: { id: number }) => o.id)).toEqual([
+      paid.body.id,
+    ]);
+
+    const onlyFree = await request(app)
+      .get(`${base}/orders?orderTypeId=${fruitA}&priceStatus=1`)
+      .set(userHeader)
+      .expect(200);
+    expect(
+      onlyFree.body.orders.every(
+        (o: { baseFruitIsFree: boolean }) => o.baseFruitIsFree
+      )
+    ).toBe(true);
+    expect(onlyFree.body.orders.map((o: { id: number }) => o.id)).toContain(
+      free.body.id
+    );
+
+    const txs = await request(app)
+      .get(`${base}/transactions?orderTypeId=${fruitA}`)
+      .set(userHeader)
+      .expect(200);
+    expect(txs.body.map((t: { id: number }) => t.id)).toContain(tx.body.id);
+
+    const otherFruit = await request(app)
+      .get(`${base}/transactions?orderTypeId=${fruitB}`)
+      .set(userHeader)
+      .expect(200);
+    expect(otherFruit.body.map((t: { id: number }) => t.id)).not.toContain(
+      tx.body.id
+    );
+  });
 });

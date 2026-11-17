@@ -95,4 +95,55 @@ describe('DELETE /api/v2/fruits fixes', () => {
       .set('x-user-id', '999999999');
     expect(res.status).toBe(404);
   });
+
+  it('refuses to delete a fruit with stock until the stock is used up', async () => {
+    const fruit = await create(uniqueLabel('stock'));
+    const cost = await prisma.cupCost.create({
+      data: { value: 1, label: uniqueLabel('cost'), userId: TEST_USER_ID },
+    });
+    const value = await prisma.cupValue.create({
+      data: { value: 1, label: uniqueLabel('value'), userId: TEST_USER_ID },
+    });
+    const cup = await prisma.cup.create({
+      data: {
+        label: uniqueLabel('cup'),
+        costId: cost.id,
+        valueId: value.id,
+        userId: TEST_USER_ID,
+      },
+    });
+    const correction = (quantity: number) =>
+      prisma.inventoryCorrection.create({
+        data: {
+          userId: TEST_USER_ID,
+          orderTypeId: fruit.id,
+          cupId: cup.id,
+          quantity,
+        },
+      });
+
+    try {
+      await correction(2);
+
+      const blocked = await del(fruit.id);
+      expect(blocked.status).toBe(400);
+      expect(blocked.body.message).toBe(
+        'Voće možeš obrisati tek kada se potroši celo stanje'
+      );
+      const row = await prisma.fruit.findUnique({ where: { id: fruit.id } });
+      expect(row?.isDeleted).toBe(false);
+
+      await correction(-2);
+
+      const ok = await del(fruit.id);
+      expect(ok.status).toBe(200);
+    } finally {
+      await prisma.inventoryCorrection.deleteMany({
+        where: { orderTypeId: fruit.id, userId: TEST_USER_ID },
+      });
+      await prisma.cup.delete({ where: { id: cup.id } });
+      await prisma.cupCost.delete({ where: { id: cost.id } });
+      await prisma.cupValue.delete({ where: { id: value.id } });
+    }
+  });
 });

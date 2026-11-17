@@ -153,7 +153,7 @@ export const patchFruit = asyncHandler(async (req: Request, res: Response) => {
  *       200:
  *         description: Object with message and the deleted fruit
  *       400:
- *         description: Invalid id
+ *         description: Invalid id, or the fruit still has jars in stock
  *       404:
  *         description: Fruit not found (or already deleted), or user not found
  */

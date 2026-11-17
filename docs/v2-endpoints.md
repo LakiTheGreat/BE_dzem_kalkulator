@@ -103,6 +103,7 @@ All paths are relative to `/api` (v1) and `/api/v2` (v2).
 - **Analysis:** soft delete; deleting an already deleted fruit returned 200 again; missing fruit gave 400 `PRISMA_P2025`.
 - **Decisions:**
   - Deleted or missing fruit -> 404.
+  - **Owner (2026-11-17):** a fruit with any jars left in stock (derived stock != 0 for any cup) cannot be deleted: 400 `Voće možeš obrisati tek kada se potroši celo stanje`. Keeps stock from ending up on a fruit that cannot be selected anymore; history and stock of deleted fruits are never changed.
   - Same id validation as PATCH.
   - One atomic `updateMany`; response unchanged: 200 `{ message: 'Voće je obrisano', fruit }`.
 - **Open questions:** none.

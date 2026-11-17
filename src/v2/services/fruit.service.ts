@@ -1,4 +1,8 @@
+import status from 'http-status';
+
+import AppError from '../../utils/AppError.js';
 import prisma from '../../utils/db.js';
+import { getStock } from './jamStock.service.js';
 
 export const getAllFruitsService = (userId: number) =>
   prisma.fruit.findMany({
@@ -66,13 +70,23 @@ export const patchFruitService = async (
 };
 
 // Soft delete. Returns null when the fruit does not exist, is already deleted
-// or belongs to another user.
-export const deleteFruitService = async (id: number, userId: number) => {
-  const { count } = await prisma.fruit.updateMany({
-    where: { id, userId, isDeleted: false },
-    data: { isDeleted: true },
-  });
-  if (count === 0) return null;
+// or belongs to another user. A fruit with any jars left in stock cannot be
+// deleted, so stock never ends up without a (selectable) fruit.
+export const deleteFruitService = async (id: number, userId: number) =>
+  prisma.$transaction(async (tx) => {
+    const { count } = await tx.fruit.updateMany({
+      where: { id, userId, isDeleted: false },
+      data: { isDeleted: true },
+    });
+    if (count === 0) return null;
 
-  return prisma.fruit.findUniqueOrThrow({ where: { id } });
-};
+    const stock = (await getStock(tx, userId, [id])).get(id);
+    if ([...(stock?.values() ?? [])].some((quantity) => quantity !== 0)) {
+      throw new AppError(
+        'Voće možeš obrisati tek kada se potroši celo stanje',
+        status.BAD_REQUEST
+      );
+    }
+
+    return tx.fruit.findUniqueOrThrow({ where: { id } });
+  });
